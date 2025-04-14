@@ -1,0 +1,166 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches:
+      - dev
+      - qa
+      - hmg
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup all environment variables
+      id: setup_envs
+      run: |
+        # Define o STAGE baseado no nome da branch
+        if [[ "${{ github.ref_name }}" == "dev" ]]; then
+          echo "stage=dev" >> $GITHUB_ENV
+          echo "stage=dev" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref_name }}" == "qa" ]]; then
+          echo "stage=qa" >> $GITHUB_ENV
+          echo "stage=qa" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref_name }}" == "hmg" ]]; then
+          echo "stage=hmg" >> $GITHUB_ENV
+          echo "stage=hmg" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref_name }}" == "prod" ]]; then
+          echo "stage=prod" >> $GITHUB_ENV
+          echo "stage=prod" >> $GITHUB_OUTPUT
+        else
+          echo "Unknown branch: ${{ github.ref_name }}"
+          exit 1
+        fi
+
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ vars.GCP_CREDENTIALS_JSON }}
+
+    - name: Sanitize GCP_PROJECT_ID
+      run: |
+        CLEAN_PROJECT_ID=$(echo "${{ vars.GCP_PROJECT_ID }}" | sed 's/^gcp://')
+        echo "CLEAN_PROJECT_ID=$CLEAN_PROJECT_ID" >> $GITHUB_ENV
+        echo "GCP_PROJECT_ID limpo: $CLEAN_PROJECT_ID"
+        echo "GCP_BUCKET_NAME=${{ vars.GCP_BUCKET_NAME }}" >> $GITHUB_ENV
+        
+
+
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ env.CLEAN_PROJECT_ID }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        cd deploy
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+
+    - name: GCloud CLI Config project_id
+      run: |
+        gcloud config set project ${{ env.CLEAN_PROJECT_ID }}
+        gcloud config list
+
+
+    - name: Setup zips
+      run: |
+        cd deploy
+        python script_adjust_zips.py
+
+    - name: Set Python Path
+      run: |
+        export PYTHONPATH=${{ github.workspace }}/deploy:${{ github.workspace }}/deploy/resources
+        echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
+
+    - name: Set up Pulumi
+      uses: pulumi/actions@v4
+      with:
+        pulumi-version: '3.141.0'
+
+    - name: Pulumi Login
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ vars.PULUMI_ACCESS_TOKEN }}
+      run: |
+        source deploy/venv/bin/activate
+        pulumi login
+
+    - name: Check and Create Pulumi Stack if Necessary
+      id: stack_check
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ vars.PULUMI_ACCESS_TOKEN }}
+        STAGE: ${{ steps.setup_envs.outputs.stage }}
+      run: |
+        cd deploy
+        source venv/bin/activate
+
+        # Verifica se a stack existe, caso contrário, cria
+        if pulumi stack ls | grep -q $STAGE; then
+          echo "Stack $STAGE already exists. Selecting it..."
+          pulumi stack select $STAGE
+        else
+          echo "Stack $STAGE does not exist. Creating it..."
+          pulumi stack init $STAGE
+        fi
+
+    - name: Verify output directory
+      run: |
+        echo "Arquivos .zip disponíveis no diretório output:"
+        ls -lh deploy/output/
+        if [ ! -f "deploy/output/health_check.zip" ]; then
+          echo "Erro: health_check.zip não existe!"
+          exit 1
+        fi
+
+    - name: Debug output directory
+      run: |
+        echo "Verificando conteúdo do diretório output:"
+        ls -lah deploy/output/
+
+    - name: Check Pulumi State
+      env:
+        STAGE: ${{ steps.setup_envs.outputs.stage }}
+      run: |
+        cd deploy
+        source venv/bin/activate
+        pulumi stack select $STAGE 
+
+    - name: Pulumi Preview
+      env:
+        STAGE: ${{ steps.setup_envs.outputs.stage }}
+        PYTHONPATH: ${{ github.workspace }}/deploy
+        GCP_PROJECT_ID: ${{ env.CLEAN_PROJECT_ID }}
+        GCP_BUCKET_NAME: ${{ env.GCP_BUCKET_NAME }}
+
+      run: |
+        cd deploy
+        source venv/bin/activate
+        pulumi config set gcp:project $GCP_PROJECT_ID
+        pulumi preview -s $STAGE
+
+    - name: Pulumi Up (Deploy)
+      env:
+        STAGE: ${{ steps.setup_envs.outputs.stage }}
+        PYTHONPATH: ${{ github.workspace }}/deploy
+        GCP_PROJECT_ID: ${{ env.CLEAN_PROJECT_ID }}
+        GCP_BUCKET_NAME: ${{ env.GCP_BUCKET_NAME }}
+      run: |
+        cd deploy
+        source venv/bin/activate
+        pulumi config set gcp:project $GCP_PROJECT_ID
+        pulumi up -s $STAGE -y
