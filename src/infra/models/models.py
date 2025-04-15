@@ -22,3 +22,13 @@ class AddressModel(Base):
     city = Column(String)
     state = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
+
+class FreeResourceModel(Base):
+    __tablename__ = 'free_resources'
+    __table_args__ = { 'schema': 'test' }
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    created_at = Column(TIMESTAMP(timezone=True))
+    url = Column(String)
+    tags = Column(ARRAY(String))
