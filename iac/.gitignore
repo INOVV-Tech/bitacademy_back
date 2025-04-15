@@ -9,4 +9,5 @@ lambda_layer_out_temp/
 # CDK asset staging directory
 .cdk.staging
 cdk.out
-shared
+.aws-sam/
+sa-local/docker/
