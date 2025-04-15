@@ -10,6 +10,16 @@ class FreeResource(BaseModel):
     # TODO: text search strategy
     # title_search: str
 
+    @staticmethod
+    def from_dict_static(data: dict) -> 'FreeResource':
+        return FreeResource(
+            id=data['id'],
+            title=data['title'],
+            created_at=data['created_at'],
+            url=data['url'],
+            tags=data['tags']
+        )
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -18,3 +28,6 @@ class FreeResource(BaseModel):
             'url': self.url,
             'tags': self.tags
         }
+    
+    def from_dict(self, data: dict) -> 'FreeResource':
+        return FreeResource.from_dict_static(data)
