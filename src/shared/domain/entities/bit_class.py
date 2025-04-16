@@ -74,7 +74,7 @@ class BitClass(BaseModel):
             user_id=user_id,
             vip_level=VIP_LEVEL(data['vip_level'])
         )
-
+        
         return ('', bit_class)
 
     @staticmethod

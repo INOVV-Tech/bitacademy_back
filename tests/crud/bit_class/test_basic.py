@@ -58,6 +58,7 @@ class Test_BitClass:
         body = self.get_body()
 
         body['tags'] = [ 'teste' ]
+        body['vip_level'] = 1
         body['limit'] = 10
         body['last_evaluated_key'] = ''
 

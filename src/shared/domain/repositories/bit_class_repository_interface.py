@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.domain.entities.bit_class import BitClass
 
 class IBitClassRepository(ABC):
@@ -8,7 +9,8 @@ class IBitClassRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, tags: list[str] = [], limit: int = 10, last_evaluated_key: str = '') -> dict:
+    def get_all(self, tags: list[str] = [], vip_level: VIP_LEVEL | None = None, \
+        limit: int = 10, last_evaluated_key: str = '') -> dict:
         pass
     
     @abstractmethod

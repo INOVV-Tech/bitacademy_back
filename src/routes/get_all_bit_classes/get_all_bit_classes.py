@@ -7,6 +7,7 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
+from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.domain.entities.bit_class import BitClass
 from src.shared.utils.entity import is_valid_getall_object
 
@@ -47,8 +48,14 @@ class Usecase:
         if BitClass.data_contains_valid_tags(request_data):
             tags = BitClass.norm_tags(request_data['tags'])
 
+        vip_level = None
+
+        if BitClass.data_contains_valid_vip_level(request_data):
+            vip_level = VIP_LEVEL(request_data['vip_level'])
+
         db_data = self.repository.bit_class_repo.get_all(
             tags=tags,
+            vip_level=vip_level,
             limit=request_data['limit'],
             last_evaluated_key=request_data['last_evaluated_key']
         )

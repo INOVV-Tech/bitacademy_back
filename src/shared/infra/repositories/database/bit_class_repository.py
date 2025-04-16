@@ -4,6 +4,7 @@ from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 
 from src.shared.domain.repositories.bit_class_repository_interface import IBitClassRepository
 
+from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.domain.entities.bit_class import BitClass
 
 class BitClassRepositoryDynamo(IBitClassRepository):
@@ -40,15 +41,32 @@ class BitClassRepositoryDynamo(IBitClassRepository):
 
         return bit_class
 
-    def get_all(self, tags: list[str] = [], limit: int = 10, last_evaluated_key: str = '') -> dict:
-        filter_expression = None
+    def get_all(self, tags: list[str] = [], vip_level: VIP_LEVEL | None = None, \
+        limit: int = 10, last_evaluated_key: str = '') -> dict:
+        tags_filter_expression = None
 
         if len(tags) > 0:
             for tag in tags:
-                if filter_expression is None:
-                    filter_expression = Attr('tags').contains(tag)
+                if tags_filter_expression is None:
+                    tags_filter_expression = Attr('tags').contains(tag)
                 else:
-                    filter_expression |= Attr('tags').contains(tag)
+                    tags_filter_expression |= Attr('tags').contains(tag)
+
+        vip_filter_expression = None
+
+        if vip_level is not None:
+            vip_filter_expression = Attr('vip_level').eq(vip_level.value)
+
+        filter_expression = None
+
+        if tags_filter_expression is not None:
+            filter_expression = tags_filter_expression
+
+        if vip_filter_expression is not None:
+            if filter_expression is None:
+                filter_expression = vip_filter_expression
+            else:
+                filter_expression &= vip_filter_expression
 
         response = self.dynamo.query(
             index_name='GetAllEntities',
