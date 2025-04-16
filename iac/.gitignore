@@ -10,4 +10,4 @@ lambda_layer_out_temp/
 .cdk.staging
 cdk.out
 .aws-sam/
-sa-local/docker/
+bitacad-local/docker/
