@@ -1,3 +1,5 @@
+from boto3.dynamodb.conditions import Attr
+
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 
 from src.shared.domain.repositories.free_resource_repository_interface import IFreeResourceRepository
@@ -37,12 +39,22 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
 
         return free_resource
 
-    def get_all(self, limit: int = 10, last_evaluated_key: str = '') -> dict:
+    def get_all(self, tags: list[str] = [], limit: int = 10, last_evaluated_key: str = '') -> dict:
+        filter_expression = None
+
+        if len(tags) > 0:
+            for tag in tags:
+                if filter_expression is None:
+                    filter_expression = Attr('tags').contains(tag)
+                else:
+                    filter_expression |= Attr('tags').contains(tag)
+
         response = self.dynamo.query(
             index_name='GetAllEntities',
             partition_key=self.free_resource_gsi_primary_key(),
             limit=limit,
-            exclusive_start_key=last_evaluated_key if last_evaluated_key != '' else None
+            exclusive_start_key=last_evaluated_key if last_evaluated_key != '' else None,
+            filter_expression=filter_expression,
         )
         
         return {

@@ -7,6 +7,7 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
+from src.shared.domain.entities.free_resource import FreeResource
 from src.shared.utils.entity import is_valid_getall_object
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
@@ -40,9 +41,17 @@ class Usecase:
     def execute(self, request_data: dict) -> dict:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
+        
+        tags = []
+        
+        if FreeResource.data_contains_valid_tags(request_data):
+            tags = FreeResource.norm_tags(request_data['tags'])
 
-        db_data = self.repository.free_resource_repo.get_all(request_data['limit'], \
-            request_data['last_evaluated_key'])
+        db_data = self.repository.free_resource_repo.get_all(
+            tags=tags,
+            limit=request_data['limit'],
+            last_evaluated_key=request_data['last_evaluated_key']
+        )
 
         db_data['free_resources'] = [ x.to_public_dict() for x in db_data['free_resources'] ]
 

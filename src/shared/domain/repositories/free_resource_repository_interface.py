@@ -8,7 +8,7 @@ class IFreeResourceRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, limit: int = 10, last_evaluated_key: str = '') -> dict:
+    def get_all(self, tags: list[str] = [], limit: int = 10, last_evaluated_key: str = '') -> dict:
         pass
     
     @abstractmethod

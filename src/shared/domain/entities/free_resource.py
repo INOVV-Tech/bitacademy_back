@@ -13,9 +13,6 @@ class FreeResource(BaseModel):
     tags: list[str]
     user_id: int
 
-    # TODO: text search strategy
-    # title_search: str
-
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
         return is_valid_uuid(data, 'id', version=4)
@@ -31,6 +28,10 @@ class FreeResource(BaseModel):
     @staticmethod
     def data_contains_valid_tags(data: dict) -> bool:
         return is_valid_entity_string_list(data, 'tags', min_length=0)
+    
+    @staticmethod
+    def norm_tags(tags: list[str]) -> list[str]:
+        return [ tag.strip().lower() for tag in tags ]
 
     @staticmethod
     def from_request_data(data: dict, user_id: int) -> 'tuple[str, FreeResource | None]':
@@ -44,15 +45,15 @@ class FreeResource(BaseModel):
             if not is_valid_entity_string_list(data, 'tags', min_length=0):
                 return ('Lista de tags inválida', None)
             
-            tags = data['tags']
+            tags = FreeResource.norm_tags(data['tags'])
         else:
             tags = []
 
         free_resource = FreeResource(
             id=random_entity_id(),
-            title=data['title'],
+            title=data['title'].strip(),
             created_at=now_timestamp(),
-            external_url=data['external_url'],
+            external_url=data['external_url'].strip(),
             tags=tags,
             user_id=user_id
         )
@@ -88,10 +89,10 @@ class FreeResource(BaseModel):
     
     def update_from_dict(self, data: dict) -> None:
         if self.data_contains_valid_title(data):
-            self.title = data['title']
+            self.title = data['title'].strip()
 
         if self.data_contains_valid_external_url(data):
-            self.external_url = data['external_url']
+            self.external_url = data['external_url'].strip()
 
         if self.data_contains_valid_tags(data):
-            self.tags = data['tags']
+            self.tags = FreeResource.norm_tags(data['tags'])

@@ -53,6 +53,20 @@ class Test_FreeResource:
         assert response.status_code == 200
 
     @pytest.mark.skip(reason='Done')
+    def test_lambda_get_all_with_tags(self):
+        body = self.get_body()
+
+        body['tags'] = [ 'teste' ]
+        body['limit'] = 10
+        body['last_evaluated_key'] = ''
+
+        controller = GetAllController()
+
+        response = self.call_lambda(controller, body)
+
+        assert response.status_code == 200
+
+    @pytest.mark.skip(reason='Done')
     def test_lambda_get_one(self):
         body = self.get_body()
 
