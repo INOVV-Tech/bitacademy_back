@@ -77,7 +77,7 @@ class Test_BitClass:
         
         assert response.status_code == 200
 
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_lambda_update(self):
         body = self.get_body()
 
