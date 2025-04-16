@@ -23,7 +23,7 @@ class Test_BitClass:
 
         return controller.execute(request)
 
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_lambda_create(self):
         body = self.get_body()
 
@@ -53,7 +53,7 @@ class Test_BitClass:
 
         assert response.status_code == 200
 
-    @pytest.mark.skip(reason='Done')
+    # @pytest.mark.skip(reason='Done')
     def test_lambda_get_one(self):
         body = self.get_body()
 

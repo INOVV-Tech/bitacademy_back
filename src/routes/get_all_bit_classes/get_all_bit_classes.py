@@ -1,18 +1,29 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
-from src.shared.helpers.errors.errors import MissingParameters
+from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
+
+from src.shared.domain.enums.role import ROLE
+from src.shared.utils.entity import is_valid_getall_object
+
+ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
 
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
+
+            if requester_user.role not in ALLOWED_USER_ROLES:
+                raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute()
+            response = Usecase().execute(request.data)
+
+            if 'error' in response:
+                return BadRequest(response['error'])
             
             return OK(body=response)
         except MissingParameters as error:
@@ -26,8 +37,16 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(bit_class_repo=True)
 
-    def execute(self) -> dict:
-        return {}
+    def execute(self, request_data: dict) -> dict:
+        if not is_valid_getall_object(request_data):
+            return { 'error': 'Filtro de consulta inválido' }
+
+        db_data = self.repository.bit_class_repo.get_all(request_data['limit'], \
+            request_data['last_evaluated_key'])
+
+        db_data['bit_classes'] = [ x.to_public_dict() for x in db_data['bit_classes'] ]
+
+        return db_data
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

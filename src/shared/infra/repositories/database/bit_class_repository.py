@@ -47,7 +47,7 @@ class BitClassRepositoryDynamo(IBitClassRepository):
         )
         
         return {
-            'free_resources': [ BitClass.from_dict_static(item) for item in response['items'] ],
+            'bit_classes': [ BitClass.from_dict_static(item) for item in response['items'] ],
             'last_evaluated_key': response.get('last_evaluated_key')
         }
     
