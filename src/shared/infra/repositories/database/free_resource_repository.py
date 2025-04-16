@@ -20,9 +20,15 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
 
     def create(self, free_resource: FreeResource) -> FreeResource:
         pass
-    
-    def get_by_title(self, title: str) -> FreeResource:
+
+    def get_all(self) -> list[FreeResource]:
         pass
     
-    def get_all(self) -> list[FreeResource]:
+    def get_one(self, title: str) -> FreeResource:
+        pass
+
+    def update(self, free_resource: FreeResource) -> FreeResource:
+        pass
+
+    def delete(self, free_resource: FreeResource) -> FreeResource:
         pass

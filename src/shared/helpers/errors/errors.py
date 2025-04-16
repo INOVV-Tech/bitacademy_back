@@ -30,3 +30,7 @@ class ForbiddenAction(BaseError):
 class DatabaseException(BaseError):
     def __init__(self, message: str):
         super().__init__(f'Erro no banco de dados: {message}')
+
+class InvalidTokenError(BaseError):
+    def __init__(self, message: str):
+        super().__init__(f'Token inválido: {message}')
