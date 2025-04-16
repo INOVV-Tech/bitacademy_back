@@ -6,7 +6,7 @@ from src.shared.domain.entities.free_resource import FreeResource
 
 class FreeResourceRepositoryDynamo(IFreeResourceRepository):
     dynamo: DynamoDatasource
-
+    
     @staticmethod
     def free_resource_partition_key_format(free_resource: FreeResource) -> str:
         return f'FREE_RESOURCE#{free_resource.title}'
@@ -19,7 +19,14 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
         self.dynamo = dynamo
 
     def create(self, free_resource: FreeResource) -> FreeResource:
-        pass
+        item = free_resource.to_dict()
+
+        item['PK'] = self.free_resource_partition_key_format(free_resource)
+        item['SK'] = self.free_resource_sort_key_format(free_resource)
+
+        self.dynamo.put_item(item=item)
+
+        return free_resource
 
     def get_all(self) -> list[FreeResource]:
         pass

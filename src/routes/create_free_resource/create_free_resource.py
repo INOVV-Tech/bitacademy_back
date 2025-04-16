@@ -1,18 +1,29 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
-from src.shared.helpers.errors.errors import MissingParameters
+from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
+
+from src.shared.domain.enums.role import ROLE
+from src.shared.domain.entities.free_resource import FreeResource
+
+ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
+
+            if requester_user.role not in ALLOWED_USER_ROLES:
+                raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute()
+            response = Usecase().execute(requester_user)
+
+            if 'error' in response:
+                raise BadRequest(response['error'])
             
             return OK(body=response)
         except MissingParameters as error:
@@ -26,8 +37,17 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(free_resource_repo=True)
 
-    def execute(self) -> dict:
-        return {}
+    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
+        (error, free_resource) = FreeResource.from_request_data(request_data, requester_user.user_id)
+
+        if error is not None:
+            return { 'error': error }
+        
+        self.repository.free_resource_repo.create(free_resource)
+
+        return {
+            'free_resource': free_resource.to_public_dict()
+        }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

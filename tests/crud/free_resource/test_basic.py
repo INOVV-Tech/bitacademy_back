@@ -29,7 +29,7 @@ class Test_FreeResource:
         controller = CreateController()
 
         response = self.call_lambda(controller, body)
-
+        
         print('response', response)
 
         assert True

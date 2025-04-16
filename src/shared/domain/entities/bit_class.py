@@ -7,6 +7,7 @@ class BitClass(BaseModel):
     external_url: str
     tags: list[str]
     vip_level: int
+    user_id: int
 
     @staticmethod
     def from_dict_static(data: dict) -> 'BitClass':
@@ -16,7 +17,8 @@ class BitClass(BaseModel):
             created_at=data['created_at'],
             external_url=data['external_url'],
             tags=data['tags'],
-            vip_level=data['vip_level']
+            vip_level=data['vip_level'],
+            user_id=data['user_id']
         )
 
     def to_dict(self):
@@ -26,7 +28,8 @@ class BitClass(BaseModel):
             'created_at': self.created_at,
             'external_url': self.external_url,
             'tags': self.tags,
-            'vip_level': self.vip_level
+            'vip_level': self.vip_level,
+            'user_id': self.user_id
         }
     
     def from_dict(self, data: dict) -> 'BitClass':
