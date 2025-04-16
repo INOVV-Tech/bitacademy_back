@@ -1,7 +1,6 @@
 from enum import Enum
 
-
-class HttpStatusCodeEnum(Enum):
+class HttpStatusCode(Enum):
     OK = 200
     CREATED = 201
     NO_CONTENT = 204

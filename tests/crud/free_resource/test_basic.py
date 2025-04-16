@@ -1,19 +1,36 @@
 import pytest
 
-from src.shared.infra.repositories.repository import Repository
-
 from tests.common import get_requester_user
+
+from src.shared.helpers.external_interfaces.http_models import HttpRequest
+
+from src.routes.create_free_resource.create_free_resource import Controller as CreateController
+from src.routes.get_all_free_resources.get_all_free_resources import Controller as GetAllController
+from src.routes.get_one_free_resource.get_one_free_resource import Controller as GetOneController
+from src.routes.update_free_resource.update_free_resource import Controller as UpdateController
+from src.routes.delete_free_resource.delete_free_resource import Controller as DeleteController
 
 class Test_FreeResource:
     def get_body(self):
         return {
             'requests_user': get_requester_user()
         }
+    
+    def call_lambda(self, controller, body={}, headers={}, query_params={}):
+        request = HttpRequest(body=body, headers=headers, query_params=query_params)
+
+        return controller.execute(request)
 
     def test_lambda_create(self):
         body = self.get_body()
 
         print('body', body)
+
+        controller = CreateController()
+
+        response = self.call_lambda(controller, body)
+
+        print('response', response)
 
         assert True
 
