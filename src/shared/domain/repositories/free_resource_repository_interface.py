@@ -12,7 +12,7 @@ class IFreeResourceRepository(ABC):
         pass
     
     @abstractmethod
-    def get_one(self, title: str) -> FreeResource:
+    def get_one(self, title: str) -> FreeResource | None:
         pass
 
     @abstractmethod

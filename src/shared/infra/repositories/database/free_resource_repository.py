@@ -13,8 +13,12 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
         return f'FREE_RESOURCE#{free_resource.title}'
     
     @staticmethod
-    def free_resource_sort_key_format(free_resource: FreeResource) -> str:
-        return str(free_resource.created_at)
+    def free_resource_partition_key_format_from_title(title: str) -> str:
+        return f'FREE_RESOURCE#{title}'
+    
+    @staticmethod
+    def free_resource_sort_key_format(free_resource: FreeResource = None) -> str:
+        return 'NONE'
     
     @staticmethod
     def free_resource_gsi_primary_key() -> str:
@@ -47,8 +51,13 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
             'last_evaluated_key': response.get('last_evaluated_key')
         }
     
-    def get_one(self, title: str) -> FreeResource:
-        pass
+    def get_one(self, title: str) -> FreeResource | None:
+        data = self.dynamo.get_item(
+            partition_key=self.free_resource_partition_key_format_from_title(title),
+            sort_key=self.free_resource_sort_key_format()
+        )
+
+        return FreeResource.from_dict_static(data['Item']) if 'Item' in data else None
 
     def update(self, free_resource: FreeResource) -> FreeResource:
         pass

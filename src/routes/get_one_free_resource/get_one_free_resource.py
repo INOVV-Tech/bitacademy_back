@@ -1,18 +1,26 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
-from src.shared.helpers.errors.errors import MissingParameters
+from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
+
+from src.shared.domain.enums.role import ROLE
+from src.shared.domain.entities.free_resource import FreeResource
+
+ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
 
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
+
+            if requester_user.role not in ALLOWED_USER_ROLES:
+                raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute()
+            response = Usecase().execute(request.data)
             
             return OK(body=response)
         except MissingParameters as error:
@@ -26,8 +34,15 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(free_resource_repo=True)
 
-    def execute(self) -> dict:
-        return {}
+    def execute(self, request_data: dict) -> dict:
+        if not FreeResource.data_contains_valid_title(request_data):
+            return { 'error': 'Título inválido' }
+        
+        free_resource = self.repository.free_resource_repo.get_one(request_data['title'])
+
+        return {
+            'free_resource': free_resource.to_public_dict() if free_resource is not None else None
+        }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

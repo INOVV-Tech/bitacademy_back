@@ -52,8 +52,17 @@ class Test_FreeResource:
 
         assert response.status_code == 200
 
+    @pytest.mark.skip(reason='Done')
     def test_lambda_get_one(self):
-        assert True
+        body = self.get_body()
+
+        body['title'] = 'Test FreeResource'
+
+        controller = GetOneController()
+
+        response = self.call_lambda(controller, body)
+
+        assert response.status_code == 200
 
     def test_lambda_update(self):
         assert True

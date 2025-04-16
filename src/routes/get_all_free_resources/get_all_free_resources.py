@@ -41,7 +41,8 @@ class Usecase:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
 
-        db_data = self.repository.free_resource_repo.get_all(request_data['limit'], request_data['last_evaluated_key'])
+        db_data = self.repository.free_resource_repo.get_all(request_data['limit'], \
+            request_data['last_evaluated_key'])
 
         db_data['free_resources'] = [ x.to_public_dict() for x in db_data['free_resources'] ]
 
