@@ -37,13 +37,13 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
     def get_all(self, limit: int = 10, last_evaluated_key: str = '') -> dict:
         response = self.dynamo.query(
             index_name='GetAllEntities',
-            filter_expression=Key('GSI_PK').eq(self.free_resource_gsi_primary_key()),
+            partition_key=self.free_resource_gsi_primary_key(),
             limit=limit,
             exclusive_start_key=last_evaluated_key if last_evaluated_key != '' else None
         )
         
         return {
-            'free_resources': [ FreeResource.from_dict(item) for item in response['items'] ],
+            'free_resources': [ FreeResource.from_dict_static(item) for item in response['items'] ],
             'last_evaluated_key': response.get('last_evaluated_key')
         }
     

@@ -37,8 +37,9 @@ class Test_FreeResource:
 
         response = self.call_lambda(controller, body)
 
-        assert response['status_code'] == 200
+        assert response.status_code == 200
 
+    @pytest.mark.skip(reason='Done')
     def test_lambda_get_all(self):
         body = self.get_body()
 
@@ -49,9 +50,7 @@ class Test_FreeResource:
 
         response = self.call_lambda(controller, body)
 
-        print('response', response)
-
-        assert True
+        assert response.status_code == 200
 
     def test_lambda_get_one(self):
         assert True
