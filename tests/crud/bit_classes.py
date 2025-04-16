@@ -29,5 +29,8 @@ class Text_BitClasses:
     def test_lambda_get_one(self):
         pass
 
+    def test_lambda_update(self):
+        pass
+
     def test_lambda_delete(self):
         pass

@@ -1,5 +1,7 @@
 import pytest
 
+from src.shared.infra.repositories.repository import Repository
+
 class Text_FreeResource:
     ### CRUD
     
@@ -27,6 +29,9 @@ class Text_FreeResource:
         pass
 
     def test_lambda_get_one(self):
+        pass
+
+    def test_lambda_update(self):
         pass
 
     def test_lambda_delete(self):

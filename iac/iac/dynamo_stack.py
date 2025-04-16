@@ -41,10 +41,10 @@ class DynamoStack(Construct):
             index_name='AllEntitiesMetadata'
         )
 
-        CfnOutput(self, 'DynamoTableName',
+        CfnOutput(self, 'BitAcademyTableName',
                   value=self.dynamo_table.table_name,
-                  export_name=f'SAExpress{github_ref_name}TableName')
+                  export_name=f'BitAcademy{github_ref_name}TableName')
 
-        CfnOutput(self, 'DynamoSAExpressRemovalPolicy',
+        CfnOutput(self, 'DynamoBitAcademyRemovalPolicy',
                   value=removal_policy.value,
-                  export_name=f'SAExpress{github_ref_name}DynamoRemovalPolicy')
+                  export_name=f'BitAcademy{github_ref_name}DynamoRemovalPolicy')
