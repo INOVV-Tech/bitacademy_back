@@ -53,11 +53,11 @@ class Test_BitClass:
 
         assert response.status_code == 200
 
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = 'f3f3fdec-3ecb-4717-9f60-7261fc401ab3'
+        body['id'] = 'a1ec6431-db19-4a60-a179-07b40f4ea7aa'
 
         controller = GetOneController()
 
@@ -77,12 +77,12 @@ class Test_BitClass:
         
         assert response.status_code == 200
 
-    @pytest.mark.skip(reason='Done')
+    # @pytest.mark.skip(reason='Done')
     def test_lambda_update(self):
         body = self.get_body()
 
         body['bit_class'] = {
-            'id': '95f57894-f802-49f9-8c2b-463a76d19b33',
+            'id': 'a1ec6431-db19-4a60-a179-07b40f4ea7aa',
             'title': 'Test BitClass updated',
             'external_url': 'https://www.google.com/',
             'tags': [ 'teste', 'free', 'maisuma' ],
@@ -99,7 +99,7 @@ class Test_BitClass:
     def test_lambda_delete(self):
         body = self.get_body()
 
-        body['id'] = '95f57894-f802-49f9-8c2b-463a76d19b33'
+        body['id'] = 'a1ec6431-db19-4a60-a179-07b40f4ea7aa'
 
         controller = DeleteController()
 
