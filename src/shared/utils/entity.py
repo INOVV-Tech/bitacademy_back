@@ -17,6 +17,18 @@ def is_valid_entity_string(data: dict, field_key: str, min_length: int = 2, max_
 
     return True
 
+def is_valid_entity_int(data: dict, field_key: str, min_value = 0, max_value = 1000) -> bool:
+    if field_key not in data:
+        return False
+    
+    if not isinstance(data[field_key], int):
+        return False
+    
+    if data[field_key] < min_value or data[field_key] > max_value:
+        return False
+    
+    return True
+
 def is_valid_entity_url(data: dict, field_key: str) -> bool:
     if not is_valid_entity_string(data, field_key, min_length=10, max_length=1024):
         return False
@@ -54,4 +66,13 @@ def is_valid_entity_string_list(data: dict, field_key: str, min_length: int = 0,
         if len(item) < min_str_length or len(item) > max_str_length:
             return False
 
+    return True
+
+def is_valid_getall_object(data: dict) -> bool:
+    if not is_valid_entity_int(data, 'limit', 1, 1000):
+        return False
+    
+    if not is_valid_entity_string(data, 'last_evaluated_key', min_length=0, max_length=256):
+        return False
+    
     return True

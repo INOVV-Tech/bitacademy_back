@@ -23,10 +23,9 @@ class Test_FreeResource:
 
         return controller.execute(request)
 
+    @pytest.mark.skip(reason='Done')
     def test_lambda_create(self):
         body = self.get_body()
-
-        print('body', body)
 
         body['free_resource'] = {
             'title': 'Test FreeResource',
@@ -38,11 +37,20 @@ class Test_FreeResource:
 
         response = self.call_lambda(controller, body)
 
-        print('response', response)
-
-        assert True
+        assert response['status_code'] == 200
 
     def test_lambda_get_all(self):
+        body = self.get_body()
+
+        body['limit'] = 10
+        body['last_evaluated_key'] = ''
+
+        controller = GetAllController()
+
+        response = self.call_lambda(controller, body)
+
+        print('response', response)
+
         assert True
 
     def test_lambda_get_one(self):

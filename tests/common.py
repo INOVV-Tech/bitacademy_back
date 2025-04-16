@@ -12,7 +12,7 @@ from src.shared.domain.entities.user import User
 from src.shared.utils.time import now_timestamp
 
 def load_app_env(stage='DEV'):
-    root_directory = Path(__file__).parent.parent.parent.parent.parent
+    root_directory = Path(__file__).parent.parent
 
     env_filepath = os.path.join(root_directory, 'iac', '.env')
 

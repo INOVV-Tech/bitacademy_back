@@ -29,9 +29,9 @@ class DynamoDatasource:
         self.key_mapping = {
             'main_table': { 'partition_key': 'PK', 'sort_key': 'SK' },
             'gsis': {
-                'AllEntitiesMetadata': {
-                    'partition_key': 'GSI#ENTITY',
-                    'sort_key': 'created_at',
+                'GetAllEntities': {
+                    'partition_key': 'GSI_GETALL_ENTITIES',
+                    'sort_key': 'created_at'
                 }
             }
         }

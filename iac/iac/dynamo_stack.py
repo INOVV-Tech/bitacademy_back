@@ -30,15 +30,15 @@ class DynamoStack(Construct):
         )
 
         self.dynamo_table.add_global_secondary_index(
+            index_name='GetAllEntities',
             partition_key=aws_dynamodb.Attribute(
-                name='GSI#ENTITY',
+                name='GSI_GETALL_ENTITIES',
                 type=aws_dynamodb.AttributeType.STRING
             ),
             sort_key=aws_dynamodb.Attribute(
                 name='created_at',
                 type=aws_dynamodb.AttributeType.NUMBER
-            ),
-            index_name='AllEntitiesMetadata'
+            )
         )
 
         CfnOutput(self, 'BitAcademyTableName',
