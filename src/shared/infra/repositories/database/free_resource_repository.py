@@ -10,14 +10,14 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
     
     @staticmethod
     def free_resource_partition_key_format(free_resource: FreeResource) -> str:
-        return f'FREE_RESOURCE#{free_resource.title}'
+        return f'FREE_RESOURCE#{free_resource.id}'
     
     @staticmethod
-    def free_resource_partition_key_format_from_title(title: str) -> str:
-        return f'FREE_RESOURCE#{title}'
+    def free_resource_partition_key_format_from_id(id: str) -> str:
+        return f'FREE_RESOURCE#{id}'
     
     @staticmethod
-    def free_resource_sort_key_format(free_resource: FreeResource = None) -> str:
+    def free_resource_sort_key_format() -> str:
         return 'NONE'
     
     @staticmethod
@@ -31,8 +31,9 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
         item = free_resource.to_dict()
 
         item['PK'] = self.free_resource_partition_key_format(free_resource)
-        item['SK'] = self.free_resource_sort_key_format(free_resource)
-        item['GSI_GETALL_ENTITIES'] = self.free_resource_gsi_primary_key()
+        item['SK'] = self.free_resource_sort_key_format()
+        item['GSI_ENTITY_GETALL'] = self.free_resource_gsi_primary_key()
+        item['GSI_TEXT'] = free_resource.title
 
         self.dynamo.put_item(item=item)
 
@@ -51,16 +52,43 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
             'last_evaluated_key': response.get('last_evaluated_key')
         }
     
-    def get_one(self, title: str) -> FreeResource | None:
+    def get_one(self, id: str) -> FreeResource | None:
         data = self.dynamo.get_item(
-            partition_key=self.free_resource_partition_key_format_from_title(title),
+            partition_key=self.free_resource_partition_key_format_from_id(id),
             sort_key=self.free_resource_sort_key_format()
         )
 
         return FreeResource.from_dict_static(data['Item']) if 'Item' in data else None
+    
+    def get_one_by_title(self, title: str) -> FreeResource | None:
+        data = self.dynamo.query(
+            partition_key=title,
+            index_name='GetEntityByText'
+        )
+
+        items = data['items']
+
+        return FreeResource.from_dict_static(items[0]) if len(items) > 0 else None
 
     def update(self, free_resource: FreeResource) -> FreeResource:
-        pass
+        item = free_resource.to_dict()
 
-    def delete(self, free_resource: FreeResource) -> FreeResource:
-        pass
+        item['PK'] = self.free_resource_partition_key_format(free_resource)
+        item['SK'] = self.free_resource_sort_key_format()
+        item['GSI_ENTITY_GETALL'] = self.free_resource_gsi_primary_key()
+        item['GSI_TEXT'] = free_resource.title
+
+        self.dynamo.put_item(item=item)
+
+        return free_resource
+
+    def delete(self, id: str) -> FreeResource | None:
+        data = self.dynamo.delete_item(
+            partition_key=self.free_resource_partition_key_format_from_id(id),
+            sort_key=self.free_resource_sort_key_format()
+        )
+
+        if 'Attributes' not in data:
+            return None
+
+        return FreeResource.from_dict_static(data['Attributes'])

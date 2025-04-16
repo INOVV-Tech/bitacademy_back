@@ -2,7 +2,8 @@ from pydantic import BaseModel, Field
 
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id, \
-    is_valid_entity_string, is_valid_entity_url, is_valid_entity_string_list
+    is_valid_entity_string, is_valid_entity_url, is_valid_entity_string_list, \
+    is_valid_uuid
 
 class FreeResource(BaseModel):
     id: str
@@ -16,8 +17,20 @@ class FreeResource(BaseModel):
     # title_search: str
 
     @staticmethod
+    def data_contains_valid_id(data: dict) -> bool:
+        return is_valid_uuid(data, 'id', version=4)
+    
+    @staticmethod
     def data_contains_valid_title(data: dict) -> bool:
         return is_valid_entity_string(data, 'title', min_length=2, max_length=128)
+    
+    @staticmethod
+    def data_contains_valid_external_url(data: dict) -> bool:
+        return is_valid_entity_url(data, 'external_url')
+    
+    @staticmethod
+    def data_contains_valid_tags(data: dict) -> bool:
+        return is_valid_entity_string_list(data, 'tags', min_length=0)
 
     @staticmethod
     def from_request_data(data: dict, user_id: int) -> 'tuple[str, FreeResource | None]':
@@ -68,7 +81,17 @@ class FreeResource(BaseModel):
         }
     
     def from_dict(self, data: dict) -> 'FreeResource':
-        return FreeResource.from_dict_static(data)
+        return self.from_dict_static(data)
     
     def to_public_dict(self):
         return self.to_dict()
+    
+    def update_from_dict(self, data: dict) -> None:
+        if self.data_contains_valid_title(data):
+            self.title = data['title']
+
+        if self.data_contains_valid_external_url(data):
+            self.external_url = data['external_url']
+
+        if self.data_contains_valid_tags(data):
+            self.tags = data['tags']

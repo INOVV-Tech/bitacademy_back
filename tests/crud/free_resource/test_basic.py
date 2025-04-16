@@ -56,7 +56,7 @@ class Test_FreeResource:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['title'] = 'Test FreeResource'
+        body['id'] = 'f3f3fdec-3ecb-4717-9f60-7261fc401ab3'
 
         controller = GetOneController()
 
@@ -64,8 +64,45 @@ class Test_FreeResource:
 
         assert response.status_code == 200
 
-    def test_lambda_update(self):
-        assert True
+    @pytest.mark.skip(reason='Done')
+    def test_lambda_get_one_by_title(self):
+        body = self.get_body()
 
+        body['title'] = 'Test FreeResource'
+
+        controller = GetOneController()
+
+        response = self.call_lambda(controller, body)
+        
+        assert response.status_code == 200
+
+    @pytest.mark.skip(reason='Done')
+    def test_lambda_update(self):
+        body = self.get_body()
+
+        body['free_resource'] = {
+            'id': '95f57894-f802-49f9-8c2b-463a76d19b33',
+            'title': 'Test FreeResource updated',
+            'external_url': 'https://www.google.com/',
+            'tags': [ 'teste', 'free', 'maisuma' ]
+        }
+        
+        controller = UpdateController()
+
+        response = self.call_lambda(controller, body)
+        
+        assert response.status_code == 200
+
+    @pytest.mark.skip(reason='Done')
     def test_lambda_delete(self):
-        assert True
+        body = self.get_body()
+
+        body['free_resource'] = {
+            'id': '95f57894-f802-49f9-8c2b-463a76d19b33'
+        }
+
+        controller = DeleteController()
+
+        response = self.call_lambda(controller, body)
+
+        assert response.status_code == 200

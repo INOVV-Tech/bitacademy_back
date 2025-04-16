@@ -35,10 +35,23 @@ class Usecase:
         self.repository = Repository(free_resource_repo=True)
 
     def execute(self, request_data: dict) -> dict:
-        if not FreeResource.data_contains_valid_title(request_data):
-            return { 'error': 'Título inválido' }
-        
-        free_resource = self.repository.free_resource_repo.get_one(request_data['title'])
+        if FreeResource.data_contains_valid_id(request_data):
+            return self.query_with_id(request_data)
+
+        if FreeResource.data_contains_valid_title(request_data):
+            return self.query_with_title(request_data)
+
+        return { 'error': 'Nenhum identificador encontrado' }
+    
+    def query_with_id(self, request_data: dict) -> dict:
+        free_resource = self.repository.free_resource_repo.get_one(request_data['id'])
+
+        return {
+            'free_resource': free_resource.to_public_dict() if free_resource is not None else None
+        }
+    
+    def query_with_title(self, request_data: dict) -> dict:
+        free_resource = self.repository.free_resource_repo.get_one_by_title(request_data['title'])
 
         return {
             'free_resource': free_resource.to_public_dict() if free_resource is not None else None

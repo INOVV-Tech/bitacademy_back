@@ -76,3 +76,11 @@ def is_valid_getall_object(data: dict) -> bool:
         return False
     
     return True
+
+def is_valid_uuid(data: dict, field_key: str, version: int = 4) -> bool:
+    try:
+        uuid_obj = uuid.UUID(data[field_key], version=version)
+
+        return str(uuid_obj) == data[field_key].lower()
+    except:
+        return False

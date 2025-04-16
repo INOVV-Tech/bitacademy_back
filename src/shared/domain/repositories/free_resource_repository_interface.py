@@ -12,7 +12,11 @@ class IFreeResourceRepository(ABC):
         pass
     
     @abstractmethod
-    def get_one(self, title: str) -> FreeResource | None:
+    def get_one(self, id: str) -> FreeResource | None:
+        pass
+    
+    @abstractmethod
+    def get_one_by_title(self, title: str) -> FreeResource | None:
         pass
 
     @abstractmethod
@@ -20,6 +24,6 @@ class IFreeResourceRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, free_resource: FreeResource) -> FreeResource:
+    def delete(self, id: str) -> FreeResource | None:
         pass
 

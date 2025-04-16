@@ -30,7 +30,11 @@ class DynamoDatasource:
             'main_table': { 'partition_key': 'PK', 'sort_key': 'SK' },
             'gsis': {
                 'GetAllEntities': {
-                    'partition_key': 'GSI_GETALL_ENTITIES',
+                    'partition_key': 'GSI_ENTITY_GETALL',
+                    'sort_key': 'created_at'
+                },
+                'GetEntityByText': {
+                    'partition_key': 'GSI_TEXT',
                     'sort_key': 'created_at'
                 }
             }
