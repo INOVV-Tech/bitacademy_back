@@ -86,9 +86,7 @@ class HttpResponse(IResponse):
         self._status_code = value
 
     def __repr__(self):
-        return (
-            f'HttpResponse (status_code={self.status_code}, body={self.body}, headers={self.headers})'
-        )
+        return (f'HttpResponse (status_code={self.status_code}, body={self.body}, headers={self.headers})')
 
 if __name__ == '__main__':
     body = { 'body': 'body' }

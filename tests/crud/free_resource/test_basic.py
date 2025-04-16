@@ -13,7 +13,7 @@ from src.routes.delete_free_resource.delete_free_resource import Controller as D
 class Test_FreeResource:
     def get_body(self):
         return {
-            'requests_user': get_requester_user()
+            'requester_user': get_requester_user()
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
