@@ -1,4 +1,3 @@
-from typing import Any
 from warnings import warn
 
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
@@ -19,12 +18,12 @@ class HttpRequest(IRequest):
             data_dict.update(body)
 
             if [ key for key in self.body.keys() if key in self.query_params.keys() ] or [ key for key in self.body.keys() if key in self.headers.keys() ]:
-                warn(f'body, query_params and/or headers have overlapping keys → {[ 
-                    key for key in self.body.keys() if key in self.query_params.keys()] or [ key for key in self.body.keys() if key in self.headers.keys() 
-                ]}')
+                overlapping_keys = [ key for key in self.body.keys() if key in self.query_params.keys()] or [ key for key in self.body.keys() if key in self.headers.keys() ]
+                warn(f'body, query_params and/or headers have overlapping keys → {overlapping_keys}')
         else:
             if [ key for key in self.query_params.keys() if key in self.headers.keys() ]:
-                warn(f'query_params and headers have overlapping keys → {[ key for key in self.query_params.keys() if key in self.headers.keys() ]}')
+                overlapping_keys = [ key for key in self.query_params.keys() if key in self.headers.keys() ]
+                warn(f'query_params and headers have overlapping keys → {overlapping_keys}')
         
         if type(body) is str:
             data_dict.update({ 'body': body })
