@@ -48,7 +48,7 @@ def is_valid_entity_string_list(data: dict, field_key: str, min_length: int = 0,
         return False
     
     for item in data[field_key]:
-        if not isinstance(data[field_key], str):
+        if not isinstance(item, str):
             return False
         
         if len(item) < min_str_length or len(item) > max_str_length:

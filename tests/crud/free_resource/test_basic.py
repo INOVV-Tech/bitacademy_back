@@ -1,6 +1,8 @@
 import pytest
 
-from tests.common import get_requester_user
+from tests.common import load_app_env, get_requester_user
+
+load_app_env()
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 
@@ -13,7 +15,7 @@ from src.routes.delete_free_resource.delete_free_resource import Controller as D
 class Test_FreeResource:
     def get_body(self):
         return {
-            'requester_user': get_requester_user()
+            'requester_user': get_requester_user(admin=True)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
@@ -26,10 +28,16 @@ class Test_FreeResource:
 
         print('body', body)
 
+        body['free_resource'] = {
+            'title': 'Test FreeResource',
+            'external_url': 'https://www.youtube.com/',
+            'tags': [ 'teste', 'free' ]
+        }
+
         controller = CreateController()
 
         response = self.call_lambda(controller, body)
-        
+
         print('response', response)
 
         assert True

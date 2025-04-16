@@ -16,7 +16,7 @@ class FreeResource(BaseModel):
     # title_search: str
 
     @staticmethod
-    def from_request_data(data: dict, user_id: int) -> tuple[str | None, 'FreeResource' | None]:
+    def from_request_data(data: dict, user_id: int) -> 'tuple[str, FreeResource | None]':
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=128):
             return ('Título inválido', None)
         
@@ -24,7 +24,7 @@ class FreeResource(BaseModel):
             return ('Link externo inválido', None)
         
         if 'tags' in data:
-            if not is_valid_entity_string_list(data, 'tags'):
+            if not is_valid_entity_string_list(data, 'tags', min_length=0):
                 return ('Lista de tags inválida', None)
             
             tags = data['tags']
@@ -40,7 +40,7 @@ class FreeResource(BaseModel):
             user_id=user_id
         )
 
-        return (None, free_resource)
+        return ('', free_resource)
 
     @staticmethod
     def from_dict_static(data: dict) -> 'FreeResource':

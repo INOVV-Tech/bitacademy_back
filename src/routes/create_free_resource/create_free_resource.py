@@ -20,15 +20,17 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user)
+            response = Usecase().execute(requester_user, request.data)
 
             if 'error' in response:
-                raise BadRequest(response['error'])
+                return BadRequest(response['error'])
             
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
-        except:
+        except Exception as ex:
+            print('ex: ', str(ex))
+
             return InternalServerError('Erro interno de servidor')
 
 class Usecase:
@@ -38,9 +40,13 @@ class Usecase:
         self.repository = Repository(free_resource_repo=True)
 
     def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        (error, free_resource) = FreeResource.from_request_data(request_data, requester_user.user_id)
+        if 'free_resource' not in request_data \
+            or not isinstance(request_data['free_resource'], dict):
+            return { 'error': 'Campo "free_resource" não foi encontrado' }
 
-        if error is not None:
+        (error, free_resource) = FreeResource.from_request_data(request_data['free_resource'], requester_user.user_id)
+
+        if error != '':
             return { 'error': error }
         
         self.repository.free_resource_repo.create(free_resource)

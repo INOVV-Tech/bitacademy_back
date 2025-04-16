@@ -1,22 +1,33 @@
+import os
 import random
 import string
+from pathlib import Path
+from dotenv import load_dotenv
 
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.user_status import USER_STATUS
 
 from src.shared.domain.entities.user import User
-from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.utils.time import now_timestamp
+
+def load_app_env(stage='DEV'):
+    root_directory = Path(__file__).parent.parent.parent.parent.parent
+
+    env_filepath = os.path.join(root_directory, 'iac', '.env')
+
+    load_dotenv(env_filepath)
+    
+    os.environ['STAGE'] = stage
 
 def random_string(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-def get_requester_user():
+def get_requester_user(admin=False):
     name = 'bit_user_' + random_string()
     email = name + '@gmail.com'
 
-    role = ROLE.CLIENT.value
+    role = ROLE.ADMIN.value if admin else ROLE.CLIENT.value
     user_status = USER_STATUS.CONFIRMED.value
     
     now = now_timestamp()
@@ -35,6 +46,4 @@ def get_requester_user():
     })
 
     return user.to_api_dto()
-
-
     
