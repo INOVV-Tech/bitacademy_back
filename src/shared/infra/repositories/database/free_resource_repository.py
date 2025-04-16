@@ -54,7 +54,7 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
             partition_key=self.free_resource_gsi_primary_key(),
             limit=limit,
             exclusive_start_key=last_evaluated_key if last_evaluated_key != '' else None,
-            filter_expression=filter_expression,
+            filter_expression=filter_expression
         )
         
         return {

@@ -7,6 +7,7 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
+from src.shared.domain.entities.bit_class import BitClass
 from src.shared.utils.entity import is_valid_getall_object
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
@@ -41,8 +42,16 @@ class Usecase:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
 
-        db_data = self.repository.bit_class_repo.get_all(request_data['limit'], \
-            request_data['last_evaluated_key'])
+        tags = []
+        
+        if BitClass.data_contains_valid_tags(request_data):
+            tags = BitClass.norm_tags(request_data['tags'])
+
+        db_data = self.repository.bit_class_repo.get_all(
+            tags=tags,
+            limit=request_data['limit'],
+            last_evaluated_key=request_data['last_evaluated_key']
+        )
 
         db_data['bit_classes'] = [ x.to_public_dict() for x in db_data['bit_classes'] ]
 
