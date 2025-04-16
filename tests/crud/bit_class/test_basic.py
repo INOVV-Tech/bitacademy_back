@@ -6,13 +6,13 @@ load_app_env()
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 
-from src.routes.create_free_resource.create_free_resource import Controller as CreateController
-from src.routes.get_all_free_resources.get_all_free_resources import Controller as GetAllController
-from src.routes.get_one_free_resource.get_one_free_resource import Controller as GetOneController
-from src.routes.update_free_resource.update_free_resource import Controller as UpdateController
-from src.routes.delete_free_resource.delete_free_resource import Controller as DeleteController
+from src.routes.create_bit_class.create_bit_class import Controller as CreateController
+from src.routes.get_all_bit_classes.get_all_bit_classes import Controller as GetAllController
+from src.routes.get_one_bit_class.get_one_bit_class import Controller as GetOneController
+from src.routes.update_bit_class.update_bit_class import Controller as UpdateController
+from src.routes.delete_bit_class.delete_bit_class import Controller as DeleteController
 
-class Test_FreeResource:
+class Test_BitClass:
     def get_body(self):
         return {
             'requester_user': get_requester_user(admin=True)
@@ -23,14 +23,15 @@ class Test_FreeResource:
 
         return controller.execute(request)
 
-    @pytest.mark.skip(reason='Done')
+    # @pytest.mark.skip(reason='Done')
     def test_lambda_create(self):
         body = self.get_body()
 
-        body['free_resource'] = {
-            'title': 'Test FreeResource',
+        body['bit_class'] = {
+            'title': 'Test BitClass',
             'external_url': 'https://www.youtube.com/',
-            'tags': [ 'teste', 'free' ]
+            'tags': [ 'teste', 'free' ],
+            'vip_level': 1
         }
 
         controller = CreateController()
@@ -68,7 +69,7 @@ class Test_FreeResource:
     def test_lambda_get_one_by_title(self):
         body = self.get_body()
 
-        body['title'] = 'Test FreeResource'
+        body['title'] = 'Test BitClass'
 
         controller = GetOneController()
 
@@ -80,11 +81,12 @@ class Test_FreeResource:
     def test_lambda_update(self):
         body = self.get_body()
 
-        body['free_resource'] = {
+        body['bit_class'] = {
             'id': '95f57894-f802-49f9-8c2b-463a76d19b33',
-            'title': 'Test FreeResource updated',
+            'title': 'Test BitClass updated',
             'external_url': 'https://www.google.com/',
-            'tags': [ 'teste', 'free', 'maisuma' ]
+            'tags': [ 'teste', 'free', 'maisuma' ],
+            'vip_level': 0
         }
         
         controller = UpdateController()

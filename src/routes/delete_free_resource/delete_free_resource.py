@@ -38,16 +38,10 @@ class Usecase:
         self.repository = Repository(free_resource_repo=True)
 
     def execute(self, request_data: dict) -> dict:
-        if 'free_resource' not in request_data \
-            or not isinstance(request_data['free_resource'], dict):
-            return { 'error': 'Campo "free_resource" não foi encontrado' }
-        
-        free_resource_delete_data = request_data['free_resource']
-
-        if not FreeResource.data_contains_valid_id(free_resource_delete_data):
+        if not FreeResource.data_contains_valid_id(request_data):
             return { 'error': 'Identificador de material inválido' }
         
-        free_resource = self.repository.free_resource_repo.delete(free_resource_delete_data['id'])
+        free_resource = self.repository.free_resource_repo.delete(request_data['id'])
     
         return {
             'free_resource': free_resource.to_public_dict() if free_resource is not None else None

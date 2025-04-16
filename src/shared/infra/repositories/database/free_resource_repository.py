@@ -1,5 +1,3 @@
-from boto3.dynamodb.conditions import Key
-
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 
 from src.shared.domain.repositories.free_resource_repository_interface import IFreeResourceRepository

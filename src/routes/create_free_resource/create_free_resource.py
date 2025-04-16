@@ -28,7 +28,7 @@ class Controller:
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
-        except Exception as ex:
+        except:
             return InternalServerError('Erro interno de servidor')
 
 class Usecase:

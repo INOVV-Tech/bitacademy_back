@@ -8,11 +8,15 @@ class IBitClassRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all(self) -> list[BitClass]:
+    def get_all(self, limit: int = 10, last_evaluated_key: str = '') -> dict:
         pass
     
     @abstractmethod
-    def get_one(self, title: str) -> BitClass:
+    def get_one(self, id: str) -> BitClass | None:
+        pass
+    
+    @abstractmethod
+    def get_one_by_title(self, title: str) -> BitClass | None:
         pass
 
     @abstractmethod
@@ -20,5 +24,5 @@ class IBitClassRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, bit_class: BitClass) -> BitClass:
+    def delete(self, id: str) -> BitClass | None:
         pass
