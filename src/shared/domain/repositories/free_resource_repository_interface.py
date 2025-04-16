@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from domain.entities.free_resource import FreeResource
+from src.shared.domain.entities.free_resource import FreeResource
 
 class IFreeResourceRepository(ABC):
     @abstractmethod

@@ -1,6 +1,7 @@
-pytest
-psycopg2-binary
-sqlalchemy
-python-dotenv
-flask
-pydantic
+aws_lambda_powertools==2.9.0
+pytest==8.3.2
+python-dotenv==1.0.1
+boto3==1.35.97
+setuptools==75.1.0
+pydantic==2.10.6
+requests==2.32.3

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from domain.entities.bit_class import BitClass
+from src.shared.domain.entities.bit_class import BitClass
 
 class IBitClassRepository(ABC):
     @abstractmethod
