@@ -5,6 +5,8 @@ from boto3.dynamodb.conditions import Key
 
 from src.shared.environments import Environments
 
+from src.shared.infra.external.key_formatters import encode_idx_pk
+
 class DynamoDatasource:
     def __init__(self, dynamo_table_name: str, region: str, endpoint_url: str = None):
         """
@@ -30,11 +32,11 @@ class DynamoDatasource:
             'main_table': { 'partition_key': 'PK', 'sort_key': 'SK' },
             'gsis': {
                 'GetAllEntities': {
-                    'partition_key': 'GSI_ENTITY_GETALL',
+                    'partition_key': encode_idx_pk('GSI#ENTITY_GETALL'),
                     'sort_key': 'created_at'
                 },
                 'GetEntityByText': {
-                    'partition_key': 'GSI_TEXT',
+                    'partition_key': encode_idx_pk('GSI#TEXT'),
                     'sort_key': 'created_at'
                 }
             }

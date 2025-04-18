@@ -32,7 +32,7 @@ class DynamoStack(Construct):
         self.dynamo_table.add_global_secondary_index(
             index_name='GetAllEntities',
             partition_key=aws_dynamodb.Attribute(
-                name='GSI_ENTITY_GETALL',
+                name='GSI#ENTITY_GETALL',
                 type=aws_dynamodb.AttributeType.STRING
             ),
             sort_key=aws_dynamodb.Attribute(
@@ -44,7 +44,7 @@ class DynamoStack(Construct):
         self.dynamo_table.add_global_secondary_index(
             index_name='GetEntityByText',
             partition_key=aws_dynamodb.Attribute(
-                name='GSI_TEXT',
+                name='GSI#TEXT',
                 type=aws_dynamodb.AttributeType.STRING
             ),
             sort_key=aws_dynamodb.Attribute(

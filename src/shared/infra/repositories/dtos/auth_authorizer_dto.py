@@ -25,4 +25,8 @@ class AuthAuthorizerDTO:
         )
     
     def __eq__(self, other):
-        return self.user_id == other.user_id and self.email == other.email and self.role == other.role and self.name == other.name and self.email_verified == other.email_verified
+        return self.user_id == other.user_id \
+            and self.email == other.email \
+            and self.role == other.role \
+            and self.name == other.name \
+            and self.email_verified == other.email_verified

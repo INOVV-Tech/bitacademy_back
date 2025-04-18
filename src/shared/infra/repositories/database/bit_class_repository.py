@@ -7,6 +7,8 @@ from src.shared.domain.repositories.bit_class_repository_interface import IBitCl
 from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.domain.entities.bit_class import BitClass
 
+from src.shared.infra.external.key_formatters import encode_idx_pk
+
 class BitClassRepositoryDynamo(IBitClassRepository):
     dynamo: DynamoDatasource
     
@@ -34,8 +36,8 @@ class BitClassRepositoryDynamo(IBitClassRepository):
 
         item['PK'] = self.bit_class_partition_key_format(bit_class)
         item['SK'] = self.bit_class_sort_key_format()
-        item['GSI_ENTITY_GETALL'] = self.bit_class_gsi_primary_key()
-        item['GSI_TEXT'] = bit_class.title
+        item[encode_idx_pk('GSI#ENTITY_GETALL')] = self.bit_class_gsi_primary_key()
+        item[encode_idx_pk('GSI#TEXT')] = bit_class.title
 
         self.dynamo.put_item(item=item)
 
@@ -104,8 +106,8 @@ class BitClassRepositoryDynamo(IBitClassRepository):
 
         item['PK'] = self.bit_class_partition_key_format(bit_class)
         item['SK'] = self.bit_class_sort_key_format()
-        item['GSI_ENTITY_GETALL'] = self.bit_class_gsi_primary_key()
-        item['GSI_TEXT'] = bit_class.title
+        item[encode_idx_pk('GSI#ENTITY_GETALL')] = self.bit_class_gsi_primary_key()
+        item[encode_idx_pk('GSI#TEXT')] = bit_class.title
 
         self.dynamo.put_item(item=item)
 

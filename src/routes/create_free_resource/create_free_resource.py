@@ -1,6 +1,6 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
+from src.shared.helpers.external_interfaces.http_codes import Created, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
@@ -25,7 +25,7 @@ class Controller:
             if 'error' in response:
                 return BadRequest(response['error'])
             
-            return OK(body=response)
+            return Created(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except:

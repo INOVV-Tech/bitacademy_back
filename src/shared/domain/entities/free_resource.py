@@ -11,7 +11,7 @@ class FreeResource(BaseModel):
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     external_url: str
     tags: list[str]
-    user_id: int
+    user_id: str
 
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
@@ -34,7 +34,7 @@ class FreeResource(BaseModel):
         return [ tag.strip().lower() for tag in tags ]
 
     @staticmethod
-    def from_request_data(data: dict, user_id: int) -> 'tuple[str, FreeResource | None]':
+    def from_request_data(data: dict, user_id: str) -> 'tuple[str, FreeResource | None]':
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=128):
             return ('Título inválido', None)
         

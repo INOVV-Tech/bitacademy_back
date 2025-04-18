@@ -2,8 +2,8 @@ from pydantic import BaseModel
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.user_status import USER_STATUS
 
-class User(BaseModel):
-	user_id: int
+class User(BaseModel): # Cognito
+	user_id: str
 	name: str
 	email: str
 	phone: str
@@ -13,7 +13,7 @@ class User(BaseModel):
 	updated_at: int 
 	email_verified: bool
 	enabled: bool
-
+	
 	@staticmethod
 	def from_dict_static(data) -> 'User':
 		return User(
@@ -23,12 +23,12 @@ class User(BaseModel):
 			phone=data['phone'],
 			role=ROLE[data['role']],
 			user_status=USER_STATUS[data['user_status']],
-			created_at=data['created_at'],
-			updated_at=data['updated_at'],
+			created_at=int(data['created_at']),
+			updated_at=int(data['updated_at']),
 			email_verified=data['email_verified'],
 			enabled=data['enabled']
 		)
-  
+	
 	def to_dict(self) -> dict:
 		return {
 			'user_id': self.user_id,
@@ -44,18 +44,7 @@ class User(BaseModel):
 		}
   
 	def from_dict(self, data: dict) -> 'User':
-		return User(
-			user_id=data['user_id'],
-			name=data['name'],
-			email=data['email'],
-			phone=data['phone'],
-			role=ROLE[data['role']],
-			user_status=USER_STATUS[data['user_status']],
-			created_at=int(data['created_at']),
-			updated_at=int(data['updated_at']),
-			email_verified=data['email_verified'],
-			enabled=data['enabled']
-		)
+		return User.from_dict_static(data)
 
 	def to_api_dto(self) -> dict:
 		return {
@@ -65,3 +54,6 @@ class User(BaseModel):
 			'role': self.role.value,
 			'email_verified': self.email_verified
 		}
+
+	def to_public_dict(self) -> dict:
+		return self.to_dict()

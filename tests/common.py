@@ -10,6 +10,7 @@ from src.shared.domain.enums.user_status import USER_STATUS
 from src.shared.domain.entities.user import User
 
 from src.shared.utils.time import now_timestamp
+from src.shared.utils.entity import random_entity_id
 
 def load_app_env(stage='DEV'):
     root_directory = Path(__file__).parent.parent
@@ -33,7 +34,7 @@ def get_requester_user(admin=False):
     now = now_timestamp()
 
     user = User.from_dict_static({
-        'user_id': 0,
+        'user_id': random_entity_id(),
         'name': name,
         'email': email,
         'role': role,

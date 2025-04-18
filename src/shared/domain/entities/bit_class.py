@@ -13,7 +13,7 @@ class BitClass(BaseModel):
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     external_url: str
     tags: list[str]
-    user_id: int
+    user_id: str
     vip_level: VIP_LEVEL
 
     @staticmethod
@@ -47,7 +47,7 @@ class BitClass(BaseModel):
         return [ tag.strip().lower() for tag in tags ]
 
     @staticmethod
-    def from_request_data(data: dict, user_id: int) -> 'tuple[str, BitClass | None]':
+    def from_request_data(data: dict, user_id: str) -> 'tuple[str, BitClass | None]':
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=128):
             return ('Título inválido', None)
         

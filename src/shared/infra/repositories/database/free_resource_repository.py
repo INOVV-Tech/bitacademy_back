@@ -5,6 +5,8 @@ from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 from src.shared.domain.repositories.free_resource_repository_interface import IFreeResourceRepository
 from src.shared.domain.entities.free_resource import FreeResource
 
+from src.shared.infra.external.key_formatters import encode_idx_pk
+
 class FreeResourceRepositoryDynamo(IFreeResourceRepository):
     dynamo: DynamoDatasource
     
@@ -32,8 +34,8 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
 
         item['PK'] = self.free_resource_partition_key_format(free_resource)
         item['SK'] = self.free_resource_sort_key_format()
-        item['GSI_ENTITY_GETALL'] = self.free_resource_gsi_primary_key()
-        item['GSI_TEXT'] = free_resource.title
+        item[encode_idx_pk('GSI#ENTITY_GETALL')] = self.free_resource_gsi_primary_key()
+        item[encode_idx_pk('GSI#TEXT')] = free_resource.title
 
         self.dynamo.put_item(item=item)
 
@@ -85,7 +87,7 @@ class FreeResourceRepositoryDynamo(IFreeResourceRepository):
 
         item['PK'] = self.free_resource_partition_key_format(free_resource)
         item['SK'] = self.free_resource_sort_key_format()
-        item['GSI_ENTITY_GETALL'] = self.free_resource_gsi_primary_key()
+        item[encode_idx_pk('GSI#ENTITY_GETALL')] = self.free_resource_gsi_primary_key()
         item['GSI_TEXT'] = free_resource.title
 
         self.dynamo.put_item(item=item)
