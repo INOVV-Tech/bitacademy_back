@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 
+from src.shared.utils.time import now_timestamp
+
 class CoinInfo:
     name: str
     symbol: str
@@ -11,7 +13,7 @@ class CoinInfo:
     market_cap: str
     price: str
     volume_24h: str
-    volume_change: str
+    volume_change_24h: str
     percent_change_1h: str
     percent_change_24h: str
     percent_change_7d: str
@@ -34,7 +36,7 @@ class CoinInfo:
             market_cap=str(quote_USD['market_cap']),
             price=str(quote_USD['price']),
             volume_24h=str(quote_USD['volume_24h']),
-            volume_change=str(quote_USD['volume_change']),
+            volume_change_24h=str(quote_USD['volume_change_24h']),
             percent_change_1h=str(quote_USD['percent_change_1h']),
             percent_change_24h=str(quote_USD['percent_change_24h']),
             percent_change_7d=str(quote_USD['percent_change_7d']),
@@ -56,7 +58,7 @@ class CoinInfo:
             market_cap=data['market_cap'],
             price=data['price'],
             volume_24h=data['volume_24h'],
-            volume_change=data['volume_change'],
+            volume_change_24h=data['volume_change_24h'],
             percent_change_1h=data['percent_change_1h'],
             percent_change_24h=data['percent_change_24h'],
             percent_change_7d=data['percent_change_7d'],
@@ -65,8 +67,28 @@ class CoinInfo:
             percent_change_90d=data['percent_change_90d']
         )
 
-    def __init__(self):
-        pass
+    def __init__(self, name: str, symbol: str, slug: str, num_market_pairs: int, \
+        cmc_id: int, total_supply: str, circulating_supply: str, market_cap: str, \
+        price: str, volume_24h: str, volume_change_24h: str, percent_change_1h: str, \
+        percent_change_24h: str, percent_change_7d: str, percent_change_30d: str, \
+        percent_change_60d: str, percent_change_90d: str):
+        self.name = name
+        self.symbol = symbol
+        self.slug = slug
+        self.num_market_pairs = num_market_pairs
+        self.cmc_id = cmc_id
+        self.total_supply = total_supply
+        self.circulating_supply = circulating_supply
+        self.market_cap = market_cap
+        self.price = price
+        self.volume_24h = volume_24h
+        self.volume_change_24h = volume_change_24h
+        self.percent_change_1h = percent_change_1h
+        self.percent_change_24h = percent_change_24h
+        self.percent_change_7d = percent_change_7d
+        self.percent_change_30d = percent_change_30d
+        self.percent_change_60d = percent_change_60d
+        self.percent_change_90d = percent_change_90d
 
     def to_dict(self) -> dict:
         return {
@@ -80,7 +102,7 @@ class CoinInfo:
             'market_cap': self.market_cap,
             'price': self.price,
             'volume_24h': self.volume_24h,
-            'volume_change': self.volume_change,
+            'volume_change_24h': self.volume_change_24h,
             'percent_change_1h': self.percent_change_1h,
             'percent_change_24h': self.percent_change_24h,
             'percent_change_7d': self.percent_change_7d,
@@ -97,6 +119,13 @@ class HomeCoins(BaseModel):
 
     updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
     coins: list[CoinInfo]
+
+    @staticmethod
+    def from_cmc_request(data: list[dict]) -> 'HomeCoins':
+        return HomeCoins(
+            updated_at=now_timestamp(),
+            coins=[ CoinInfo.from_cmc_request(x) for x in data ]
+        )
 
     @staticmethod
     def from_dict_static(data: dict) -> 'HomeCoins':

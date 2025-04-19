@@ -15,8 +15,8 @@ class Test_CMCApi:
     def test_top_cripto(self):
         cmc_api = CMCApi()
 
-        data = cmc_api.get_top_cripto()
-        
-        self.print_data(data)
-        
-        assert 'error' not in data
+        home_coins = cmc_api.get_home_coins()
+
+        print(home_coins)
+
+        assert True

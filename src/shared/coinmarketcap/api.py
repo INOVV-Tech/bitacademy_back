@@ -5,6 +5,8 @@ from src.shared.environments import Environments
 
 from src.shared.coinmarketcap.enums.sort_option import CMC_SORT_OPTION
 
+from src.shared.domain.entities.home_coins import HomeCoins
+
 class CMCApi:
     CMD_API_KEY: str = Environments.cmc_api_key 
 
@@ -49,7 +51,7 @@ class CMCApi:
         except:
             return { 'error': 'CMC request failed' }
         
-    def get_top_cripto(self, limit: int = 10, sort: CMC_SORT_OPTION = CMC_SORT_OPTION.MARKET_CAP, timeout_secs: int = 3):
+    def get_top_cripto(self, limit: int = 10, sort: CMC_SORT_OPTION = CMC_SORT_OPTION.MARKET_CAP, timeout_secs: int = 3) -> dict | list[dict]:
         url_sufix = 'v1/cryptocurrency/listings/latest?'
     
         url_sufix += f'limit={limit}'
@@ -66,3 +68,15 @@ class CMCApi:
             return resp
 
         return resp['data']
+    
+    def get_home_coins(self, timeout_secs: int = 3) -> HomeCoins | None:
+        data = self.get_top_cripto(
+            limit=10,
+            sort=CMC_SORT_OPTION.MARKET_CAP,
+            timeout_secs=timeout_secs
+        )
+
+        if 'error' in data:
+            return None
+
+        return HomeCoins.from_cmc_request(data)
