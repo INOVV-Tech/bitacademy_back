@@ -122,6 +122,15 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        ### HOME COINS ###
+
+        self.get_home_coins = self.create_lambda_api_gateway_integration(
+            module_name='get_home_coins',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -149,5 +158,7 @@ class LambdaStack(Construct):
             self.get_all_bit_classes,
             self.get_one_bit_class,
             self.update_bit_class,
-            self.delete_bit_class
+            self.delete_bit_class,
+
+            self.get_home_coins
         ]
