@@ -12,7 +12,7 @@ from src.routes.get_one_free_resource.get_one_free_resource import Controller as
 from src.routes.update_free_resource.update_free_resource import Controller as UpdateController
 from src.routes.delete_free_resource.delete_free_resource import Controller as DeleteController
 
-class Test_FreeResource:
+class Test_FreeResourceLambda:
     def get_body(self):
         return {
             'requester_user': get_requester_user(admin=True)

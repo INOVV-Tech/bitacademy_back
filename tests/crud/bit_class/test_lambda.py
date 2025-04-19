@@ -12,7 +12,7 @@ from src.routes.get_one_bit_class.get_one_bit_class import Controller as GetOneC
 from src.routes.update_bit_class.update_bit_class import Controller as UpdateController
 from src.routes.delete_bit_class.delete_bit_class import Controller as DeleteController
 
-class Test_BitClass:
+class Test_BitClassLambda:
     def get_body(self):
         return {
             'requester_user': get_requester_user(admin=True)

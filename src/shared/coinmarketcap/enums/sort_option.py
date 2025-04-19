@@ -1,0 +1,20 @@
+from enum import Enum
+
+class CMC_SORT_OPTION(Enum):
+    MARKET_CAP = 'market_cap'
+    NAME = 'name'
+    SYMBOL = 'symbol'
+    DATE_ADDED = 'date_added'
+    MARKET_CAP_STRICT = 'market_cap_strict'
+    PRICE = 'price'
+    CIRCULATING_SUPPLY = 'circulating_supply'
+    TOTAL_SUPPLY = 'total_supply'
+    MAX_SUPPLY = 'max_supply'
+    NUM_MARKET_PAIRS = 'num_market_pairs'
+    VOLUME_24 = 'volume_24h'
+    VOLUME_7D = 'volume_7d'
+    VOLUME_30D = 'volume_30d'
+    PERCENT_CHANGE_1H = 'percent_change_1h'
+    PERCENT_CHANGE_24H = 'percent_change_24h'
+    PERCENT_CHANGE_7D = 'percent_change_7d'
+    MARKET_CAP_BY_TOTAL_SUPPLY_STRICT = 'market_cap_by_total_supply_strict'

@@ -64,3 +64,4 @@ jobs:
           PERSIST_LOCAL: ${{ secrets.PERSIST_LOCAL }}
           DYNAMO_LOCAL_KEY_ID: ${{ secrets.DYNAMO_LOCAL_KEY_ID }}
           DYNAMO_LOCAL_ACCESS_KEY: ${{ secrets.DYNAMO_LOCAL_ACCESS_KEY }}
+          CMC_API_KEY: ${{ secrets.CMC_API_KEY }}

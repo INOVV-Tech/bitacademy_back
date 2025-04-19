@@ -22,3 +22,4 @@ class Environments:
     persist_local: str = int(os.environ.get('PERSIST_LOCAL', '0')) == 1
     dynamo_local_key_id: str = os.environ.get('DYNAMO_LOCAL_KEY_ID', '')
     dynamo_local_access_key: str = os.environ.get('DYNAMO_LOCAL_ACCESS_KEY', '')
+    cmc_api_key: str = os.environ.get('CMC_API_KEY', '')
