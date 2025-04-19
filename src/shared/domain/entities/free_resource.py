@@ -71,7 +71,7 @@ class FreeResource(BaseModel):
             user_id=data['user_id']
         )
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             'id': self.id,
             'title': self.title,
@@ -84,7 +84,7 @@ class FreeResource(BaseModel):
     def from_dict(self, data: dict) -> 'FreeResource':
         return self.from_dict_static(data)
     
-    def to_public_dict(self):
+    def to_public_dict(self) -> dict:
         return self.to_dict()
     
     def update_from_dict(self, data: dict) -> None:

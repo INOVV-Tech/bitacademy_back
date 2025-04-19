@@ -89,7 +89,7 @@ class BitClass(BaseModel):
             vip_level=VIP_LEVEL(data['vip_level'])
     )
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             'id': self.id,
             'title': self.title,
@@ -103,7 +103,7 @@ class BitClass(BaseModel):
     def from_dict(self, data: dict) -> 'BitClass':
         return self.from_dict_static(data)
     
-    def to_public_dict(self):
+    def to_public_dict(self) -> dict:
         return self.to_dict()
     
     def update_from_dict(self, data: dict) -> None:
