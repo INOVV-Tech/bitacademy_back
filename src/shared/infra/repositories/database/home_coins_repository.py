@@ -12,8 +12,8 @@ class HomeCoinsRepositoryDynamo(IHomeCoinsRepository):
         return f'HOME_COINS'
     
     @staticmethod
-    def home_coins_sort_key_format(home_coins: HomeCoins) -> str:
-        return str(home_coins.updated_at)
+    def home_coins_sort_key_format() -> str:
+        return 'NONE'
     
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo
