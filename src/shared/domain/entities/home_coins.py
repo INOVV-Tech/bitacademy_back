@@ -51,8 +51,8 @@ class CoinInfo:
             name=data['name'],
             symbol=data['symbol'],
             slug=data['slug'],
-            num_market_pairs=data['num_market_pairs'],
-            cmc_id=data['id'],
+            num_market_pairs=int(data['num_market_pairs']),
+            cmc_id=int(data['id']),
             total_supply=data['total_supply'],
             circulating_supply=data['circulating_supply'],
             market_cap=data['market_cap'],
@@ -130,7 +130,7 @@ class HomeCoins(BaseModel):
     @staticmethod
     def from_dict_static(data: dict) -> 'HomeCoins':
         return HomeCoins(
-            updated_at=data['updated_at'],
+            updated_at=int(data['updated_at']),
             coins=[ CoinInfo.from_static_dict(x) for x in data['coins'] ]
         )
 

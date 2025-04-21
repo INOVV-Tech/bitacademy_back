@@ -65,7 +65,7 @@ class FreeResource(BaseModel):
         return FreeResource(
             id=data['id'],
             title=data['title'],
-            created_at=data['created_at'],
+            created_at=int(data['created_at']),
             external_url=data['external_url'],
             tags=data['tags'],
             user_id=data['user_id']

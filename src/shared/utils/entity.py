@@ -72,8 +72,11 @@ def is_valid_getall_object(data: dict) -> bool:
     if not is_valid_entity_int(data, 'limit', 1, 1000):
         return False
     
-    if not is_valid_entity_string(data, 'last_evaluated_key', min_length=0, max_length=256):
-        return False
+    if 'last_evaluated_key' in data:
+        if not is_valid_entity_string(data, 'last_evaluated_key', min_length=0, max_length=256):
+            return False
+    else:
+        data['last_evaluated_key'] = ''
     
     return True
 

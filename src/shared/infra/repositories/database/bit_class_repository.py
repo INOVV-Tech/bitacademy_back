@@ -110,7 +110,7 @@ class BitClassRepositoryDynamo(IBitClassRepository):
         item[encode_idx_pk('GSI#TEXT')] = bit_class.title
 
         self.dynamo.put_item(item=item)
-
+        
         return bit_class
 
     def delete(self, id: str) -> BitClass | None:

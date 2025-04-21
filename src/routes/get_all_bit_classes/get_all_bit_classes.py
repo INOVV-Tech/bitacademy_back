@@ -9,6 +9,7 @@ from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorize
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.domain.entities.bit_class import BitClass
+
 from src.shared.utils.entity import is_valid_getall_object
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
