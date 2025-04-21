@@ -21,6 +21,9 @@ class Controller:
                 raise ForbiddenAction('Acesso não autorizado')
             
             response = Usecase().execute(request.data)
+
+            if 'error' in response:
+                return BadRequest(response['error'])
             
             return OK(body=response)
         except MissingParameters as error:

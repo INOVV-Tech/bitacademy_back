@@ -10,9 +10,6 @@ class Controller:
     def execute(request: IRequest) -> IResponse:
         try:
             response = Usecase().execute()
-
-            if 'error' in response:
-                return BadRequest(response['error'])
             
             return OK(body=response)
         except MissingParameters as error:
