@@ -132,6 +132,48 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        ### NEWS ###
+
+        self.create_news = self.create_lambda_api_gateway_integration(
+            module_name='create_news',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_all_news = self.create_lambda_api_gateway_integration(
+            module_name='get_all_news',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_one_news = self.create_lambda_api_gateway_integration(
+            module_name='get_one_news',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.update_news = self.create_lambda_api_gateway_integration(
+            module_name='update_news',
+            method='PUT',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.delete_news = self.create_lambda_api_gateway_integration(
+            module_name='delete_news',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -147,7 +189,13 @@ class LambdaStack(Construct):
             self.update_bit_class,
             self.delete_bit_class,
 
-            self.get_home_coins
+            self.get_home_coins,
+
+            self.create_news,
+            self.get_all_news,
+            self.get_one_news,
+            self.update_news,
+            self.delete_news
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -163,5 +211,11 @@ class LambdaStack(Construct):
             self.update_bit_class,
             self.delete_bit_class,
 
-            self.get_home_coins
+            self.get_home_coins,
+
+            self.create_news,
+            self.get_all_news,
+            self.get_one_news,
+            self.update_news,
+            self.delete_news
         ]
