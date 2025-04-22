@@ -37,12 +37,14 @@ class Test_HomeCoinsLambda:
 
         assert response.status_code == 200
 
-    @pytest.mark.skip(reason='Done')
+    # @pytest.mark.skip(reason='Done')
     def test_cronjob(self):
         body = {}
 
         controller = UpdateController()
 
         response = self.call_cronjob(controller)
+
+        self.print_data(response)
 
         assert 'error' not in response

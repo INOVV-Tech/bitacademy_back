@@ -1,19 +1,12 @@
-from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
-from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
-from src.shared.helpers.errors.errors import MissingParameters
-
 from src.shared.infra.repositories.repository import Repository
 
 from src.shared.coinmarketcap.api import CMCApi
 
 class Controller:
     @staticmethod
-    def execute() -> IResponse:
+    def execute() -> dict:
         try:
             return Usecase().execute()
-        except MissingParameters as error:
-            return { 'error': error.message }
         except:
             return { 'error': 'Erro interno de servidor' }
         
@@ -35,5 +28,5 @@ class Usecase:
 
         return {}
 
-def lambda_handler(event, context) -> LambdaHttpResponse:
+def lambda_handler(event, context) -> dict:
     return Controller.execute()
