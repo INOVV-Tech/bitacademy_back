@@ -129,6 +129,7 @@ class LambdaStack(Construct):
             method='GET',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
+            authorizer=authorizer
         )
 
         ### PERMISSIONS ###
@@ -144,7 +145,9 @@ class LambdaStack(Construct):
             self.get_all_bit_classes,
             self.get_one_bit_class,
             self.update_bit_class,
-            self.delete_bit_class
+            self.delete_bit_class,
+
+            self.get_home_coins
         ]
 
         self.functions_that_need_dynamo_permissions = [

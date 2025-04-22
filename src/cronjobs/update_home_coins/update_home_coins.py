@@ -9,18 +9,13 @@ from src.shared.coinmarketcap.api import CMCApi
 
 class Controller:
     @staticmethod
-    def execute(request: IRequest) -> IResponse:
+    def execute() -> IResponse:
         try:
-            headers = request.headers
-            query_params = request.query_params
-
-            response = Usecase().execute(query_params, headers)
-            
-            return OK(body=response)
+            return Usecase().execute()
         except MissingParameters as error:
-            return BadRequest(error.message)
+            return { 'error': error.message }
         except:
-            return InternalServerError('Erro interno de servidor')
+            return { 'error': 'Erro interno de servidor' }
         
 class Usecase:
     repository: Repository
@@ -41,12 +36,4 @@ class Usecase:
         return {}
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
-    http_request = LambdaHttpRequest(event)
-    
-    response = Controller.execute(http_request)
-
-    return LambdaHttpResponse(
-        status_code=response.status_code, 
-        body=response.body, 
-        headers=response.headers
-    ).toDict()
+    return Controller.execute()

@@ -1,14 +1,24 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
-from src.shared.helpers.errors.errors import MissingParameters
+from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
+
+from src.shared.domain.enums.role import ROLE
+
+ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
 
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
+            requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
+
+            if requester_user.role not in ALLOWED_USER_ROLES:
+                raise ForbiddenAction('Acesso não autorizado')
+
             response = Usecase().execute()
             
             return OK(body=response)
@@ -21,7 +31,7 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(bit_class_repo=True)
+        self.repository = Repository(home_coins_repo=True)
 
     def execute(self) -> dict:
         home_coins = self.repository.home_coins_repo.get()

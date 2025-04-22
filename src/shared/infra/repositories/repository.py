@@ -35,7 +35,7 @@ class Repository:
                 bit_class_repo,
                 home_coins_repo
             )
-
+    
     def _initialize_mock_repositories(self):
         pass
         

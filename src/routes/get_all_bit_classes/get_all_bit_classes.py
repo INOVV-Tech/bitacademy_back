@@ -48,7 +48,7 @@ class Usecase:
         
         if BitClass.data_contains_valid_tags(request_data):
             tags = BitClass.norm_tags(request_data['tags'])
-
+        
         vip_level = None
 
         if BitClass.data_contains_valid_vip_level(request_data):

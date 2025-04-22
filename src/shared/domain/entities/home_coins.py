@@ -52,7 +52,7 @@ class CoinInfo:
             symbol=data['symbol'],
             slug=data['slug'],
             num_market_pairs=int(data['num_market_pairs']),
-            cmc_id=int(data['id']),
+            cmc_id=int(data['cmc_id']),
             total_supply=data['total_supply'],
             circulating_supply=data['circulating_supply'],
             market_cap=data['market_cap'],
