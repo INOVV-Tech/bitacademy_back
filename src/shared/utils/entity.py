@@ -1,5 +1,6 @@
 import re
 import uuid
+import base64
 from urllib.parse import urlparse
 
 def random_entity_id() -> str:
@@ -27,6 +28,20 @@ def is_valid_entity_int(data: dict, field_key: str, min_value = 0, max_value = 1
     if data[field_key] < min_value or data[field_key] > max_value:
         return False
     
+    return True
+
+def is_valid_entity_dict(data: dict, field_key: str, valid_keys: list[str] | None = None) -> bool:
+    if field_key not in data:
+        return False
+    
+    if not isinstance(data[field_key], dict):
+        return False
+    
+    if valid_keys is not None:
+        for valid_key in valid_keys:
+            if valid_key not in data[field_key]:
+                return False
+
     return True
 
 def is_valid_entity_url(data: dict, field_key: str) -> bool:
@@ -87,3 +102,21 @@ def is_valid_uuid(data: dict, field_key: str, version: int = 4) -> bool:
         return str(uuid_obj) == data[field_key].lower()
     except:
         return False
+
+def is_valid_entity_base64_string(data: dict, field_key: str, max_length: int = 2200000) -> bool:
+    if not is_valid_entity_string(data, field_key, min_length=4, max_length=max_length):
+        return False
+    
+    try:
+        base64_parts = data[field_key].split(',')
+
+        base64_data = base64_parts[-1]
+        byte_string = base64_data.encode('utf8')
+
+        base64.b64decode(byte_string, validate=True)
+
+        return True
+    except:
+        pass
+    
+    return False

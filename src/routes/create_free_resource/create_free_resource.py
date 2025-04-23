@@ -28,7 +28,8 @@ class Controller:
             return Created(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
-        except:
+        except Exception as ex:
+            print('ex', str(ex))
             return InternalServerError('Erro interno de servidor')
 
 class Usecase:
@@ -46,6 +47,8 @@ class Usecase:
 
         if error != '':
             return { 'error': error }
+        
+        # upload S3 image
         
         self.repository.free_resource_repo.create(free_resource)
 

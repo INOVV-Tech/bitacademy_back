@@ -1,4 +1,5 @@
 import os
+import base64
 import random
 import string
 from pathlib import Path
@@ -51,10 +52,17 @@ def get_requester_user(admin=False):
 
     return user.to_api_dto()
 
-def load_resource(filename):
+def load_resource(filename, encode_base64=True, base64_prefix=''):
     root_directory = get_root_directory()
 
     filepath = os.path.join(root_directory, 'tests', '.resources', filename)
 
-    return (filename, open(filepath, 'rb').read(), 'text/plain')
+    data = open(filepath, 'rb').read()
+
+    if encode_base64:
+        data = base64.b64encode(data)
+        data = data.decode('utf8')
+        data = base64_prefix + ',' + data if len(base64_prefix) > 0 else data
+
+    return data
 

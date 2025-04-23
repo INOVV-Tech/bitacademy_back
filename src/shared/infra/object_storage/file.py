@@ -1,29 +1,56 @@
-from src.shared.domain.enums.object_storage_file_type import OBJECT_STORAGE_FILE_TYPE
+import re
+from src.shared.utils.time import now_timestamp
 
 class ObjectStorageFile:
     name: str
-    file_type: OBJECT_STORAGE_FILE_TYPE
+    mime_type: str
     external_url: str
+    base64_data: str
     created_at: int
-
+    
     @staticmethod
-    def from_request_data(data: dict) -> 'tuple[str, ObjectStorageFile | None]':
-        pass
+    def from_base64_data(data: str, name: str = '', mime_type: str = '') -> 'ObjectStorageFile':
+        base64_parts = data.split(',')
+
+        if len(base64_parts) == 1:
+            base64_data = base64_parts[0]
+        else:
+            mime_regex = re.match(r"^data:(.*?);", base64_parts[0])
+            mime_type = mime_regex.group(1)
+            base64_data = base64_parts[1]
+
+        return ObjectStorageFile(
+            name=name,
+            mime_type=mime_type,
+            external_url='',
+            base64_data=base64_data,
+            created_at=now_timestamp()
+        )
 
     @staticmethod
     def from_dict_static(data: dict) -> 'ObjectStorageFile':
         return ObjectStorageFile(
             name=data['name'],
-            file_type=OBJECT_STORAGE_FILE_TYPE[data['file_type']],
+            mime_type=data['mime_type'],
             external_url=data['external_url'],
+            base64_data=data['base64_data'],
             created_at=int(data['created_at'])
         )
+    
+    def __init__(self, name: str, mime_type: str, external_url: str, \
+        base64_data: str, created_at: int):
+        self.name = name
+        self.mime_type = mime_type
+        self.external_url = external_url
+        self.base64_data = base64_data
+        self.created_at = created_at
 
     def to_dict(self) -> dict:
         return {
             'name': self.name,
-            'file_type': self.file_type.value,
+            'mime_type': self.mime_type,
             'external_url': self.external_url,
+            'base64_data': self.base64_data,
             'created_at': self.created_at
         }
     

@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id, \
     is_valid_entity_string, is_valid_entity_url, is_valid_entity_string_list, \
-    is_valid_uuid
+    is_valid_uuid, is_valid_entity_base64_string
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
 
@@ -29,7 +29,7 @@ class FreeResource(BaseModel):
     
     @staticmethod
     def data_contains_valid_description(data: dict) -> bool:
-        return is_valid_entity_string(data, 'description', min_length=2, max_length=512)
+        return is_valid_entity_string(data, 'description', min_length=2, max_length=1024)
     
     @staticmethod
     def data_contains_valid_external_url(data: dict) -> bool:
@@ -48,11 +48,14 @@ class FreeResource(BaseModel):
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=128):
             return ('Título inválido', None)
         
-        if not is_valid_entity_string(data, 'description', min_length=2, max_length=512):
+        if not is_valid_entity_string(data, 'description', min_length=2, max_length=1024):
             return ('Descrição inválida', None)
         
         if not is_valid_entity_url(data, 'external_url'):
             return ('Link externo inválido', None)
+        
+        if not is_valid_entity_base64_string(data, 'cover_img'):
+            return ('Imagem de capa inválida', None)
         
         if 'tags' in data:
             if not is_valid_entity_string_list(data, 'tags', min_length=0):
@@ -61,12 +64,12 @@ class FreeResource(BaseModel):
             tags = FreeResource.norm_tags(data['tags'])
         else:
             tags = []
-
+        
         free_resource = FreeResource(
             id=random_entity_id(),
             title=data['title'].strip(),
             description=data['description'].strip(),
-            cover_img=None,
+            cover_img=ObjectStorageFile.from_base64_data(data['cover_img']),
             created_at=now_timestamp(),
             external_url=data['external_url'].strip(),
             tags=tags,

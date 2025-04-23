@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from tests.common import load_app_env, get_requester_user, \
@@ -14,6 +15,9 @@ from src.routes.update_free_resource.update_free_resource import Controller as U
 from src.routes.delete_free_resource.delete_free_resource import Controller as DeleteController
 
 class Test_FreeResourceLambda:
+    def print_data(self, data: dict) -> None:
+        print(json.dumps(data, indent=4, ensure_ascii=False))
+
     def get_body(self):
         return {
             'requester_user': get_requester_user(admin=True)
@@ -28,7 +32,8 @@ class Test_FreeResourceLambda:
     def test_lambda_create(self):
         body = self.get_body()
 
-        cover_img = load_resource('free_resource_cover_img.jpg')
+        cover_img = load_resource('free_resource_cover_img.jpg',
+            encode_base64=True, base64_prefix='data:image/jpeg;base64')
 
         body['free_resource'] = {
             'title': 'O que são criptomoedas? Realmente valem à pena?',
@@ -41,6 +46,8 @@ class Test_FreeResourceLambda:
         controller = CreateController()
 
         response = self.call_lambda(controller, body)
+
+        self.print_data(response.data)
 
         assert response.status_code == 201
 
