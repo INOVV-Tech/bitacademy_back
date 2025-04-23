@@ -1,16 +1,31 @@
-version: '3.8'
 services:
   dynamodb-local:
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
     image: "amazon/dynamodb-local:latest"
-    container_name: dynamodb
+    container_name: bit-dynamodb
     ports:
       - "8000:8000"
     volumes:
       - "./docker/dynamodb:/home/dynamodblocal/data"
     working_dir: /home/dynamodblocal
     networks:
-      - persist-local
+      - bit-persist-local
+  localstack:
+    env_file:
+      - ../.env
+    container_name: bit-localstack
+    image: localstack/localstack:latest
+    ports:
+      - '4566:4566'
+    environment:
+      - SERVICES=s3
+      - DEBUG = 1
+      - DATA_DIR = /home/localstacklocal/data
+    volumes:
+      - './docker/localstack:/home/localstacklocal'
+    working_dir: /home/localstacklocal
+    networks:
+      - bit-persist-local
 networks:
-    persist-local:
-        name: persist-local
+    bit-persist-local:
+        name: bit-persist-local
