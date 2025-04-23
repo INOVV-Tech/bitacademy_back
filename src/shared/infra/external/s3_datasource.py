@@ -6,7 +6,7 @@ from src.shared.environments import Environments
 class S3Datasource:
     def __init__(self, bucket_name: str, region: str, endpoint_url: str = None):
         self.region = region
-
+        
         session = boto3.Session(region_name=region)
 
         if Environments.persist_local:
@@ -30,7 +30,7 @@ class S3Datasource:
     def get_s3_object(self, s3_key: str):
         return self.s3_resource.Object(self.bucket_name, s3_key)
 
-    def upload_base64_file(self, s3_key: str, base64_data: str, mime_type: str) -> dict:
+    def upload_base64_file(self, s3_key: str, base64_data: str, mime_type: str = '') -> dict:
         try:
             response = self.get_s3_object(s3_key).put(
                 Body=base64.b64decode(base64_data), 
@@ -61,4 +61,4 @@ class S3Datasource:
         except:
             pass
 
-        return { 'error': f'S3 "read_file" falhou com a chave "{s3_key}"' }
+        return { 'error': f'S3 "read_base64_file" falhou com a chave "{s3_key}"' }

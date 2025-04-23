@@ -9,7 +9,7 @@ from src.shared.infra.external.key_formatters import encode_idx_pk
 
 class FreeResourceRepositoryDynamo(IFreeResourceRepository):
     dynamo: DynamoDatasource
-    
+
     @staticmethod
     def free_resource_partition_key_format(free_resource: FreeResource) -> str:
         return f'FREE_RESOURCE#{free_resource.id}'

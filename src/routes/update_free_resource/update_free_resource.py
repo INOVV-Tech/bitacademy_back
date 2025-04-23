@@ -52,7 +52,15 @@ class Usecase:
         if free_resource is None:
             return { 'error': 'Material não foi encontrado' }
         
-        free_resource.update_from_dict(free_resource_update_data)
+        updated_fields = free_resource.update_from_dict(free_resource_update_data)
+
+        if 'cover_img' in updated_fields:
+            s3_datasource = self.repository.get_s3_datasource()
+
+            upload_resp = free_resource.cover_img.store_in_s3(s3_datasource)
+
+            if 'error' in upload_resp:
+                return upload_resp
 
         self.repository.free_resource_repo.update(free_resource)
 

@@ -1,5 +1,10 @@
 import re
+import hashlib
+
 from src.shared.utils.time import now_timestamp
+from src.shared.utils.entity import random_entity_id
+
+from src.shared.infra.external.s3_datasource import S3Datasource
 
 class ObjectStorageFile:
     name: str
@@ -59,3 +64,21 @@ class ObjectStorageFile:
     
     def to_public_dict(self) -> dict:
         return self.to_dict()
+    
+    def store_in_s3(self, s3_datasource: S3Datasource) -> dict:
+        if len(self.external_url) > 0:
+            return { 'error': 'File already uploaded to s3' }
+        
+        s3_key = hashlib.sha256(self.base64_data.encode('utf8')).hexdigest()
+
+        resp = s3_datasource.upload_base64_file(s3_key, self.base64_data, self.mime_type)
+
+        if 'error' in resp:
+            return resp
+
+        self.name = s3_key
+        self.external_url = resp['url']
+        self.base64_data = ''
+        self.created_at = now_timestamp()
+
+        return {}

@@ -109,15 +109,32 @@ class FreeResource(BaseModel):
     def to_public_dict(self) -> dict:
         return self.to_dict()
     
-    def update_from_dict(self, data: dict) -> None:
+    def update_from_dict(self, data: dict) -> dict:
+        updated_fields = {}
+
         if self.data_contains_valid_title(data):
             self.title = data['title'].strip()
+
+            updated_fields['title'] = self.title
 
         if self.data_contains_valid_external_url(data):
             self.external_url = data['external_url'].strip()
 
+            updated_fields['external_url'] = self.external_url
+
         if self.data_contains_valid_tags(data):
             self.tags = FreeResource.norm_tags(data['tags'])
 
+            updated_fields['tags'] = self.tags
+
         if self.data_contains_valid_description(data):
             self.description = data['description'].strip()
+
+            updated_fields['description'] = self.description
+
+        if is_valid_entity_base64_string(data, 'cover_img'):
+            self.cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
+
+            updated_fields['cover_img'] = self.cover_img
+
+        return updated_fields

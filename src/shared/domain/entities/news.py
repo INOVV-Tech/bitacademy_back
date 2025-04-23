@@ -106,15 +106,27 @@ class News(BaseModel):
     def to_public_dict(self) -> dict:
         return self.to_dict()
     
-    def update_from_dict(self, data: dict) -> None:
+    def update_from_dict(self, data: dict) -> dict:
+        updated_fields = {}
+
         if self.data_contains_valid_title(data):
             self.title = data['title'].strip()
+
+            updated_fields['title'] = self.title
 
         if self.data_contains_valid_content(data):
             self.content = data['content'].strip()
 
+            updated_fields['content'] = self.content
+
         if self.data_contains_valid_tags(data):
             self.tags = News.norm_tags(data['tags'])
 
+            updated_fields['tags'] = self.tags
+
         if self.data_contains_valid_vip_level(data):
             self.vip_level = VIP_LEVEL(data['vip_level'])
+
+            updated_fields['vip_level'] = self.vip_level
+
+        return updated_fields

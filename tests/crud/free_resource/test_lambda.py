@@ -28,7 +28,7 @@ class Test_FreeResourceLambda:
 
         return controller.execute(request)
 
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_lambda_create(self):
         body = self.get_body()
 
@@ -62,6 +62,8 @@ class Test_FreeResourceLambda:
 
         response = self.call_lambda(controller, body)
 
+        self.print_data(response.data)
+
         assert response.status_code == 200
 
     @pytest.mark.skip(reason='Done')
@@ -76,6 +78,8 @@ class Test_FreeResourceLambda:
 
         response = self.call_lambda(controller, body)
 
+        self.print_data(response.data)
+
         assert response.status_code == 200
 
     @pytest.mark.skip(reason='Done')
@@ -88,6 +92,8 @@ class Test_FreeResourceLambda:
 
         response = self.call_lambda(controller, body)
 
+        self.print_data(response.data)
+
         assert response.status_code == 200
 
     @pytest.mark.skip(reason='Done')
@@ -99,6 +105,8 @@ class Test_FreeResourceLambda:
         controller = GetOneController()
 
         response = self.call_lambda(controller, body)
+
+        self.print_data(response.data)
         
         assert response.status_code == 200
 
@@ -106,9 +114,14 @@ class Test_FreeResourceLambda:
     def test_lambda_update(self):
         body = self.get_body()
 
+        cover_img = load_resource('free_resource_cover_img.jpg',
+            encode_base64=True, base64_prefix='data:image/jpeg;base64')
+
         body['free_resource'] = {
-            'id': '95f57894-f802-49f9-8c2b-463a76d19b33',
-            'title': 'Test FreeResource updated',
+            'id': 'cd8af803-3751-4699-84be-f3175fc21b5a',
+            'title': 'UPDATED',
+            'description': 'UPDATED',
+            'cover_img': cover_img,
             'external_url': 'https://www.google.com/',
             'tags': [ 'teste', 'free', 'maisuma' ]
         }
