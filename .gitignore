@@ -136,3 +136,5 @@ dmypy.json
 test.py
 
 output/
+
+tests/.resources/

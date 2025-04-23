@@ -1,6 +1,7 @@
 import pytest
 
-from tests.common import load_app_env, get_requester_user
+from tests.common import load_app_env, get_requester_user, \
+    load_resource
 
 load_app_env()
 
@@ -23,12 +24,16 @@ class Test_FreeResourceLambda:
 
         return controller.execute(request)
 
-    @pytest.mark.skip(reason='Done')
+    # @pytest.mark.skip(reason='Done')
     def test_lambda_create(self):
         body = self.get_body()
 
+        cover_img = load_resource('free_resource_cover_img.jpg')
+
         body['free_resource'] = {
-            'title': 'Test FreeResource',
+            'title': 'O que são criptomoedas? Realmente valem à pena?',
+            'description': 'O que são Criptomoedas? Imagine uma revolução no mundo financeiro, uma nova forma de dinheiro que não só redefine como realizamos transações, mas também nos dá o poder de controle total sobre nossos ativos. Esse avanço é representado pelas criptomoedas, um tipo de dinheiro puramente digital que utiliza uma tecnologia extremamente sofisticada, conhecida como criptografia, para garantir transações seguras e, na maioria das vezes, anônimas. Ao contrário das moedas tradicionais, como o real ou o dólar, que você pode segurar em mãos, as criptomoedas existem somente no ambiente digital.',
+            'cover_img': cover_img,
             'external_url': 'https://www.youtube.com/',
             'tags': [ 'teste', 'free' ]
         }

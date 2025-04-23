@@ -1,13 +1,19 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id, \
     is_valid_entity_string, is_valid_entity_url, is_valid_entity_string_list, \
     is_valid_uuid
 
+from src.shared.infra.object_storage.file import ObjectStorageFile
+
 class FreeResource(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
     id: str
     title: str
+    description: str
+    cover_img: ObjectStorageFile
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     external_url: str
     tags: list[str]
@@ -20,6 +26,10 @@ class FreeResource(BaseModel):
     @staticmethod
     def data_contains_valid_title(data: dict) -> bool:
         return is_valid_entity_string(data, 'title', min_length=2, max_length=128)
+    
+    @staticmethod
+    def data_contains_valid_description(data: dict) -> bool:
+        return is_valid_entity_string(data, 'description', min_length=2, max_length=512)
     
     @staticmethod
     def data_contains_valid_external_url(data: dict) -> bool:
@@ -38,6 +48,9 @@ class FreeResource(BaseModel):
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=128):
             return ('Título inválido', None)
         
+        if not is_valid_entity_string(data, 'description', min_length=2, max_length=512):
+            return ('Descrição inválida', None)
+        
         if not is_valid_entity_url(data, 'external_url'):
             return ('Link externo inválido', None)
         
@@ -52,6 +65,8 @@ class FreeResource(BaseModel):
         free_resource = FreeResource(
             id=random_entity_id(),
             title=data['title'].strip(),
+            description=data['description'].strip(),
+            cover_img=None,
             created_at=now_timestamp(),
             external_url=data['external_url'].strip(),
             tags=tags,
@@ -65,6 +80,8 @@ class FreeResource(BaseModel):
         return FreeResource(
             id=data['id'],
             title=data['title'],
+            description=data['description'],
+            cover_img=ObjectStorageFile.from_dict_static(data['cover_img']),
             created_at=int(data['created_at']),
             external_url=data['external_url'],
             tags=data['tags'],
@@ -75,6 +92,8 @@ class FreeResource(BaseModel):
         return {
             'id': self.id,
             'title': self.title,
+            'description': self.description,
+            'cover_img': self.cover_img.to_dict(),
             'created_at': self.created_at,
             'external_url': self.external_url,
             'tags': self.tags,
@@ -96,3 +115,6 @@ class FreeResource(BaseModel):
 
         if self.data_contains_valid_tags(data):
             self.tags = FreeResource.norm_tags(data['tags'])
+
+        if self.data_contains_valid_description(data):
+            self.description = data['description'].strip()

@@ -37,7 +37,7 @@ class Test_HomeCoinsLambda:
 
         assert response.status_code == 200
 
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_cronjob(self):
         body = {}
 

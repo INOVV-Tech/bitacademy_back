@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+      <meta charset='UTF-8'>
+        <title>File Upload Example</title>
+        <script>
+            const API_DOMAIN = 'https://gorilla-steady-deadly.ngrok-free.app'
+
+            async function getBase64(file) {
+                const reader = new FileReader()
+
+                reader.readAsDataURL(file)
+
+                return new Promise((resolve) => {
+                    reader.onload = function () {
+                        resolve(reader.result)
+                    }
+
+                    reader.onerror = function () {
+                        resolve(null)
+                    }
+                })
+            }
+
+            async function uploadFile(event) {
+                event.preventDefault()
+
+                const file = document.getElementById('file_input').files[0]
+
+                const base64 = await getBase64(file)
+
+                console.log('base64 length', base64.length)
+                
+                const url = `${API_DOMAIN}/file_upload`
+
+                console.log('url', url)
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        file: base64
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                const result = await response.json()
+                console.log('result', result)
+            }
+
+            window.addEventListener('load', function (event) {
+                const form = document.getElementById('fileUploadForm')
+
+                const data = new FormData(form)
+
+                form.addEventListener('submit', uploadFile)
+            })
+      </script>
+    </head>
+    <body>
+        <h2>Select a file to upload:</h2>
+        <form id='fileUploadForm' enctype='multipart/form-data'>
+            <input type='file' name='file' id='file_input'/>
+            <input type='submit' id='submit' />
+        </form>
+    </body>
+</html>

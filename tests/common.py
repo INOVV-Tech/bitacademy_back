@@ -12,8 +12,11 @@ from src.shared.domain.entities.user import User
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id
 
+def get_root_directory():
+    return Path(__file__).parent.parent
+
 def load_app_env(stage='DEV'):
-    root_directory = Path(__file__).parent.parent
+    root_directory = get_root_directory()
 
     env_filepath = os.path.join(root_directory, 'iac', '.env')
 
@@ -47,4 +50,11 @@ def get_requester_user(admin=False):
     })
 
     return user.to_api_dto()
-    
+
+def load_resource(filename):
+    root_directory = get_root_directory()
+
+    filepath = os.path.join(root_directory, 'tests', '.resources', filename)
+
+    return (filename, open(filepath, 'rb').read(), 'text/plain')
+
