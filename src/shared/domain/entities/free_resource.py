@@ -29,7 +29,7 @@ class FreeResource(BaseModel):
     
     @staticmethod
     def data_contains_valid_description(data: dict) -> bool:
-        return is_valid_entity_string(data, 'description', min_length=2, max_length=1024)
+        return is_valid_entity_string(data, 'description', min_length=2, max_length=2048)
     
     @staticmethod
     def data_contains_valid_external_url(data: dict) -> bool:
@@ -48,7 +48,7 @@ class FreeResource(BaseModel):
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=128):
             return ('Título inválido', None)
         
-        if not is_valid_entity_string(data, 'description', min_length=2, max_length=1024):
+        if not is_valid_entity_string(data, 'description', min_length=2, max_length=2048):
             return ('Descrição inválida', None)
         
         if not is_valid_entity_url(data, 'external_url'):

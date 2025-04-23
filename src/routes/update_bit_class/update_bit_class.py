@@ -52,7 +52,22 @@ class Usecase:
         if bit_class is None:
             return { 'error': 'Curso não foi encontrado' }
         
-        bit_class.update_from_dict(bit_class_update_data)
+        updated_fields = bit_class.update_from_dict(bit_class_update_data)
+
+        if 'cover_img' in updated_fields or 'card_img' in updated_fields:
+            s3_datasource = self.repository.get_s3_datasource()
+
+        if 'cover_img' in updated_fields:
+            upload_resp = bit_class.cover_img.store_in_s3(s3_datasource)
+
+            if 'error' in upload_resp:
+                return upload_resp
+
+        if 'card_img' in updated_fields:
+            upload_resp = bit_class.card_img.store_in_s3(s3_datasource)
+
+            if 'error' in upload_resp:
+                return upload_resp
 
         self.repository.bit_class_repo.update(bit_class)
 

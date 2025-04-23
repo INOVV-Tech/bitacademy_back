@@ -47,6 +47,18 @@ class Usecase:
         if error != '':
             return { 'error': error }
         
+        s3_datasource = self.repository.get_s3_datasource()
+
+        upload_cover_resp = bit_class.cover_img.store_in_s3(s3_datasource)
+
+        if 'error' in upload_cover_resp:
+            return upload_cover_resp
+        
+        upload_card_resp = bit_class.card_img.store_in_s3(s3_datasource)
+
+        if 'error' in upload_card_resp:
+            return upload_card_resp
+        
         self.repository.bit_class_repo.create(bit_class)
 
         return {
