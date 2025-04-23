@@ -52,7 +52,22 @@ class Usecase:
         if news is None:
             return { 'error': 'Notícia não foi encontrada' }
         
-        news.update_from_dict(news_update_data)
+        updated_fields = news.update_from_dict(news_update_data)
+
+        if 'cover_img' in updated_fields or 'card_img' in updated_fields:
+            s3_datasource = self.repository.get_s3_datasource()
+
+        if 'cover_img' in updated_fields:
+            upload_resp = news.cover_img.store_in_s3(s3_datasource)
+
+            if 'error' in upload_resp:
+                return upload_resp
+
+        if 'card_img' in updated_fields:
+            upload_resp = news.card_img.store_in_s3(s3_datasource)
+
+            if 'error' in upload_resp:
+                return upload_resp
 
         self.repository.news_repo.update(news)
 

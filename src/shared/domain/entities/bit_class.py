@@ -30,7 +30,7 @@ class BitClass(BaseModel):
     
     @staticmethod
     def data_contains_valid_title(data: dict) -> bool:
-        return is_valid_entity_string(data, 'title', min_length=2, max_length=128)
+        return is_valid_entity_string(data, 'title', min_length=2, max_length=256)
     
     @staticmethod
     def data_contains_valid_description(data: dict) -> bool:
@@ -64,7 +64,7 @@ class BitClass(BaseModel):
 
     @staticmethod
     def from_request_data(data: dict, user_id: str) -> 'tuple[str, BitClass | None]':
-        if not is_valid_entity_string(data, 'title', min_length=2, max_length=128):
+        if not is_valid_entity_string(data, 'title', min_length=2, max_length=256):
             return ('Título inválido', None)
         
         if not is_valid_entity_string(data, 'description', min_length=2, max_length=2048):

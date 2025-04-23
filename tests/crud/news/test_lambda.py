@@ -1,7 +1,8 @@
 import json
 import pytest
 
-from tests.common import load_app_env, get_requester_user
+from tests.common import load_app_env, get_requester_user, \
+    load_resource
 
 load_app_env()
 
@@ -31,16 +32,24 @@ class Test_NewsLambda:
     def test_lambda_create(self):
         body = self.get_body()
 
+        cover_img = load_resource('free_resource_cover_img.jpg',
+            encode_base64=True, base64_prefix='data:image/jpeg;base64')
+
         body['news'] = {
             'title': 'Test News',
+            'header': 'uhul header',
             'content': 'Conteúdo teste da notícia',
             'tags': [ 'teste', 'free' ],
-            'vip_level': 1
+            'vip_level': 1,
+            'cover_img': cover_img,
+            'card_img': cover_img
         }
 
         controller = CreateController()
 
         response = self.call_lambda(controller, body)
+
+        self.print_data(response.data)
 
         assert response.status_code == 201
 
@@ -108,12 +117,18 @@ class Test_NewsLambda:
     def test_lambda_update(self):
         body = self.get_body()
 
+        cover_img = load_resource('free_resource_cover_img.jpg',
+            encode_base64=True, base64_prefix='data:image/jpeg;base64')
+
         body['news'] = {
-            'id': 'fce39bab-cbcc-4899-8108-1cc854d714b0',
+            'id': 'a30f03bf-55da-4e6a-99e4-61d816d22062',
             'title': 'Test News updated',
+            'header': 'UPDATED',
             'content': 'UPDATED',
             'tags': [ 'teste', 'free', 'maisuma' ],
-            'vip_level': 0
+            'vip_level': 0,
+            'cover_img': cover_img,
+            'card_img': cover_img
         }
         
         controller = UpdateController()
