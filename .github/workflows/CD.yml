@@ -60,8 +60,4 @@ jobs:
           USER_POOL_ID: ${{ secrets.USER_POOL_ID }}
           APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}
-          PERSIST_LOCAL: ${{ secrets.PERSIST_LOCAL }}
-          DYNAMO_LOCAL_KEY_ID: ${{ secrets.DYNAMO_LOCAL_KEY_ID }}
-          DYNAMO_LOCAL_ACCESS_KEY: ${{ secrets.DYNAMO_LOCAL_ACCESS_KEY }}
           CMC_API_KEY: ${{ secrets.CMC_API_KEY }}
