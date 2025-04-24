@@ -7,7 +7,7 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.bit_class import BitClass
+from src.shared.domain.entities.course import Course
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
@@ -35,44 +35,44 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(bit_class_repo=True)
+        self.repository = Repository(course_repo=True)
 
     def execute(self, request_data: dict) -> dict:
-        if 'bit_class' not in request_data \
-            or not isinstance(request_data['bit_class'], dict):
-            return { 'error': 'Campo "bit_class" não foi encontrado' }
+        if 'course' not in request_data \
+            or not isinstance(request_data['course'], dict):
+            return { 'error': 'Campo "course" não foi encontrado' }
         
-        bit_class_update_data = request_data['bit_class']
+        course_update_data = request_data['course']
 
-        if not BitClass.data_contains_valid_id(bit_class_update_data):
+        if not Course.data_contains_valid_id(course_update_data):
             return { 'error': 'Identificador de curso inválido' }
         
-        bit_class = self.repository.bit_class_repo.get_one(bit_class_update_data['id'])
+        course = self.repository.course_repo.get_one(course_update_data['id'])
 
-        if bit_class is None:
+        if course is None:
             return { 'error': 'Curso não foi encontrado' }
         
-        updated_fields = bit_class.update_from_dict(bit_class_update_data)
+        updated_fields = course.update_from_dict(course_update_data)
 
         if 'cover_img' in updated_fields or 'card_img' in updated_fields:
             s3_datasource = self.repository.get_s3_datasource()
 
         if 'cover_img' in updated_fields:
-            upload_resp = bit_class.cover_img.store_in_s3(s3_datasource)
+            upload_resp = course.cover_img.store_in_s3(s3_datasource)
 
             if 'error' in upload_resp:
                 return upload_resp
 
         if 'card_img' in updated_fields:
-            upload_resp = bit_class.card_img.store_in_s3(s3_datasource)
+            upload_resp = course.card_img.store_in_s3(s3_datasource)
 
             if 'error' in upload_resp:
                 return upload_resp
 
-        self.repository.bit_class_repo.update(bit_class)
+        self.repository.course_repo.update(course)
 
         return {
-            'bit_class': bit_class.to_public_dict()
+            'course': course.to_public_dict()
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

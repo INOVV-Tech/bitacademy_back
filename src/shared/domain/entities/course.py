@@ -9,7 +9,7 @@ from src.shared.utils.entity import random_entity_id, \
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
 
-class BitClass(BaseModel):
+class Course(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
     id: str
@@ -63,7 +63,7 @@ class BitClass(BaseModel):
         return [ x.strip() for x in teachers ]
 
     @staticmethod
-    def from_request_data(data: dict, user_id: str) -> 'tuple[str, BitClass | None]':
+    def from_request_data(data: dict, user_id: str) -> 'tuple[str, Course | None]':
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=256):
             return ('Título inválido', None)
         
@@ -73,7 +73,7 @@ class BitClass(BaseModel):
         if not is_valid_entity_string_list(data, 'teachers', min_length=0):
             return ('Lista de professores inválida', None)
         
-        teachers = BitClass.norm_teachers(data['teachers'])
+        teachers = Course.norm_teachers(data['teachers'])
         
         if not is_valid_entity_url(data, 'external_url'):
             return ('Link externo inválido', None)
@@ -88,14 +88,14 @@ class BitClass(BaseModel):
             if not is_valid_entity_string_list(data, 'tags', min_length=0):
                 return ('Lista de tags inválida', None)
             
-            tags = BitClass.norm_tags(data['tags'])
+            tags = Course.norm_tags(data['tags'])
         else:
             tags = []
 
-        if not BitClass.data_contains_valid_vip_level(data):
+        if not Course.data_contains_valid_vip_level(data):
             return ('VIP level inválido', None)
 
-        bit_class = BitClass(
+        course = Course(
             id=random_entity_id(),
             title=data['title'].strip(),
             description=data['description'].strip(),
@@ -109,11 +109,11 @@ class BitClass(BaseModel):
             vip_level=VIP_LEVEL(data['vip_level'])
         )
         
-        return ('', bit_class)
+        return ('', course)
 
     @staticmethod
-    def from_dict_static(data: dict) -> 'BitClass':
-        return BitClass(
+    def from_dict_static(data: dict) -> 'Course':
+        return Course(
             id=data['id'],
             title=data['title'],
             description=data['description'],
@@ -142,7 +142,7 @@ class BitClass(BaseModel):
             'vip_level': self.vip_level.value
         }
     
-    def from_dict(self, data: dict) -> 'BitClass':
+    def from_dict(self, data: dict) -> 'Course':
         return self.from_dict_static(data)
     
     def to_public_dict(self) -> dict:
@@ -162,7 +162,7 @@ class BitClass(BaseModel):
             updated_fields['external_url'] = self.external_url
 
         if self.data_contains_valid_tags(data):
-            self.tags = BitClass.norm_tags(data['tags'])
+            self.tags = Course.norm_tags(data['tags'])
 
             updated_fields['tags'] = self.tags
 
@@ -177,7 +177,7 @@ class BitClass(BaseModel):
             updated_fields['description'] = self.description
 
         if is_valid_entity_string_list(data, 'teachers', min_length=0):
-            self.teachers = BitClass.norm_teachers(data['teachers'])
+            self.teachers = Course.norm_teachers(data['teachers'])
 
             updated_fields['teachers'] = self.teachers
 

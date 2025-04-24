@@ -38,84 +38,84 @@ class LambdaStack(Construct):
         
         ### FUNCTIONS ###
 
-        ### FREE RESOURCE ###
+        ### FREE MATERIAL ###
 
-        self.create_free_resource = self.create_lambda_api_gateway_integration(
-            module_name='create_free_resource',
+        self.create_free_material = self.create_lambda_api_gateway_integration(
+            module_name='create_free_material',
             method='POST',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        self.get_all_free_resources = self.create_lambda_api_gateway_integration(
-            module_name='get_all_free_resources',
+        self.get_all_free_materials = self.create_lambda_api_gateway_integration(
+            module_name='get_all_free_materials',
             method='GET',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        self.get_one_free_resource = self.create_lambda_api_gateway_integration(
-            module_name='get_one_free_resource',
+        self.get_one_free_material = self.create_lambda_api_gateway_integration(
+            module_name='get_one_free_material',
             method='GET',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        self.update_free_resource = self.create_lambda_api_gateway_integration(
-            module_name='update_free_resource',
+        self.update_free_material = self.create_lambda_api_gateway_integration(
+            module_name='update_free_material',
             method='PUT',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        self.delete_free_resource = self.create_lambda_api_gateway_integration(
-            module_name='delete_free_resource',
+        self.delete_free_material = self.create_lambda_api_gateway_integration(
+            module_name='delete_free_material',
             method='POST',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        ### BIT CLASS ###
+        ### COURSE ###
 
-        self.create_bit_class = self.create_lambda_api_gateway_integration(
-            module_name='create_bit_class',
+        self.create_course = self.create_lambda_api_gateway_integration(
+            module_name='create_course',
             method='POST',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        self.get_all_bit_classes = self.create_lambda_api_gateway_integration(
-            module_name='get_all_bit_classes',
+        self.get_all_courses = self.create_lambda_api_gateway_integration(
+            module_name='get_all_courses',
             method='GET',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        self.get_one_bit_class = self.create_lambda_api_gateway_integration(
-            module_name='get_one_bit_class',
+        self.get_one_course = self.create_lambda_api_gateway_integration(
+            module_name='get_one_course',
             method='GET',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        self.update_bit_class = self.create_lambda_api_gateway_integration(
-            module_name='update_bit_class',
+        self.update_course = self.create_lambda_api_gateway_integration(
+            module_name='update_course',
             method='PUT',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
         )
 
-        self.delete_bit_class = self.create_lambda_api_gateway_integration(
-            module_name='delete_bit_class',
+        self.delete_course = self.create_lambda_api_gateway_integration(
+            module_name='delete_course',
             method='POST',
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
@@ -177,17 +177,17 @@ class LambdaStack(Construct):
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
-            self.create_free_resource,
-            self.get_all_free_resources,
-            self.get_one_free_resource,
-            self.update_free_resource,
-            self.delete_free_resource,
+            self.create_free_material,
+            self.get_all_free_materials,
+            self.get_one_free_material,
+            self.update_free_material,
+            self.delete_free_material,
 
-            self.create_bit_class,
-            self.get_all_bit_classes,
-            self.get_one_bit_class,
-            self.update_bit_class,
-            self.delete_bit_class,
+            self.create_course,
+            self.get_all_courses,
+            self.get_one_course,
+            self.update_course,
+            self.delete_course,
 
             self.get_home_coins,
 
@@ -199,17 +199,17 @@ class LambdaStack(Construct):
         ]
 
         self.functions_that_need_dynamo_permissions = [
-            self.create_free_resource,
-            self.get_all_free_resources,
-            self.get_one_free_resource,
-            self.update_free_resource,
-            self.delete_free_resource,
+            self.create_free_material,
+            self.get_all_free_materials,
+            self.get_one_free_material,
+            self.update_free_material,
+            self.delete_free_material,
 
-            self.create_bit_class,
-            self.get_all_bit_classes,
-            self.get_one_bit_class,
-            self.update_bit_class,
-            self.delete_bit_class,
+            self.create_course,
+            self.get_all_courses,
+            self.get_one_course,
+            self.update_course,
+            self.delete_course,
 
             self.get_home_coins,
 

@@ -1,13 +1,13 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import Created, InternalServerError, BadRequest
+from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.bit_class import BitClass
+from src.shared.domain.entities.course import Course
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
@@ -16,16 +16,16 @@ class Controller:
     def execute(request: IRequest) -> IResponse:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
-
+            
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user, request.data)
+            response = Usecase().execute(request.data)
 
             if 'error' in response:
                 return BadRequest(response['error'])
             
-            return Created(body=response)
+            return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except:
@@ -35,34 +35,16 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(bit_class_repo=True)
+        self.repository = Repository(course_repo=True)
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if 'bit_class' not in request_data \
-            or not isinstance(request_data['bit_class'], dict):
-            return { 'error': 'Campo "bit_class" não foi encontrado' }
-
-        (error, bit_class) = BitClass.from_request_data(request_data['bit_class'], requester_user.user_id)
-
-        if error != '':
-            return { 'error': error }
+    def execute(self, request_data: dict) -> dict:
+        if not Course.data_contains_valid_id(request_data):
+            return { 'error': 'Identificador de curso inválido' }
         
-        s3_datasource = self.repository.get_s3_datasource()
-
-        upload_cover_resp = bit_class.cover_img.store_in_s3(s3_datasource)
-
-        if 'error' in upload_cover_resp:
-            return upload_cover_resp
-        
-        upload_card_resp = bit_class.card_img.store_in_s3(s3_datasource)
-
-        if 'error' in upload_card_resp:
-            return upload_card_resp
-        
-        self.repository.bit_class_repo.create(bit_class)
-
+        course = self.repository.course_repo.delete(request_data['id'])
+    
         return {
-            'bit_class': bit_class.to_public_dict()
+            'course': course.to_public_dict() if course is not None else None
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

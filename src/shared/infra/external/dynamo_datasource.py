@@ -32,12 +32,8 @@ class DynamoDatasource:
             'main_table': { 'partition_key': 'PK', 'sort_key': 'SK' },
             'gsis': {
                 'GetAllEntities': {
-                    'partition_key': encode_idx_pk('GSI#ENTITY_GETALL'),
-                    'sort_key': 'created_at'
-                },
-                'GetEntityByText': {
-                    'partition_key': encode_idx_pk('GSI#TEXT'),
-                    'sort_key': 'created_at'
+                    'partition_key': encode_idx_pk('GSI#ENTITY_GETALL#PK'),
+                    'sort_key': encode_idx_pk('GSI#ENTITY_GETALL#SK')
                 }
             }
         }
@@ -82,7 +78,8 @@ class DynamoDatasource:
         index_name=None,
         filter_expression=None,
         limit=None,
-        exclusive_start_key=None
+        exclusive_start_key=None,
+        scan_index_forward=False
     ):
         """
         Realiza uma consulta na tabela principal ou em um GSI com suporte a filtros e paginação.
@@ -109,6 +106,8 @@ class DynamoDatasource:
         
         if exclusive_start_key:
             kwargs['ExclusiveStartKey'] = exclusive_start_key
+
+        kwargs['ScanIndexForward'] = scan_index_forward
 
         response = self.dynamo_table.query(**kwargs)
 

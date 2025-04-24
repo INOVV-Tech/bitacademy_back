@@ -58,7 +58,8 @@ class Usecase:
             tags=tags,
             vip_level=vip_level,
             limit=request_data['limit'],
-            last_evaluated_key=request_data['last_evaluated_key']
+            last_evaluated_key=request_data['last_evaluated_key'],
+            sort_order=request_data['sort_order']
         )
 
         db_data['news_list'] = [ x.to_public_dict() for x in db_data['news_list'] ]

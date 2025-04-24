@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from src.shared.domain.entities.free_resource import FreeResource
 from src.shared.domain.entities.home_coins import HomeCoins
 
 class IHomeCoinsRepository(ABC):

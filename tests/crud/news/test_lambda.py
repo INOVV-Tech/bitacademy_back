@@ -32,8 +32,8 @@ class Test_NewsLambda:
     def test_lambda_create(self):
         body = self.get_body()
 
-        cover_img = load_resource('free_resource_cover_img.jpg',
-            encode_base64=True, base64_prefix='data:image/jpeg;base64')
+        cover_img = load_resource('catbeach.png',
+            encode_base64=True, base64_prefix='data:image/png;base64')
 
         body['news'] = {
             'title': 'Test News',
@@ -59,6 +59,7 @@ class Test_NewsLambda:
 
         body['limit'] = 10
         body['last_evaluated_key'] = ''
+        body['sort_order'] = 'desc'
 
         controller = GetAllController()
 
@@ -76,6 +77,7 @@ class Test_NewsLambda:
         body['vip_level'] = 1
         body['limit'] = 10
         body['last_evaluated_key'] = ''
+        body['sort_order'] = 'desc'
 
         controller = GetAllController()
 
@@ -89,7 +91,7 @@ class Test_NewsLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = 'fce39bab-cbcc-4899-8108-1cc854d714b0'
+        body['id'] = 'bddb8f04-a2cf-47d9-812a-350a5e7217d2'
 
         controller = GetOneController()
 
@@ -117,8 +119,8 @@ class Test_NewsLambda:
     def test_lambda_update(self):
         body = self.get_body()
 
-        cover_img = load_resource('free_resource_cover_img.jpg',
-            encode_base64=True, base64_prefix='data:image/jpeg;base64')
+        cover_img = load_resource('catbeach.png',
+            encode_base64=True, base64_prefix='data:image/png;base64')
 
         body['news'] = {
             'id': 'a30f03bf-55da-4e6a-99e4-61d816d22062',

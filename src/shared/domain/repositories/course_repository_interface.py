@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
 from src.shared.domain.enums.vip_level import VIP_LEVEL
-from src.shared.domain.entities.news import News
+from src.shared.domain.entities.course import Course
 
-class INewsRepository(ABC):
+class ICourseRepository(ABC):
     @abstractmethod
-    def create(self, news: News) -> News:
+    def create(self, course: Course) -> Course:
         pass
 
     @abstractmethod
@@ -14,17 +14,17 @@ class INewsRepository(ABC):
         pass
     
     @abstractmethod
-    def get_one(self, id: str) -> News | None:
+    def get_one(self, id: str) -> Course | None:
         pass
     
     @abstractmethod
-    def get_one_by_title(self, title: str) -> News | None:
+    def get_one_by_title(self, title: str) -> Course | None:
         pass
 
     @abstractmethod
-    def update(self, news: News) -> News:
+    def update(self, course: Course) -> Course:
         pass
 
     @abstractmethod
-    def delete(self, id: str) -> News | None:
+    def delete(self, id: str) -> Course | None:
         pass

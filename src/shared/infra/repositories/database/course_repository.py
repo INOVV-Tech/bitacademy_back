@@ -2,50 +2,50 @@ from boto3.dynamodb.conditions import Attr
 
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 
-from src.shared.domain.repositories.news_repository_interface import INewsRepository
+from src.shared.domain.repositories.course_repository_interface import ICourseRepository
 
 from src.shared.domain.enums.vip_level import VIP_LEVEL
-from src.shared.domain.entities.news import News
+from src.shared.domain.entities.course import Course
 
 from src.shared.infra.external.key_formatters import encode_idx_pk
 
-class NewsRepositoryDynamo(INewsRepository):
+class CourseRepositoryDynamo(ICourseRepository):
     dynamo: DynamoDatasource
     
     @staticmethod
-    def news_partition_key_format(news: News) -> str:
-        return f'NEWS#{news.id}'
+    def course_partition_key_format(course: Course) -> str:
+        return f'COURSE#{course.id}'
     
     @staticmethod
-    def news_partition_key_format_from_id(id: str) -> str:
-        return f'NEWS#{id}'
+    def course_partition_key_format_from_id(id: str) -> str:
+        return f'COURSE#{id}'
     
     @staticmethod
-    def news_sort_key_format() -> str:
+    def course_sort_key_format() -> str:
         return 'METADATA'
+
+    @staticmethod
+    def course_gsi_entity_get_all_pk() -> str:
+        return 'INDEX#COURSE'
     
     @staticmethod
-    def news_gsi_entity_get_all_pk() -> str:
-        return 'INDEX#NEWS'
-    
-    @staticmethod
-    def news_gsi_entity_get_all_sk(news: News) -> str:
-        return f'DATE#{news.created_at}'
+    def course_gsi_entity_get_all_sk(course: Course) -> str:
+        return f'DATE#{course.created_at}'
     
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo
 
-    def create(self, news: News) -> News:
-        item = news.to_dict()
+    def create(self, course: Course) -> Course:
+        item = course.to_dict()
 
-        item['PK'] = self.news_partition_key_format(news)
-        item['SK'] = self.news_sort_key_format()
-        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.news_gsi_entity_get_all_pk()
-        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.news_gsi_entity_get_all_sk(news)
+        item['PK'] = self.course_partition_key_format(course)
+        item['SK'] = self.course_sort_key_format()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.course_gsi_entity_get_all_pk()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.course_gsi_entity_get_all_sk(course)
 
         self.dynamo.put_item(item=item)
 
-        return news
+        return course
 
     def get_all(self, tags: list[str] = [], vip_level: VIP_LEVEL | None = None, \
         limit: int = 10, last_evaluated_key: str = '', sort_order: str = 'desc') -> dict:
@@ -76,7 +76,7 @@ class NewsRepositoryDynamo(INewsRepository):
 
         response = self.dynamo.query(
             index_name='GetAllEntities',
-            partition_key=self.news_gsi_entity_get_all_pk(),
+            partition_key=self.course_gsi_entity_get_all_pk(),
             limit=limit,
             exclusive_start_key=last_evaluated_key if last_evaluated_key != '' else None,
             filter_expression=filter_expression,
@@ -84,50 +84,50 @@ class NewsRepositoryDynamo(INewsRepository):
         )
         
         return {
-            'news_list': [ News.from_dict_static(item) for item in response['items'] ],
+            'courses': [ Course.from_dict_static(item) for item in response['items'] ],
             'last_evaluated_key': response.get('last_evaluated_key')
         }
     
-    def get_one(self, id: str) -> News | None:
+    def get_one(self, id: str) -> Course | None:
         data = self.dynamo.get_item(
-            partition_key=self.news_partition_key_format_from_id(id),
-            sort_key=self.news_sort_key_format()
+            partition_key=self.course_partition_key_format_from_id(id),
+            sort_key=self.course_sort_key_format()
         )
 
-        return News.from_dict_static(data['Item']) if 'Item' in data else None
+        return Course.from_dict_static(data['Item']) if 'Item' in data else None
     
-    def get_one_by_title(self, title: str) -> News | None:
+    def get_one_by_title(self, title: str) -> Course | None:
         filter_expression = Attr('title').contains(title)
 
         data = self.dynamo.query(
             index_name='GetAllEntities',
-            partition_key=self.news_gsi_entity_get_all_pk(),
+            partition_key=self.course_gsi_entity_get_all_pk(),
             filter_expression=filter_expression
         )
-
+        
         items = data['items']
 
-        return News.from_dict_static(items[0]) if len(items) > 0 else None
+        return Course.from_dict_static(items[0]) if len(items) > 0 else None
 
-    def update(self, news: News) -> News:
-        item = news.to_dict()
+    def update(self, course: Course) -> Course:
+        item = course.to_dict()
 
-        item['PK'] = self.news_partition_key_format(news)
-        item['SK'] = self.news_sort_key_format()
-        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.news_gsi_entity_get_all_pk()
-        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.news_gsi_entity_get_all_sk(news)
+        item['PK'] = self.course_partition_key_format(course)
+        item['SK'] = self.course_sort_key_format()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.course_gsi_entity_get_all_pk()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.course_gsi_entity_get_all_sk(course)
 
         self.dynamo.put_item(item=item)
         
-        return news
+        return course
 
-    def delete(self, id: str) -> News | None:
+    def delete(self, id: str) -> Course | None:
         data = self.dynamo.delete_item(
-            partition_key=self.news_partition_key_format_from_id(id),
-            sort_key=self.news_sort_key_format()
+            partition_key=self.course_partition_key_format_from_id(id),
+            sort_key=self.course_sort_key_format()
         )
 
         if 'Attributes' not in data:
             return None
 
-        return News.from_dict_static(data['Attributes'])
+        return Course.from_dict_static(data['Attributes'])

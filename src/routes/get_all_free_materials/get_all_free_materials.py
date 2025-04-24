@@ -7,7 +7,8 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.free_resource import FreeResource
+from src.shared.domain.entities.free_material import FreeMaterial
+from src.shared.utils.entity import is_valid_getall_object
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
 
@@ -21,6 +22,9 @@ class Controller:
                 raise ForbiddenAction('Acesso não autorizado')
             
             response = Usecase().execute(request.data)
+
+            if 'error' in response:
+                return BadRequest(response['error'])
             
             return OK(body=response)
         except MissingParameters as error:
@@ -32,30 +36,27 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(free_resource_repo=True)
+        self.repository = Repository(free_material_repo=True)
 
     def execute(self, request_data: dict) -> dict:
-        if FreeResource.data_contains_valid_id(request_data):
-            return self.query_with_id(request_data)
+        if not is_valid_getall_object(request_data):
+            return { 'error': 'Filtro de consulta inválido' }
+        
+        tags = []
+        
+        if FreeMaterial.data_contains_valid_tags(request_data):
+            tags = FreeMaterial.norm_tags(request_data['tags'])
 
-        if FreeResource.data_contains_valid_title(request_data):
-            return self.query_with_title(request_data)
+        db_data = self.repository.free_material_repo.get_all(
+            tags=tags,
+            limit=request_data['limit'],
+            last_evaluated_key=request_data['last_evaluated_key'],
+            sort_order=request_data['sort_order']
+        )
 
-        return { 'error': 'Nenhum identificador encontrado' }
-    
-    def query_with_id(self, request_data: dict) -> dict:
-        free_resource = self.repository.free_resource_repo.get_one(request_data['id'])
+        db_data['free_materials'] = [ x.to_public_dict() for x in db_data['free_materials'] ]
 
-        return {
-            'free_resource': free_resource.to_public_dict() if free_resource is not None else None
-        }
-    
-    def query_with_title(self, request_data: dict) -> dict:
-        free_resource = self.repository.free_resource_repo.get_one_by_title(request_data['title'])
-
-        return {
-            'free_resource': free_resource.to_public_dict() if free_resource is not None else None
-        }
+        return db_data
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

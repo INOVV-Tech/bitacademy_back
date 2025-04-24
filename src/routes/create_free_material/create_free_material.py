@@ -1,18 +1,15 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
+from src.shared.helpers.external_interfaces.http_codes import Created, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.enums.vip_level import VIP_LEVEL
-from src.shared.domain.entities.bit_class import BitClass
+from src.shared.domain.entities.free_material import FreeMaterial
 
-from src.shared.utils.entity import is_valid_getall_object
-
-ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
+ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
 class Controller:
     @staticmethod
@@ -23,12 +20,12 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(request.data)
+            response = Usecase().execute(requester_user, request.data)
 
             if 'error' in response:
                 return BadRequest(response['error'])
             
-            return OK(body=response)
+            return Created(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except:
@@ -38,32 +35,30 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(bit_class_repo=True)
+        self.repository = Repository(free_material_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
-        if not is_valid_getall_object(request_data):
-            return { 'error': 'Filtro de consulta inválido' }
+    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
+        if 'free_material' not in request_data \
+            or not isinstance(request_data['free_material'], dict):
+            return { 'error': 'Campo "free_material" não foi encontrado' }
 
-        tags = []
+        (error, free_material) = FreeMaterial.from_request_data(request_data['free_material'], requester_user.user_id)
+
+        if error != '':
+            return { 'error': error }
+
+        s3_datasource = self.repository.get_s3_datasource()
+
+        upload_resp = free_material.cover_img.store_in_s3(s3_datasource)
+
+        if 'error' in upload_resp:
+            return upload_resp
         
-        if BitClass.data_contains_valid_tags(request_data):
-            tags = BitClass.norm_tags(request_data['tags'])
-        
-        vip_level = None
+        self.repository.free_material_repo.create(free_material)
 
-        if BitClass.data_contains_valid_vip_level(request_data):
-            vip_level = VIP_LEVEL(request_data['vip_level'])
-
-        db_data = self.repository.bit_class_repo.get_all(
-            tags=tags,
-            vip_level=vip_level,
-            limit=request_data['limit'],
-            last_evaluated_key=request_data['last_evaluated_key']
-        )
-
-        db_data['bit_classes'] = [ x.to_public_dict() for x in db_data['bit_classes'] ]
-
-        return db_data
+        return {
+            'free_material': free_material.to_public_dict()
+        }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

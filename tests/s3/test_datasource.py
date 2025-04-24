@@ -33,7 +33,7 @@ class Test_S3Datasource:
     def test_upload_base64(self):
         s3_datasource = self.get_datasource()
 
-        cover_img = load_resource('free_resource_cover_img.jpg', encode_base64=True, base64_prefix='')
+        cover_img = load_resource('free_material_cover_img.jpg', encode_base64=True, base64_prefix='')
 
         print('cover_img', cover_img[0:200])
         

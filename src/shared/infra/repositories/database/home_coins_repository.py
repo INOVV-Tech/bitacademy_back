@@ -13,7 +13,7 @@ class HomeCoinsRepositoryDynamo(IHomeCoinsRepository):
     
     @staticmethod
     def home_coins_sort_key_format() -> str:
-        return 'NONE'
+        return 'METADATA'
     
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo

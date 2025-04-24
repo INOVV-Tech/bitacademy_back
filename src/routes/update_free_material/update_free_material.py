@@ -7,7 +7,7 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.bit_class import BitClass
+from src.shared.domain.entities.free_material import FreeMaterial
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
@@ -16,7 +16,7 @@ class Controller:
     def execute(request: IRequest) -> IResponse:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
-            
+
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
@@ -35,16 +35,37 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(bit_class_repo=True)
+        self.repository = Repository(free_material_repo=True)
 
     def execute(self, request_data: dict) -> dict:
-        if not BitClass.data_contains_valid_id(request_data):
-            return { 'error': 'Identificador de curso inválido' }
+        if 'free_material' not in request_data \
+            or not isinstance(request_data['free_material'], dict):
+            return { 'error': 'Campo "free_material" não foi encontrado' }
         
-        bit_class = self.repository.bit_class_repo.delete(request_data['id'])
-    
+        free_material_update_data = request_data['free_material']
+
+        if not FreeMaterial.data_contains_valid_id(free_material_update_data):
+            return { 'error': 'Identificador de material inválido' }
+        
+        free_material = self.repository.free_material_repo.get_one(free_material_update_data['id'])
+
+        if free_material is None:
+            return { 'error': 'Material não foi encontrado' }
+        
+        updated_fields = free_material.update_from_dict(free_material_update_data)
+
+        if 'cover_img' in updated_fields:
+            s3_datasource = self.repository.get_s3_datasource()
+
+            upload_resp = free_material.cover_img.store_in_s3(s3_datasource)
+
+            if 'error' in upload_resp:
+                return upload_resp
+
+        self.repository.free_material_repo.update(free_material)
+
         return {
-            'bit_class': bit_class.to_public_dict() if bit_class is not None else None
+            'free_material': free_material.to_public_dict()
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

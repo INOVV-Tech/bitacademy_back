@@ -7,7 +7,7 @@ from src.shared.utils.entity import random_entity_id, \
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
 
-class FreeResource(BaseModel):
+class FreeMaterial(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
     id: str
@@ -44,7 +44,7 @@ class FreeResource(BaseModel):
         return [ tag.strip().lower() for tag in tags ]
 
     @staticmethod
-    def from_request_data(data: dict, user_id: str) -> 'tuple[str, FreeResource | None]':
+    def from_request_data(data: dict, user_id: str) -> 'tuple[str, FreeMaterial | None]':
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=256):
             return ('Título inválido', None)
         
@@ -61,11 +61,11 @@ class FreeResource(BaseModel):
             if not is_valid_entity_string_list(data, 'tags', min_length=0):
                 return ('Lista de tags inválida', None)
             
-            tags = FreeResource.norm_tags(data['tags'])
+            tags = FreeMaterial.norm_tags(data['tags'])
         else:
             tags = []
         
-        free_resource = FreeResource(
+        free_material = FreeMaterial(
             id=random_entity_id(),
             title=data['title'].strip(),
             description=data['description'].strip(),
@@ -76,11 +76,11 @@ class FreeResource(BaseModel):
             user_id=user_id
         )
 
-        return ('', free_resource)
+        return ('', free_material)
 
     @staticmethod
-    def from_dict_static(data: dict) -> 'FreeResource':
-        return FreeResource(
+    def from_dict_static(data: dict) -> 'FreeMaterial':
+        return FreeMaterial(
             id=data['id'],
             title=data['title'],
             description=data['description'],
@@ -103,7 +103,7 @@ class FreeResource(BaseModel):
             'user_id': self.user_id
         }
     
-    def from_dict(self, data: dict) -> 'FreeResource':
+    def from_dict(self, data: dict) -> 'FreeMaterial':
         return self.from_dict_static(data)
     
     def to_public_dict(self) -> dict:
@@ -123,7 +123,7 @@ class FreeResource(BaseModel):
             updated_fields['external_url'] = self.external_url
 
         if self.data_contains_valid_tags(data):
-            self.tags = FreeResource.norm_tags(data['tags'])
+            self.tags = FreeMaterial.norm_tags(data['tags'])
 
             updated_fields['tags'] = self.tags
 

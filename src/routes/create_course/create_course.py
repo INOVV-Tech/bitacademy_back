@@ -1,13 +1,13 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
+from src.shared.helpers.external_interfaces.http_codes import Created, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.free_resource import FreeResource
+from src.shared.domain.entities.course import Course
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
@@ -16,16 +16,16 @@ class Controller:
     def execute(request: IRequest) -> IResponse:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
-            
+
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(request.data)
+            response = Usecase().execute(requester_user, request.data)
 
             if 'error' in response:
                 return BadRequest(response['error'])
             
-            return OK(body=response)
+            return Created(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except:
@@ -35,16 +35,34 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(free_resource_repo=True)
+        self.repository = Repository(course_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
-        if not FreeResource.data_contains_valid_id(request_data):
-            return { 'error': 'Identificador de material inválido' }
+    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
+        if 'course' not in request_data \
+            or not isinstance(request_data['course'], dict):
+            return { 'error': 'Campo "course" não foi encontrado' }
+
+        (error, course) = Course.from_request_data(request_data['course'], requester_user.user_id)
+
+        if error != '':
+            return { 'error': error }
         
-        free_resource = self.repository.free_resource_repo.delete(request_data['id'])
-    
+        s3_datasource = self.repository.get_s3_datasource()
+
+        upload_cover_resp = course.cover_img.store_in_s3(s3_datasource)
+
+        if 'error' in upload_cover_resp:
+            return upload_cover_resp
+        
+        upload_card_resp = course.card_img.store_in_s3(s3_datasource)
+
+        if 'error' in upload_card_resp:
+            return upload_card_resp
+        
+        self.repository.course_repo.create(course)
+
         return {
-            'free_resource': free_resource.to_public_dict() if free_resource is not None else None
+            'course': course.to_public_dict()
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

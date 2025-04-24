@@ -92,6 +92,13 @@ def is_valid_getall_object(data: dict) -> bool:
             return False
     else:
         data['last_evaluated_key'] = ''
+
+    if 'sort_order' in data:
+        if not isinstance(data['sort_order'], str) \
+            or data['sort_order'] not in [ 'asc', 'desc' ]:
+            return False
+    else:
+        data['sort_order'] = 'desc'
     
     return True
 

@@ -7,7 +7,10 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.bit_class import BitClass
+from src.shared.domain.enums.vip_level import VIP_LEVEL
+from src.shared.domain.entities.course import Course
+
+from src.shared.utils.entity import is_valid_getall_object
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
 
@@ -35,30 +38,33 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(bit_class_repo=True)
+        self.repository = Repository(course_repo=True)
 
     def execute(self, request_data: dict) -> dict:
-        if BitClass.data_contains_valid_id(request_data):
-            return self.query_with_id(request_data)
+        if not is_valid_getall_object(request_data):
+            return { 'error': 'Filtro de consulta inválido' }
 
-        if BitClass.data_contains_valid_title(request_data):
-            return self.query_with_title(request_data)
+        tags = []
+        
+        if Course.data_contains_valid_tags(request_data):
+            tags = Course.norm_tags(request_data['tags'])
+        
+        vip_level = None
 
-        return { 'error': 'Nenhum identificador encontrado' }
-    
-    def query_with_id(self, request_data: dict) -> dict:
-        bit_class = self.repository.bit_class_repo.get_one(request_data['id'])
+        if Course.data_contains_valid_vip_level(request_data):
+            vip_level = VIP_LEVEL(request_data['vip_level'])
 
-        return {
-            'bit_class': bit_class.to_public_dict() if bit_class is not None else None
-        }
-    
-    def query_with_title(self, request_data: dict) -> dict:
-        bit_class = self.repository.bit_class_repo.get_one_by_title(request_data['title'])
+        db_data = self.repository.course_repo.get_all(
+            tags=tags,
+            vip_level=vip_level,
+            limit=request_data['limit'],
+            last_evaluated_key=request_data['last_evaluated_key'],
+            sort_order=request_data['sort_order']
+        )
 
-        return {
-            'bit_class': bit_class.to_public_dict() if bit_class is not None else None
-        }
+        db_data['courses'] = [ x.to_public_dict() for x in db_data['courses'] ]
+
+        return db_data
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)
