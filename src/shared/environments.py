@@ -17,7 +17,6 @@ class Environments:
     user_pool_arn: str = os.environ.get('USER_POOL_ARN', '')
     app_client_id: str = os.environ.get('APP_CLIENT_ID', '')
     bucket_name: str = os.environ.get('BUCKET_NAME', '')
-    api_base_url: str = os.environ.get('API_BASE_URL', 'http://127.0.0.1:3000')
     dynamo_table_name: str = os.environ.get('DYNAMO_TABLE_NAME', '')
 
     persist_local: str = int(os.environ.get('PERSIST_LOCAL', '0')) == 1
@@ -34,7 +33,6 @@ class Environments:
         Environments.user_pool_arn = os.environ.get('USER_POOL_ARN', '')
         Environments.app_client_id = os.environ.get('APP_CLIENT_ID', '')
         Environments.bucket_name = os.environ.get('BUCKET_NAME', '')
-        Environments.api_base_url = os.environ.get('API_BASE_URL', 'http://127.0.0.1:3000')
         Environments.dynamo_table_name = os.environ.get('DYNAMO_TABLE_NAME', '')
 
         Environments.persist_local = int(os.environ.get('PERSIST_LOCAL', '0')) == 1

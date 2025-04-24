@@ -103,7 +103,7 @@ def is_valid_uuid(data: dict, field_key: str, version: int = 4) -> bool:
     except:
         return False
 
-def is_valid_entity_base64_string(data: dict, field_key: str, max_length: int = 2200000) -> bool:
+def is_valid_entity_base64_string(data: dict, field_key: str, max_length: int = 2900000) -> bool:
     if not is_valid_entity_string(data, field_key, min_length=4, max_length=max_length):
         return False
     

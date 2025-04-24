@@ -2,7 +2,6 @@ import re
 import hashlib
 
 from src.shared.utils.time import now_timestamp
-from src.shared.utils.entity import random_entity_id
 
 from src.shared.infra.external.s3_datasource import S3Datasource
 

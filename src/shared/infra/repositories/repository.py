@@ -41,15 +41,15 @@ class Repository:
                 home_coins_repo,
                 news_repo
             )
-    
-    def _initialize_mock_repositories(self):
-        pass
 
     def get_s3_datasource(self) -> S3Datasource:
         return S3Datasource(
             bucket_name=Environments.bucket_name,
             region=Environments.region
         )
+    
+    def _initialize_mock_repositories(self):
+        pass
         
     def _initialize_database_repositories(self, free_resource_repo: bool, bit_class_repo: bool, \
         home_coins_repo: bool, news_repo: bool):
