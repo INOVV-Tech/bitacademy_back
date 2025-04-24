@@ -46,7 +46,7 @@ class Tool(BaseModel):
     @staticmethod
     def from_request_data(data: dict, user_id: str) -> 'tuple[str, Tool | None]':
         if not is_valid_entity_string(data, 'title', min_length=2, max_length=512):
-            return ('Nome inválido', None)
+            return ('Título inválido', None)
 
         if not is_valid_entity_string(data, 'description', min_length=2, max_length=2048):
             return ('Descrição inválida', None)

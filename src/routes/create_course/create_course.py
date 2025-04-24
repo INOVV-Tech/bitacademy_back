@@ -8,6 +8,7 @@ from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorize
 
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.entities.course import Course
+from src.shared.domain.entities.tag import Tag
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
@@ -35,7 +36,10 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(course_repo=True)
+        self.repository = Repository(
+            course_repo=True,
+            tag_repo=True
+        )
 
     def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
         if 'course' not in request_data \
@@ -60,6 +64,12 @@ class Usecase:
             return upload_card_resp
         
         self.repository.course_repo.create(course)
+
+        tags = Tag.from_string_list(course.tags)
+
+        if len(tags) > 0:
+            for tag in tags:
+                self.repository.tag_repo.create(tag)
 
         return {
             'course': course.to_public_dict()

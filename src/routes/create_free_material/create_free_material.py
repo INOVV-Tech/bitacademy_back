@@ -8,6 +8,7 @@ from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorize
 
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.entities.free_material import FreeMaterial
+from src.shared.domain.entities.tag import Tag
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
@@ -35,7 +36,10 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(free_material_repo=True)
+        self.repository = Repository(
+            free_material_repo=True,
+            tag_repo=True
+        )
 
     def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
         if 'free_material' not in request_data \
@@ -55,6 +59,12 @@ class Usecase:
             return upload_resp
         
         self.repository.free_material_repo.create(free_material)
+
+        tags = Tag.from_string_list(free_material.tags)
+
+        if len(tags) > 0:
+            for tag in tags:
+                self.repository.tag_repo.create(tag)
 
         return {
             'free_material': free_material.to_public_dict()

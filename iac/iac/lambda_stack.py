@@ -216,6 +216,16 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        ### TAG ###
+
+        self.get_all_tags = self.create_lambda_api_gateway_integration(
+            module_name='get_all_tags',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -243,7 +253,9 @@ class LambdaStack(Construct):
             self.get_all_tools,
             self.get_one_tool,
             self.update_tool,
-            self.delete_tool
+            self.delete_tool,
+
+            self.get_all_tags
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -271,5 +283,7 @@ class LambdaStack(Construct):
             self.get_all_tools,
             self.get_one_tool,
             self.update_tool,
-            self.delete_tool
+            self.delete_tool,
+
+            self.get_all_tags
         ]

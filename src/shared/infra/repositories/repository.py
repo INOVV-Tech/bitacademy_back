@@ -10,6 +10,7 @@ from src.shared.domain.repositories.course_repository_interface import ICourseRe
 from src.shared.domain.repositories.home_coins_repository_interface import IHomeCoinsRepository
 from src.shared.domain.repositories.news_repository_interface import INewsRepository
 from src.shared.domain.repositories.tool_repository_interface import IToolRepository
+from src.shared.domain.repositories.tag_repository_interface import ITagRepository
 
 ### REPOSITORIES ###
 
@@ -18,6 +19,7 @@ from src.shared.infra.repositories.database.course_repository import CourseRepos
 from src.shared.infra.repositories.database.home_coins_repository import HomeCoinsRepositoryDynamo
 from src.shared.infra.repositories.database.news_repository import NewsRepositoryDynamo
 from src.shared.infra.repositories.database.tool_repository import ToolRepositoryDynamo
+from src.shared.infra.repositories.database.tag_repository import TagRepositoryDynamo
 
 class Repository:
     free_material_repo: IFreeMaterialRepository
@@ -25,6 +27,7 @@ class Repository:
     home_coins_repo: IHomeCoinsRepository
     news_repo: INewsRepository
     tool_repo: IToolRepository
+    tag_repo: ITagRepository
 
     def __init__(
         self,
@@ -32,7 +35,8 @@ class Repository:
         course_repo: bool = False,
         home_coins_repo: bool= False,
         news_repo: bool = False,
-        tool_repo: bool = False
+        tool_repo: bool = False,
+        tag_repo: bool = False
     ):
         self.session = None
 
@@ -44,7 +48,8 @@ class Repository:
                 course_repo,
                 home_coins_repo,
                 news_repo,
-                tool_repo
+                tool_repo,
+                tag_repo
             )
 
     def get_s3_datasource(self) -> S3Datasource:
@@ -57,7 +62,7 @@ class Repository:
         pass
         
     def _initialize_database_repositories(self, free_material_repo: bool, course_repo: bool, \
-        home_coins_repo: bool, news_repo: bool, tool_repo: bool):
+        home_coins_repo: bool, news_repo: bool, tool_repo: bool, tag_repo: bool):
         dynamo = DynamoDatasource(
             dynamo_table_name=Environments.dynamo_table_name,
             region=Environments.region,
@@ -78,3 +83,6 @@ class Repository:
 
         if tool_repo:
             self.tool_repo = ToolRepositoryDynamo(dynamo)
+
+        if tag_repo:
+            self.tag_repo = TagRepositoryDynamo(dynamo)

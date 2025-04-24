@@ -1,16 +1,17 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import Created, InternalServerError, BadRequest
+from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.news import News
 from src.shared.domain.entities.tag import Tag
 
-ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
+from src.shared.utils.entity import is_valid_getall_object
+
+ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
 
 class Controller:
     @staticmethod
@@ -21,12 +22,12 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user, request.data)
+            response = Usecase().execute(request.data)
 
             if 'error' in response:
                 return BadRequest(response['error'])
             
-            return Created(body=response)
+            return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except:
@@ -36,44 +37,27 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(
-            news_repo=True,
-            tag_repo=True
+        self.repository = Repository(tag_repo=True)
+
+    def execute(self, request_data: dict) -> dict:
+        if not is_valid_getall_object(request_data):
+            return { 'error': 'Filtro de consulta inválido' }
+        
+        title_contains = ''
+
+        if Tag.data_contains_valid_title(request_data):
+            title_contains = Tag.norm_title(request_data['title'])
+
+        db_data = self.repository.tag_repo.get_all(
+            title_contains=title_contains,
+            limit=request_data['limit'],
+            last_evaluated_key=request_data['last_evaluated_key'],
+            sort_order=request_data['sort_order']
         )
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if 'news' not in request_data \
-            or not isinstance(request_data['news'], dict):
-            return { 'error': 'Campo "news" não foi encontrado' }
+        db_data['tags'] = [ x.to_public_dict() for x in db_data['tags'] ]
 
-        (error, news) = News.from_request_data(request_data['news'], requester_user.user_id)
-
-        if error != '':
-            return { 'error': error }
-        
-        s3_datasource = self.repository.get_s3_datasource()
-
-        upload_cover_resp = news.cover_img.store_in_s3(s3_datasource)
-
-        if 'error' in upload_cover_resp:
-            return upload_cover_resp
-        
-        upload_card_resp = news.card_img.store_in_s3(s3_datasource)
-
-        if 'error' in upload_card_resp:
-            return upload_card_resp
-        
-        self.repository.news_repo.create(news)
-
-        tags = Tag.from_string_list(news.tags)
-
-        if len(tags) > 0:
-            for tag in tags:
-                self.repository.tag_repo.create(tag)
-
-        return {
-            'news': news.to_public_dict()
-        }
+        return db_data
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)
