@@ -61,7 +61,7 @@ class CourseRepositoryDynamo(ICourseRepository):
         vip_filter_expression = None
 
         if vip_level is not None:
-            vip_filter_expression = Attr('vip_level').eq(vip_level.value)
+            vip_filter_expression = Attr('vip_level').gte(vip_level.value)
 
         filter_expression = None
 
