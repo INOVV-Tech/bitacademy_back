@@ -37,7 +37,7 @@ class Usecase:
 
     def __init__(self):
         self.repository = Repository(signal_repo=True)
-
+    
     def execute(self, request_data: dict) -> dict:
         if 'signal' not in request_data \
             or not isinstance(request_data['signal'], dict):

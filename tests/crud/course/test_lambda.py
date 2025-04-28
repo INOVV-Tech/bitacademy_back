@@ -57,7 +57,7 @@ class Test_CourseLambda:
     @pytest.mark.skip(reason='Done')
     def test_lambda_get_all(self):
         body = self.get_body()
-
+        
         body['limit'] = 10
         body['last_evaluated_key'] = ''
         body['sort_order'] = 'desc'

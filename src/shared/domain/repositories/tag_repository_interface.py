@@ -8,6 +8,6 @@ class ITagRepository(ABC):
         pass
     
     @abstractmethod
-    def get_all(self, title_contains: str = '', limit: int = 10, last_evaluated_key: str = '', \
+    def get_all(self, title: str = '', limit: int = 10, last_evaluated_key: str = '', \
         sort_order: str = 'desc') -> dict:
         pass

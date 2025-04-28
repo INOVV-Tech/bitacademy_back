@@ -115,7 +115,6 @@ class SignalRepositoryDynamo(ISignalRepository):
 
         if len(filter_expressions) > 0:
             for f_exp in filter_expressions:
-
                 if filter_expression is None:
                     filter_expression = f_exp
                 else:

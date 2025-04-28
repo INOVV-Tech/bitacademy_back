@@ -43,6 +43,11 @@ class Usecase:
     def execute(self, request_data: dict) -> dict:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
+        
+        title = ''
+
+        if Course.data_contains_valid_title(request_data):
+            title = request_data['title'].strip()
 
         tags = []
         
@@ -55,6 +60,7 @@ class Usecase:
             vip_level = VIP_LEVEL(request_data['vip_level'])
 
         db_data = self.repository.course_repo.get_all(
+            title=title,
             tags=tags,
             vip_level=vip_level,
             limit=request_data['limit'],

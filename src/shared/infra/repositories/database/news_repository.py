@@ -47,32 +47,35 @@ class NewsRepositoryDynamo(INewsRepository):
 
         return news
 
-    def get_all(self, tags: list[str] = [], vip_level: VIP_LEVEL | None = None, \
+    def get_all(self, title: str = '', tags: list[str] = [], vip_level: VIP_LEVEL | None = None, \
         limit: int = 10, last_evaluated_key: str = '', sort_order: str = 'desc') -> dict:
-        tags_filter_expression = None
+        filter_expressions = []
+
+        if title != '':
+            filter_expressions.append(Attr('title').contains(title))
 
         if len(tags) > 0:
+            tags_filter_expression = None
+
             for tag in tags:
                 if tags_filter_expression is None:
                     tags_filter_expression = Attr('tags').contains(tag)
                 else:
                     tags_filter_expression |= Attr('tags').contains(tag)
 
-        vip_filter_expression = None
+            filter_expressions.append(tags_filter_expression)
 
         if vip_level is not None:
-            vip_filter_expression = Attr('vip_level').lte(vip_level.value)
+            filter_expressions.append(Attr('vip_level').lte(vip_level.value))
 
-        filter_expression = None
+        filter_expression= None
 
-        if tags_filter_expression is not None:
-            filter_expression = tags_filter_expression
-
-        if vip_filter_expression is not None:
-            if filter_expression is None:
-                filter_expression = vip_filter_expression
-            else:
-                filter_expression &= vip_filter_expression
+        if len(filter_expressions) > 0:
+            for f_exp in filter_expressions:
+                if filter_expression is None:
+                    filter_expression = f_exp
+                else:
+                    filter_expression &= f_exp
 
         response = self.dynamo.query(
             index_name='GetAllEntities',

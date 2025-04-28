@@ -46,12 +46,12 @@ class TagRepositoryDynamo(ITagRepository):
 
         return tag
 
-    def get_all(self, title_contains: str = '', limit: int = 10, \
+    def get_all(self, title: str = '', limit: int = 10, \
         last_evaluated_key: str = '', sort_order: str = 'desc') -> dict:
         filter_expression = None
 
-        if len(title_contains) > 0:
-            filter_expression = Attr('title').contains(title_contains)
+        if title != '':
+            filter_expression = Attr('title').contains(title)
 
         response = self.dynamo.query(
             index_name='GetAllEntities',

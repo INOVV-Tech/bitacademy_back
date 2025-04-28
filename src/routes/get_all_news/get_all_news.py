@@ -44,6 +44,11 @@ class Usecase:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
         
+        title = ''
+
+        if News.data_contains_valid_title(request_data):
+            title = request_data['title'].strip()
+
         tags = []
         
         if News.data_contains_valid_tags(request_data):
@@ -55,6 +60,7 @@ class Usecase:
             vip_level = VIP_LEVEL(request_data['vip_level'])
 
         db_data = self.repository.news_repo.get_all(
+            title=title,
             tags=tags,
             vip_level=vip_level,
             limit=request_data['limit'],

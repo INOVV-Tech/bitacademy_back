@@ -42,12 +42,18 @@ class Usecase:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
         
+        title = ''
+
+        if FreeMaterial.data_contains_valid_title(request_data):
+            title = request_data['title'].strip()
+        
         tags = []
         
         if FreeMaterial.data_contains_valid_tags(request_data):
             tags = FreeMaterial.norm_tags(request_data['tags'])
 
         db_data = self.repository.free_material_repo.get_all(
+            title=title,
             tags=tags,
             limit=request_data['limit'],
             last_evaluated_key=request_data['last_evaluated_key'],

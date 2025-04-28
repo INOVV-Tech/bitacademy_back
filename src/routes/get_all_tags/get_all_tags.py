@@ -43,13 +43,13 @@ class Usecase:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
         
-        title_contains = ''
+        title = ''
 
         if Tag.data_contains_valid_title(request_data):
-            title_contains = Tag.norm_title(request_data['title'])
+            title = Tag.norm_title(request_data['title'])
 
         db_data = self.repository.tag_repo.get_all(
-            title_contains=title_contains,
+            title=title,
             limit=request_data['limit'],
             last_evaluated_key=request_data['last_evaluated_key'],
             sort_order=request_data['sort_order']
