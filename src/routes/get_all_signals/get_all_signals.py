@@ -17,8 +17,6 @@ from src.shared.domain.entities.signal import Signal
 from src.shared.utils.entity import is_valid_getall_object, \
     is_valid_entity_string_list
 
-import traceback
-
 ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
 
 class Controller:
@@ -38,9 +36,7 @@ class Controller:
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
-        except Exception as ex:
-            print('saopasposa', str(ex))
-            traceback.print_exc()
+        except:
             return InternalServerError('Erro interno de servidor')
 
 class Usecase:

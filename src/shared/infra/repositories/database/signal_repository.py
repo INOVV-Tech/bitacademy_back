@@ -69,9 +69,9 @@ class SignalRepositoryDynamo(ISignalRepository):
 
             for exchange in exchanges:
                 if exchange_filter_expression is None:
-                    exchange_filter_expression = Attr('exchange').eq(exchange)
+                    exchange_filter_expression = Attr('exchange').eq(exchange.value)
                 else:
-                    exchange_filter_expression |= Attr('exchange').eq(exchange)
+                    exchange_filter_expression |= Attr('exchange').eq(exchange.value)
 
             filter_expressions.append(exchange_filter_expression)
 
@@ -80,9 +80,9 @@ class SignalRepositoryDynamo(ISignalRepository):
 
             for market in markets:
                 if market_filter_expression is None:
-                    market_filter_expression = Attr('market').eq(market)
+                    market_filter_expression = Attr('market').eq(market.value)
                 else:
-                    market_filter_expression |= Attr('market').eq(market)
+                    market_filter_expression |= Attr('market').eq(market.value)
 
             filter_expressions.append(market_filter_expression)
 
@@ -91,9 +91,9 @@ class SignalRepositoryDynamo(ISignalRepository):
 
             for trade_side in trade_sides:
                 if trade_side_filter_expression is None:
-                    trade_side_filter_expression = Attr('trade_side').eq(trade_side)
+                    trade_side_filter_expression = Attr('trade_side').eq(trade_side.value)
                 else:
-                    trade_side_filter_expression |= Attr('trade_side').eq(trade_side)
+                    trade_side_filter_expression |= Attr('trade_side').eq(trade_side.value)
 
             filter_expressions.append(trade_side_filter_expression)
 
@@ -102,14 +102,14 @@ class SignalRepositoryDynamo(ISignalRepository):
 
             for status in signal_status:
                 if status_filter_expression is None:
-                    status_filter_expression = Attr('status').eq(status)
+                    status_filter_expression = Attr('status').eq(status.value)
                 else:
-                    status_filter_expression |= Attr('status').eq(status)
+                    status_filter_expression |= Attr('status').eq(status.value)
 
             filter_expressions.append(status_filter_expression)
 
         if vip_level is not None:
-            filter_expressions.append(Attr('vip_level').gte(vip_level.value))
+            filter_expressions.append(Attr('vip_level').lte(vip_level.value))
 
         filter_expression = None
 
