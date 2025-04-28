@@ -4,7 +4,7 @@ import base64
 from enum import Enum
 from urllib.parse import urlparse
 
-from utils.decimal import Decimal
+from src.shared.utils.decimal import Decimal
 
 def random_entity_id() -> str:
     return str(uuid.uuid4())
@@ -149,7 +149,7 @@ def is_valid_entity_int_enum(data: dict, field_key: str, enum: Enum) -> bool:
     
     return data[field_key] in [ x for x in enum ]
 
-def is_valid_entity_decimal_percentage(data: dict, field_key: str) -> bool:
+def is_valid_entity_decimal_percentage(data: dict, field_key: str, max_value: str = '1') -> bool:
     if field_key not in data:
         return False
     
@@ -159,7 +159,7 @@ def is_valid_entity_decimal_percentage(data: dict, field_key: str) -> bool:
     try:
         value = Decimal(data[field_key])
 
-        return value >= Decimal('0') and value <= Decimal('1')
+        return value >= Decimal('0') and value <= Decimal(max_value)
     except:
         pass
 

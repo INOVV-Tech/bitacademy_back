@@ -23,6 +23,7 @@ class Signal(BaseModel):
     estimated_pnl: Decimal
     status: SIGNAL_STATUS
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
+    updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
     price_entry: Decimal
     price_exit: Decimal
     user_id: str
@@ -57,11 +58,15 @@ class Signal(BaseModel):
     
     @staticmethod
     def data_contains_valid_estimated_pnl(data: dict) -> bool:
-        return is_valid_entity_decimal_percentage(data, 'estimated_pnl')
+        return is_valid_entity_decimal_percentage(data, 'estimated_pnl', max_value='100')
     
     @staticmethod
     def data_contains_valid_status(data: dict) -> bool:
         return is_valid_entity_string_enum(data, 'status', SIGNAL_STATUS)
+    
+    @staticmethod
+    def norm_asset(asset: str) -> str:
+        return asset.strip().lower()
 
     @staticmethod
     def from_request_data(data: dict, user_id: str) -> 'tuple[str, Signal | None]':
@@ -85,18 +90,22 @@ class Signal(BaseModel):
         
         if not Signal.data_contains_valid_estimated_pnl(data):
             return ('PnL estimado inválido [0, 1]', None)
+        
+        base_asset = Signal.norm_asset(data['base_asset'])
+        quote_asset = Signal.norm_asset(data['quote_asset'])
 
         signal = Signal(
             id=random_entity_id(),
             exchange=EXCHANGE[data['exchange']],
             market=MARKET[data['market']],
-            base_asset=data['base_asset'],
-            quote_asset=data['quote_asset'],
+            base_asset=base_asset,
+            quote_asset=quote_asset,
             trade_side=TRADE_SIDE[data['trade_side']],
             vip_level=VIP_LEVEL(data['vip_level']),
             estimated_pnl=Decimal(data['estimated_pnl']),
-            status=SIGNAL_STATUS[data['status']],
+            status=SIGNAL_STATUS.ENTRY_WAIT,
             created_at=now_timestamp(),
+            updated_at=now_timestamp(),
             price_entry=Decimal('0'),
             price_exit=Decimal('0'),
             user_id=user_id
@@ -118,8 +127,9 @@ class Signal(BaseModel):
             trade_side=TRADE_SIDE[data['trade_side']],
             vip_level=VIP_LEVEL(data['vip_level']),
             estimated_pnl=Decimal(data['estimated_pnl']),
-            status=SIGNAL_STATUS[data['signal_status']],
+            status=SIGNAL_STATUS[data['status']],
             created_at=int(data['created_at']),
+            updated_at=int(data['updated_at']),
             price_entry=Decimal(data['price_entry']),
             price_exit=Decimal(data['price_exit']),
             user_id=data['user_id']
@@ -137,6 +147,7 @@ class Signal(BaseModel):
             'estimated_pnl': str(self.estimated_pnl),
             'status': self.status.value,
             'created_at': self.created_at,
+            'updated_at': self.updated_at,
             'price_entry': str(self.price_entry),
             'price_exit': str(self.price_exit),
             'user_id': self.user_id
@@ -162,12 +173,12 @@ class Signal(BaseModel):
             updated_fields['market'] = self.market
         
         if Signal.data_contains_valid_base_asset(data):
-            self.base_asset = data['base_asset']
+            self.base_asset = Signal.norm_asset(data['base_asset'])
 
             updated_fields['base_asset'] = self.base_asset
         
         if Signal.data_contains_valid_quote_asset(data):
-            self.quote_asset = data['quote_asset']
+            self.quote_asset = Signal.norm_asset(data['quote_asset'])
 
             updated_fields['quote_asset'] = self.quote_asset
         
@@ -185,5 +196,8 @@ class Signal(BaseModel):
             self.estimated_pnl = Decimal(data['estimated_pnl'])
 
             updated_fields['estimated_pnl'] = self.estimated_pnl
+
+        if len(updated_fields.keys()) > 0:
+            self.updated_at = now_timestamp()
 
         return updated_fields

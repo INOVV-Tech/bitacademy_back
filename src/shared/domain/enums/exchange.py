@@ -5,3 +5,7 @@ class EXCHANGE(Enum):
     # BYBIT = 'BYBIT'
     # BITGET = 'BITGET'
     # BINGX = 'BINGX'
+
+    @staticmethod
+    def length() -> int:
+        return len(EXCHANGE)

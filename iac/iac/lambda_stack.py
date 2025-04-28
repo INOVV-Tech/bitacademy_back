@@ -226,6 +226,48 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        ### SIGNAL ###
+
+        self.create_signal = self.create_lambda_api_gateway_integration(
+            module_name='create_signal',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_all_signals = self.create_lambda_api_gateway_integration(
+            module_name='get_all_signals',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_one_signal = self.create_lambda_api_gateway_integration(
+            module_name='get_one_signal',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.update_signal = self.create_lambda_api_gateway_integration(
+            module_name='update_signal',
+            method='PUT',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.delete_signal = self.create_lambda_api_gateway_integration(
+            module_name='delete_signal',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -255,7 +297,13 @@ class LambdaStack(Construct):
             self.update_tool,
             self.delete_tool,
 
-            self.get_all_tags
+            self.get_all_tags,
+
+            self.create_signal,
+            self.get_all_signals,
+            self.get_one_signal,
+            self.update_signal,
+            self.delete_signal
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -285,5 +333,11 @@ class LambdaStack(Construct):
             self.update_tool,
             self.delete_tool,
 
-            self.get_all_tags
+            self.get_all_tags,
+
+            self.create_signal,
+            self.get_all_signals,
+            self.get_one_signal,
+            self.update_signal,
+            self.delete_signal
         ]
