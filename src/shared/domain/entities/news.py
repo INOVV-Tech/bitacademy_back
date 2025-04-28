@@ -51,7 +51,7 @@ class News(BaseModel):
         if not isinstance(data['vip_level'], int):
             return False
         
-        return data['vip_level'] in [ vipl for vipl in VIP_LEVEL ]
+        return data['vip_level'] in [ x for x in VIP_LEVEL ]
     
     @staticmethod
     def norm_tags(tags: list[str]) -> list[str]:
@@ -83,7 +83,7 @@ class News(BaseModel):
             tags = []
 
         if not News.data_contains_valid_vip_level(data):
-            return ('VIP level inválido', None)
+            return ('Level de VIP inválido', None)
 
         news = News(
             id=random_entity_id(),

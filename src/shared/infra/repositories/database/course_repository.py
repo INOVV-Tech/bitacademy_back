@@ -106,7 +106,7 @@ class CourseRepositoryDynamo(ICourseRepository):
         )
         
         items = data['items']
-
+        
         return Course.from_dict_static(items[0]) if len(items) > 0 else None
 
     def update(self, course: Course) -> Course:

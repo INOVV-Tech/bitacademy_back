@@ -1,7 +1,10 @@
 import re
 import uuid
 import base64
+from enum import Enum
 from urllib.parse import urlparse
+
+from utils.decimal import Decimal
 
 def random_entity_id() -> str:
     return str(uuid.uuid4())
@@ -126,4 +129,38 @@ def is_valid_entity_base64_string(data: dict, field_key: str, max_length: int = 
     except:
         pass
     
+    return False
+
+def is_valid_entity_string_enum(data: dict, field_key: str, enum: Enum) -> bool:
+    if field_key not in data:
+        return False
+    
+    if not isinstance(data[field_key], str):
+        return False
+
+    return data[field_key] in [ x.value for x in enum ]
+
+def is_valid_entity_int_enum(data: dict, field_key: str, enum: Enum) -> bool:
+    if field_key not in data:
+        return False
+    
+    if not isinstance(data[field_key], int):
+        return False
+    
+    return data[field_key] in [ x for x in enum ]
+
+def is_valid_entity_decimal_percentage(data: dict, field_key: str) -> bool:
+    if field_key not in data:
+        return False
+    
+    if not isinstance(data[field_key], str):
+        return False
+    
+    try:
+        value = Decimal(data[field_key])
+
+        return value >= Decimal('0') and value <= Decimal('1')
+    except:
+        pass
+
     return False
