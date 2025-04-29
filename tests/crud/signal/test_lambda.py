@@ -31,7 +31,7 @@ class Test_SignalLambda:
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
         request = HttpRequest(body=body, headers=headers, query_params=query_params)
-
+        
         return controller.execute(request)
 
     @pytest.mark.skip(reason='Done')

@@ -39,8 +39,6 @@ class Test_HomeCoinsLambda:
 
     @pytest.mark.skip(reason='Done')
     def test_cronjob(self):
-        body = {}
-
         controller = UpdateController()
 
         response = self.call_cronjob(controller)

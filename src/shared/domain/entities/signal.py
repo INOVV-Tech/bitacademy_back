@@ -410,3 +410,9 @@ class Signal(BaseModel):
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 
         return updated_fields
+    
+    def get_binance_symbol(self) -> str:
+        return f'{self.base_asset.upper()}{self.quote_asset.upper()}'
+    
+    def get_symbol(self) -> str:
+        return self.get_binance_symbol()
