@@ -35,7 +35,7 @@ class Test_SignalLambda:
         return controller.execute(request)
 
     @pytest.mark.skip(reason='Done')
-    def test_lambda_create(self):   
+    def test_lambda_create(self):
         body = self.get_body()
 
         signals = [
