@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.shared.domain.enums.exchange import EXCHANGE
 from src.shared.domain.enums.market import MARKET
@@ -13,7 +13,64 @@ from src.shared.utils.entity import random_entity_id, is_valid_uuid, \
     is_valid_entity_string_enum, is_valid_entity_int_enum, is_valid_entity_string, \
     is_valid_entity_decimal
 
+class PriceSnapshot:
+    @staticmethod
+    def from_dict_static(data: dict) -> 'PriceSnapshot':
+        return PriceSnapshot(
+            price=Decimal(data['price']) if ('price' in data and data['price'] is not None) else None,
+            timestamp=data['timestamp'] if 'timestamp' in data else None
+        )
+
+    def __init__(self, price: Decimal | None = None, timestamp: int | None = None):
+        self.price = price
+        self.timestamp = timestamp
+
+    def to_dict(self) -> dict:
+        return {
+            'price': str(self.price) if self.price is not None else None,
+            'timestamp': self.timestamp
+        }
+
+class StatusDetails:
+    @staticmethod
+    def from_dict_static(data: dict) -> 'StatusDetails':
+        def decode_price_snapshot(field_key: str) -> PriceSnapshot | None:
+            return PriceSnapshot.from_dict_static(data[field_key]) if (field_key in data and data[field_key] is not None) else None
+
+        return StatusDetails(
+            entry_snapshot=decode_price_snapshot('entry_snapshot'),
+            stop_snapshot=decode_price_snapshot('stop_snapshot'),
+            hit_target_one_snapshot=decode_price_snapshot('hit_target_one_snapshot'),
+            hit_target_two_snapshot=decode_price_snapshot('hit_target_two_snapshot'),
+            hit_target_three_snapshot=decode_price_snapshot('hit_target_three_snapshot')
+        )
+
+    def __init__(self,
+        entry_snapshot: PriceSnapshot | None = None,
+        stop_snapshot: PriceSnapshot | None = None,
+        hit_target_one_snapshot: PriceSnapshot | None = None,
+        hit_target_two_snapshot: PriceSnapshot | None = None,
+        hit_target_three_snapshot: PriceSnapshot | None = None,
+    ):
+        self.entry_snapshot = entry_snapshot
+        self.stop_snapshot = stop_snapshot
+
+        self.hit_target_one_snapshot = hit_target_one_snapshot
+        self.hit_target_two_snapshot = hit_target_two_snapshot
+        self.hit_target_three_snapshot = hit_target_three_snapshot
+
+    def to_dict(self) -> dict:
+        return {
+            'entry_snapshot': self.entry_snapshot.to_dict() if self.entry_snapshot is not None else None,
+            'stop_snapshot': self.stop_snapshot.to_dict() if self.stop_snapshot is not None else None,
+            'hit_target_one_snapshot': self.hit_target_one_snapshot.to_dict() if self.hit_target_one_snapshot is not None else None,
+            'hit_target_two_snapshot': self.hit_target_two_snapshot.to_dict() if self.hit_target_two_snapshot is not None else None,
+            'hit_target_three_snapshot': self.hit_target_three_snapshot.to_dict() if self.hit_target_three_snapshot is not None else None,
+        }
+
 class Signal(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     id: str
     user_id: str
     title: str
@@ -36,6 +93,8 @@ class Signal(BaseModel):
     price_target_one: Decimal
     price_target_two: Decimal
     price_target_three: Decimal
+
+    status_details: StatusDetails
 
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
@@ -180,6 +239,8 @@ class Signal(BaseModel):
             price_target_two=Decimal(data['price_target_two']),
             price_target_three=Decimal(data['price_target_three']),
 
+            status_details=StatusDetails(),
+
             created_at=now_timestamp(),
             updated_at=now_timestamp()
         )
@@ -214,6 +275,8 @@ class Signal(BaseModel):
             price_target_one=Decimal(data['price_target_one']),
             price_target_two=Decimal(data['price_target_two']),
             price_target_three=Decimal(data['price_target_three']),
+
+            status_details=StatusDetails.from_dict_static(data['status_details']),
             
             created_at=int(data['created_at']),
             updated_at=int(data['updated_at']),
@@ -243,6 +306,8 @@ class Signal(BaseModel):
             'price_target_one': str(self.price_target_one),
             'price_target_two': str(self.price_target_two),
             'price_target_three': str(self.price_target_three),
+            
+            'status_details': self.status_details.to_dict(),
 
             'created_at': self.created_at,
             'updated_at': self.updated_at,            
