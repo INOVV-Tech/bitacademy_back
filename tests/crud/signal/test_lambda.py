@@ -31,7 +31,7 @@ class Test_SignalLambda:
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
         request = HttpRequest(body=body, headers=headers, query_params=query_params)
-        
+
         return controller.execute(request)
 
     @pytest.mark.skip(reason='Done')
@@ -51,12 +51,12 @@ class Test_SignalLambda:
                 'estimated_pnl': '1.5',
                 'stake_relative': '0.02',
                 'margin_multiplier': '1',
-                'price_entry_min': '1',
-                'price_entry_max': '2',
-                'price_stop': '0.25',
-                'price_target_one': '3',
-                'price_target_two': '4',
-                'price_target_three': '5',
+                'price_entry_min': '93000',
+                'price_entry_max': '96000',
+                'price_stop': '91000',
+                'price_target_one': '97000',
+                'price_target_two': '98000',
+                'price_target_three': '100000',
             },
             {
                 'title': 'Vitalikcoin',
