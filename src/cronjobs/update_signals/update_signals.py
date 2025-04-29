@@ -9,7 +9,6 @@ from src.shared.domain.enums.signal_status import SIGNAL_STATUS
 from src.shared.domain.entities.signal import Signal, PriceSnapshot
 
 from src.shared.utils.decimal import Decimal
-from src.shared.utils.time import now_timestamp
 
 class Controller:
     @staticmethod
@@ -170,7 +169,30 @@ class Usecase:
         return signals_updated
     
     def update_binance_futures_coins_signals(self, market_data: dict) -> int:
-        return 0
+        market_symbols = market_data['symbols']
+
+        if len(market_symbols) == 0:
+            return 0
+        
+        futures_tickers_resp = self.binance_api.get_futures_coin_ticker_24hr()
+
+        if 'error' in futures_tickers_resp:
+            return 0
+        
+        futures_ticker_by_symbol = {}
+
+        for ticker_data in futures_tickers_resp['tickers']:
+            futures_ticker_by_symbol[ticker_data['symbol']] = ticker_data
+        
+        long_signals = market_data['signals'][TRADE_SIDE.LONG.value]
+        short_signals = market_data['signals'][TRADE_SIDE.SHORT.value]
+
+        signals_updated = 0
+
+        signals_updated += self.update_binance_long_signals(long_signals, futures_ticker_by_symbol)
+        signals_updated += self.update_binance_short_signals(short_signals, futures_ticker_by_symbol)
+
+        return signals_updated
     
     def update_binance_long_signals(self, signals: list[Signal], tickers: dict) -> int:
         if len(signals) == 0:
