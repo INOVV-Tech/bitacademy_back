@@ -51,6 +51,12 @@ class Test_SignalLambda:
                 'estimated_pnl': '1.5',
                 'stake_relative': '0.02',
                 'margin_multiplier': '1',
+                'price_entry_min': '1',
+                'price_entry_max': '2',
+                'price_stop': '0.25',
+                'price_target_one': '3',
+                'price_target_two': '4',
+                'price_target_three': '5',
             },
             {
                 'title': 'Vitalikcoin',
@@ -64,6 +70,12 @@ class Test_SignalLambda:
                 'estimated_pnl': '1.5',
                 'stake_relative': '0.09',
                 'margin_multiplier': '7',
+                'price_entry_min': '3',
+                'price_entry_max': '2',
+                'price_stop': '4',
+                'price_target_one': '1',
+                'price_target_two': '0.5',
+                'price_target_three': '0.25',
             }
         ]
 

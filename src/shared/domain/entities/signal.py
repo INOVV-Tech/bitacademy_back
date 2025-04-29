@@ -30,6 +30,12 @@ class Signal(BaseModel):
     estimated_pnl: Decimal
     stake_relative: Decimal
     margin_multiplier: Decimal
+    price_entry_min: Decimal
+    price_entry_max: Decimal
+    price_stop: Decimal
+    price_target_one: Decimal
+    price_target_two: Decimal
+    price_target_three: Decimal
 
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
@@ -87,6 +93,10 @@ class Signal(BaseModel):
         return is_valid_entity_decimal(data, 'margin_multiplier', min_value='1', max_value='1000')
     
     @staticmethod
+    def data_contains_valid_price(data: dict, price_key: str) -> bool:
+        return is_valid_entity_decimal(data, price_key, min_value='0', max_value='1000000000')
+    
+    @staticmethod
     def norm_asset(asset: str) -> str:
         return asset.strip().lower()
 
@@ -124,7 +134,25 @@ class Signal(BaseModel):
         
         if not Signal.data_contains_valid_margin_multiplier(data):
             return ('Alavancagem inválida', None)
+
+        if not Signal.data_contains_valid_price(data, 'price_entry_min'):
+            return ('Preço de entrada mínimo inválido', None)
         
+        if not Signal.data_contains_valid_price(data, 'price_entry_max'):
+            return ('Preço de entrada máximo inválido', None)
+        
+        if not Signal.data_contains_valid_price(data, 'price_stop'):
+            return ('Preço de stop-loss inválido', None)
+        
+        if not Signal.data_contains_valid_price(data, 'price_target_one'):
+            return ('Preço do primeiro alvo inválido', None)
+        
+        if not Signal.data_contains_valid_price(data, 'price_target_two'):
+            return ('Preço do segundo alvo inválido', None)
+        
+        if not Signal.data_contains_valid_price(data, 'price_target_three'):
+            return ('Preço do terceiro alvo inválido', None)
+
         base_asset = Signal.norm_asset(data['base_asset'])
         quote_asset = Signal.norm_asset(data['quote_asset'])
 
@@ -145,6 +173,12 @@ class Signal(BaseModel):
             estimated_pnl=Decimal(data['estimated_pnl']),
             stake_relative=Decimal(data['stake_relative']),
             margin_multiplier=Decimal(data['margin_multiplier']),
+            price_entry_min=Decimal(data['price_entry_min']),
+            price_entry_max=Decimal(data['price_entry_max']),
+            price_stop=Decimal(data['price_stop']),
+            price_target_one=Decimal(data['price_target_one']),
+            price_target_two=Decimal(data['price_target_two']),
+            price_target_three=Decimal(data['price_target_three']),
 
             created_at=now_timestamp(),
             updated_at=now_timestamp()
@@ -174,6 +208,12 @@ class Signal(BaseModel):
             estimated_pnl=Decimal(data['estimated_pnl']),
             stake_relative=Decimal(data['stake_relative']),
             margin_multiplier=Decimal(data['margin_multiplier']),
+            price_entry_min=Decimal(data['price_entry_min']),
+            price_entry_max=Decimal(data['price_entry_max']),
+            price_stop=Decimal(data['price_stop']),
+            price_target_one=Decimal(data['price_target_one']),
+            price_target_two=Decimal(data['price_target_two']),
+            price_target_three=Decimal(data['price_target_three']),
             
             created_at=int(data['created_at']),
             updated_at=int(data['updated_at']),
@@ -197,6 +237,12 @@ class Signal(BaseModel):
             'estimated_pnl': str(self.estimated_pnl),
             'stake_relative': str(self.stake_relative),
             'margin_multiplier': str(self.margin_multiplier),
+            'price_entry_min': str(self.price_entry_min),
+            'price_entry_max': str(self.price_entry_max),
+            'price_stop': str(self.price_stop),
+            'price_target_one': str(self.price_target_one),
+            'price_target_two': str(self.price_target_two),
+            'price_target_three': str(self.price_target_three),
 
             'created_at': self.created_at,
             'updated_at': self.updated_at,            
@@ -265,6 +311,36 @@ class Signal(BaseModel):
             self.margin_multiplier = Decimal(data['margin_multiplier'])
 
             updated_fields['margin_multiplier'] = self.margin_multiplier
+
+        if Signal.data_contains_valid_price(data, 'price_entry_min'):
+            self.price_entry_min = Decimal(data['price_entry_min'])
+
+            updated_fields['price_entry_min'] = self.price_entry_min
+
+        if Signal.data_contains_valid_price(data, 'price_entry_max'):
+            self.price_entry_max = Decimal(data['price_entry_max'])
+
+            updated_fields['price_entry_max'] = self.price_entry_max
+
+        if Signal.data_contains_valid_price(data, 'price_stop'):
+            self.price_stop = Decimal(data['price_stop'])
+
+            updated_fields['price_stop'] = self.price_stop
+
+        if Signal.data_contains_valid_price(data, 'price_target_one'):
+            self.price_target_one = Decimal(data['price_target_one'])
+
+            updated_fields['price_target_one'] = self.price_target_one
+
+        if Signal.data_contains_valid_price(data, 'price_target_two'):
+            self.price_target_two = Decimal(data['price_target_two'])
+
+            updated_fields['price_target_two'] = self.price_target_two
+        
+        if Signal.data_contains_valid_price(data, 'price_target_three'):
+            self.price_target_three = Decimal(data['price_target_three'])
+
+            updated_fields['price_target_three'] = self.price_target_three
 
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 
