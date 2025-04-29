@@ -15,6 +15,10 @@ from src.shared.utils.entity import random_entity_id, is_valid_uuid, \
 
 class PriceSnapshot:
     @staticmethod
+    def from_exchange(price: Decimal) -> 'PriceSnapshot':
+        return PriceSnapshot(price, timestamp=now_timestamp())
+
+    @staticmethod
     def from_dict_static(data: dict) -> 'PriceSnapshot':
         return PriceSnapshot(
             price=Decimal(data['price']) if ('price' in data and data['price'] is not None) else None,
@@ -412,7 +416,12 @@ class Signal(BaseModel):
         return updated_fields
     
     def get_binance_symbol(self) -> str:
-        return f'{self.base_asset.upper()}{self.quote_asset.upper()}'
+        symbol = f'{self.base_asset.upper()}{self.quote_asset.upper()}'
+
+        if self.market == MARKET.SPOT or self.market == MARKET.FUTURES_USDT:
+            return symbol
+        
+        return symbol + '_PERP'
     
     def get_symbol(self) -> str:
         return self.get_binance_symbol()
