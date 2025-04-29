@@ -54,6 +54,9 @@ class Usecase:
         
         updated_fields = course.update_from_dict(course_update_data)
 
+        if not updated_fields['any_updated']:
+            return { 'course': course.to_public_dict() }
+
         if 'cover_img' in updated_fields or 'card_img' in updated_fields:
             s3_datasource = self.repository.get_s3_datasource()
 

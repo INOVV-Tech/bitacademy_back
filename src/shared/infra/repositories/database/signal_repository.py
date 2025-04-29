@@ -9,9 +9,12 @@ from src.shared.domain.enums.market import MARKET
 from src.shared.domain.enums.trade_side import TRADE_SIDE
 from src.shared.domain.enums.signal_status import SIGNAL_STATUS
 from src.shared.domain.enums.vip_level import VIP_LEVEL
+from src.shared.domain.enums.trade_strat import TRADE_STRAT
 from src.shared.domain.entities.signal import Signal
 
 from src.shared.infra.external.key_formatters import encode_idx_pk
+
+from src.shared.utils.time import now_timestamp
 
 class SignalRepositoryDynamo(ISignalRepository):
     dynamo: DynamoDatasource
@@ -52,14 +55,19 @@ class SignalRepositoryDynamo(ISignalRepository):
         return signal
     
     def get_all(self,
+        title: str = '',
         base_asset: str = '',
         exchanges: list[EXCHANGE] = [],
         markets: list[MARKET] = [],
         trade_sides: list[TRADE_SIDE] = [],
         signal_status: list[SIGNAL_STATUS] = [],
         vip_level: VIP_LEVEL | None = None,
+        trade_strats: list[TRADE_STRAT] = [],
         limit: int = 10, last_evaluated_key: str  = '', sort_order: str = 'desc') -> dict:
         filter_expressions = []
+
+        if title != '':
+            filter_expressions.append(Attr('title').contains(title))
 
         if base_asset != '':
             filter_expressions.append(Attr('base_asset').eq(base_asset))
@@ -111,6 +119,17 @@ class SignalRepositoryDynamo(ISignalRepository):
         if vip_level is not None:
             filter_expressions.append(Attr('vip_level').lte(vip_level.value))
 
+        if len(trade_strats) > 0:
+            trade_strat_filter_expression = None
+
+            for trade_strat in trade_strats:
+                if trade_strat_filter_expression is None:
+                    trade_strat_filter_expression = Attr('trade_strat').eq(trade_strat.value)
+                else:
+                    trade_strat_filter_expression |= Attr('trade_strat').eq(trade_strat.value)
+
+            filter_expressions.append(trade_strat_filter_expression)
+
         filter_expression = None
 
         if len(filter_expressions) > 0:
@@ -143,6 +162,8 @@ class SignalRepositoryDynamo(ISignalRepository):
         return Signal.from_dict_static(data['Item']) if 'Item' in data else None
 
     def update(self, signal: Signal) -> Signal:
+        signal.updated_at = now_timestamp()
+
         item = signal.to_dict()
 
         item['PK'] = self.signal_partition_key_format(signal)

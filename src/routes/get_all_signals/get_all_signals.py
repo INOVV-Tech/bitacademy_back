@@ -12,6 +12,7 @@ from src.shared.domain.enums.market import MARKET
 from src.shared.domain.enums.trade_side import TRADE_SIDE
 from src.shared.domain.enums.signal_status import SIGNAL_STATUS
 from src.shared.domain.enums.vip_level import VIP_LEVEL
+from src.shared.domain.enums.trade_strat import TRADE_STRAT
 from src.shared.domain.entities.signal import Signal
 
 from src.shared.utils.entity import is_valid_getall_object, \
@@ -48,6 +49,11 @@ class Usecase:
     def execute(self, request_data: dict) -> dict:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
+        
+        title = ''
+
+        if Signal.data_contains_valid_title(request_data):
+            title = request_data['title'].strip()
 
         base_asset = ''
 
@@ -87,13 +93,22 @@ class Usecase:
         if Signal.data_contains_valid_vip_level(request_data):
             vip_level = VIP_LEVEL(request_data['vip_level'])
 
+        trade_strats = []
+
+        if is_valid_entity_string_list(request_data, 'trade_strats', min_length=1, max_length=TRADE_STRAT.length()):
+            for trade_strat in request_data['trade_strats']:
+                if Signal.data_contains_valid_trade_strat({ 'trade_strat': trade_strat }):
+                    trade_strats.append(TRADE_STRAT[trade_strat])
+
         db_data = self.repository.signal_repo.get_all(
+            title=title,
             base_asset=base_asset,
             exchanges=exchanges,
             markets=markets,
             trade_sides=trade_sides,
             signal_status=signal_status,
             vip_level=vip_level,
+            trade_strats=trade_strats,
             limit=request_data['limit'],
             last_evaluated_key=request_data['last_evaluated_key'],
             sort_order=request_data['sort_order']

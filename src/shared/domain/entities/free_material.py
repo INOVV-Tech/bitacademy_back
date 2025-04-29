@@ -137,4 +137,6 @@ class FreeMaterial(BaseModel):
 
             updated_fields['cover_img'] = self.cover_img
 
+        updated_fields['any_updated'] = len(updated_fields.keys()) > 0
+
         return updated_fields

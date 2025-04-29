@@ -137,4 +137,6 @@ class Tool(BaseModel):
 
             updated_fields['tags'] = self.tags
 
+        updated_fields['any_updated'] = len(updated_fields.keys()) > 0
+
         return updated_fields

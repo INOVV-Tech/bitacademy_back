@@ -10,6 +10,7 @@ from src.shared.domain.enums.market import MARKET
 from src.shared.domain.enums.trade_side import TRADE_SIDE
 from src.shared.domain.enums.signal_status import SIGNAL_STATUS
 from src.shared.domain.enums.vip_level import VIP_LEVEL
+from src.shared.domain.enums.trade_strat import TRADE_STRAT
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 
@@ -34,27 +35,35 @@ class Test_SignalLambda:
         return controller.execute(request)
 
     @pytest.mark.skip(reason='Done')
-    def test_lambda_create(self):
+    def test_lambda_create(self):   
         body = self.get_body()
 
         signals = [
             {
-                'exchange': 'BINANCE',
-                'market': 'SPOT',
+                'title': 'Bitcoio',
                 'base_asset': 'BTC',
                 'quote_asset': 'USDT',
-                'trade_side': 'LONG',
+                'exchange': EXCHANGE.BINANCE.value,
+                'market': MARKET.SPOT.value,
+                'trade_side': TRADE_SIDE.LONG.value,
                 'vip_level': VIP_LEVEL.VIP_1,
-                'estimated_pnl': '1.5'
+                'trade_strat': TRADE_STRAT.SCALPING.value,
+                'estimated_pnl': '1.5',
+                'stake_relative': '0.02',
+                'margin_multiplier': '1',
             },
             {
-                'exchange': 'BINANCE',
-                'market': 'FUTURES_USDT',
+                'title': 'Vitalikcoin',
                 'base_asset': 'ETH',
                 'quote_asset': 'USDT',
-                'trade_side': 'SHORT',
+                'exchange': EXCHANGE.BINANCE.value,
+                'market': MARKET.FUTURES_USDT.value,
+                'trade_side': TRADE_SIDE.SHORT.value,
                 'vip_level': VIP_LEVEL.FREE,
-                'estimated_pnl': '1.5'
+                'trade_strat': TRADE_STRAT.DAY_TRADING.value,
+                'estimated_pnl': '1.5',
+                'stake_relative': '0.09',
+                'margin_multiplier': '7',
             }
         ]
 
@@ -73,6 +82,7 @@ class Test_SignalLambda:
     def test_lambda_get_all(self):
         body = self.get_body()
 
+        # body['title'] = 'Bitcoio'
         body['limit'] = 10
         body['last_evaluated_key'] = ''
         body['sort_order'] = 'desc'
@@ -188,10 +198,27 @@ class Test_SignalLambda:
         assert response.status_code == 200
 
     @pytest.mark.skip(reason='Done')
+    def test_lambda_get_all_by_trade_strat(self):
+        body = self.get_body()
+
+        body['trade_strats'] = [ TRADE_STRAT.DAY_TRADING.value ]
+        body['limit'] = 10
+        body['last_evaluated_key'] = ''
+        body['sort_order'] = 'desc'
+
+        controller = GetAllController()
+
+        response = self.call_lambda(controller, body)
+
+        self.print_data(response.data)
+
+        assert response.status_code == 200
+
+    @pytest.mark.skip(reason='Done')
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = '0a22993c-600b-4d57-afcb-49207e2286df'
+        body['id'] = 'f488e153-35dd-49d5-a278-272b40a4541e'
 
         controller = GetOneController()
 
@@ -206,13 +233,15 @@ class Test_SignalLambda:
         body = self.get_body()
 
         body['signal'] = {
-            'id': 'e457e63d-3306-43a4-afd4-b6a96662a88d',
-            'market': 'SPOT',
+            'id': 'f488e153-35dd-49d5-a278-272b40a4541e',
             'base_asset': 'BTC',
             'quote_asset': 'USDT',
+            'market': 'SPOT',
             'trade_side': 'LONG',
             'vip_level': VIP_LEVEL.VIP_1,
-            'estimated_pnl': '2'
+            'estimated_pnl': '2',
+            'margin_multiplier': '10',
+            'stake_relative': '0.05'
         }
         
         controller = UpdateController()

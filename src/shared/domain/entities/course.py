@@ -191,4 +191,6 @@ class Course(BaseModel):
 
             updated_fields['card_img'] = self.card_img
 
+        updated_fields['any_updated'] = len(updated_fields.keys()) > 0
+
         return updated_fields

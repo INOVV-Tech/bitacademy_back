@@ -149,7 +149,7 @@ def is_valid_entity_int_enum(data: dict, field_key: str, enum: Enum) -> bool:
     
     return data[field_key] in [ x for x in enum ]
 
-def is_valid_entity_decimal_percentage(data: dict, field_key: str, max_value: str = '1') -> bool:
+def is_valid_entity_decimal(data: dict, field_key: str, min_value = '0', max_value: str = '1') -> bool:
     if field_key not in data:
         return False
     
@@ -159,7 +159,7 @@ def is_valid_entity_decimal_percentage(data: dict, field_key: str, max_value: st
     try:
         value = Decimal(data[field_key])
 
-        return value >= Decimal('0') and value <= Decimal(max_value)
+        return value >= Decimal(min_value) and value <= Decimal(max_value)
     except:
         pass
 

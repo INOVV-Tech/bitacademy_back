@@ -56,7 +56,10 @@ class Usecase:
         if signal.status != SIGNAL_STATUS.ENTRY_WAIT:
             return { 'error': f'Sinais com status "{signal.status.value}" não podem ser atualizados' }
         
-        signal.update_from_dict(signal_update_data)
+        updated_fields = signal.update_from_dict(signal_update_data)
+
+        if not updated_fields['any_updated']:
+            return { 'signal': signal.to_public_dict() }
 
         self.repository.signal_repo.update(signal)
 

@@ -54,6 +54,9 @@ class Usecase:
         
         updated_fields = free_material.update_from_dict(free_material_update_data)
 
+        if not updated_fields['any_updated']:
+            return { 'free_material': free_material.to_public_dict() }
+
         if 'cover_img' in updated_fields:
             s3_datasource = self.repository.get_s3_datasource()
 
