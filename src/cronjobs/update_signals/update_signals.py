@@ -114,7 +114,7 @@ class Usecase:
                 signals_updated += self.update_binance_futures_usdt_signals(exchange_signals[market.value])
             elif market == MARKET.FUTURES_COIN:
                 signals_updated += self.update_binance_futures_coins_signals(exchange_signals[market.value])
-
+        
         return signals_updated
     
     def update_binance_spot_signals(self, market_data: dict) -> int:
@@ -213,9 +213,45 @@ class Usecase:
         for signal in signals_with_tickers:
             ticker_data = tickers[signal.get_symbol()]
 
-            last_price = ticker_data['lastPrice']
+            last_price = Decimal(ticker_data['lastPrice'])
 
-            pass
+            updated = False
+
+            if signal.status == SIGNAL_STATUS.ENTRY_WAIT:
+                if last_price >= signal.price_entry_max and last_price <= signal.price_entry_min:
+                    signal.status_details.entry_snapshot = PriceSnapshot.from_exchange(last_price)
+                    signal.status = SIGNAL_STATUS.RUNNING
+                    
+                    updated = True
+            elif signal.status == SIGNAL_STATUS.RUNNING:
+                if last_price >= signal.price_stop:
+                    signal.status_details.stop_snapshot = PriceSnapshot.from_exchange(last_price)
+                    signal.status = SIGNAL_STATUS.DONE
+
+                    updated = True
+                else:
+                    if last_price <= signal.price_target_one:
+                        signal.status_details.hit_target_one_snapshot = PriceSnapshot.from_exchange(last_price)
+                        
+                        updated = True
+                    
+                    if last_price <= signal.price_target_two:
+                        signal.status_details.hit_target_two_snapshot = PriceSnapshot.from_exchange(last_price)
+                        
+                        updated = True
+
+                    if last_price <= signal.price_target_three:
+                        signal.status_details.hit_target_three_snapshot = PriceSnapshot.from_exchange(last_price)
+                        signal.status = SIGNAL_STATUS.DONE
+
+                        updated = True
+
+            if not updated:
+                continue
+
+            self.repository.signal_repo.update(signal)
+
+            signals_updated += 1
 
         return signals_updated
 
