@@ -29,17 +29,17 @@ class DynamoStack(Construct):
             removal_policy=removal_policy
         )
 
-        # self.dynamo_table.add_global_secondary_index(
-        #     index_name='GetAllEntities',
-        #     partition_key=aws_dynamodb.Attribute(
-        #         name='GSI#ENTITY_GETALL#PK',
-        #         type=aws_dynamodb.AttributeType.STRING
-        #     ),
-        #     sort_key=aws_dynamodb.Attribute(
-        #         name='GSI#ENTITY_GETALL#SK',
-        #         type=aws_dynamodb.AttributeType.NUMBER
-        #     )
-        # )
+        self.dynamo_table.add_global_secondary_index(
+            index_name='GetAllEntities',
+            partition_key=aws_dynamodb.Attribute(
+                name='GSI#ENTITY_GETALL#PK',
+                type=aws_dynamodb.AttributeType.STRING
+            ),
+            sort_key=aws_dynamodb.Attribute(
+                name='GSI#ENTITY_GETALL#SK',
+                type=aws_dynamodb.AttributeType.NUMBER
+            )
+        )
 
         CfnOutput(self, 'BitAcademyTableName',
                   value=self.dynamo_table.table_name,
