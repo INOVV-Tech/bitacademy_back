@@ -321,7 +321,11 @@ class Signal(BaseModel):
         return self.from_dict_static(data)
     
     def to_public_dict(self) -> dict:
-        return self.to_dict()
+        result = self.to_dict()
+
+        del result['user_id']
+
+        return result
     
     def update_from_dict(self, data: dict) -> dict:
         updated_fields = {}
