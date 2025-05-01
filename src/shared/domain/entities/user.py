@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.user_status import USER_STATUS
 
-class User(BaseModel): # Cognito
+class User(BaseModel):
 	user_id: str
 	name: str
 	email: str
@@ -12,6 +12,7 @@ class User(BaseModel): # Cognito
 	created_at: int
 	updated_at: int 
 	email_verified: bool
+	phone_verified: bool
 	enabled: bool
 	
 	@staticmethod
@@ -26,6 +27,7 @@ class User(BaseModel): # Cognito
 			created_at=int(data['created_at']),
 			updated_at=int(data['updated_at']),
 			email_verified=data['email_verified'],
+			phone_verified=data['phone_verified'],
 			enabled=data['enabled']
 		)
 	
@@ -40,6 +42,7 @@ class User(BaseModel): # Cognito
 			'created_at': self.created_at,
 			'updated_at': self.updated_at,
 			'email_verified': self.email_verified,
+			'phone_verified': self.phone_verified,
 			'enabled': self.enabled
 		}
   
@@ -48,13 +51,14 @@ class User(BaseModel): # Cognito
 
 	def to_auth_dto(self) -> dict:
 		return {
-			'user_id': self.user_id,
+			'sub': self.user_id,
 			'name': self.name,
 			'email': self.email,
 			'phone_number': self.phone,
 			'custom:role': self.role.value,
 			'enabled': self.enabled,
-			'email_verified': self.email_verified
+			'email_verified': self.email_verified,
+			'phone_verified': self.phone_verified
 		}
 
 	def to_public_dict(self) -> dict:

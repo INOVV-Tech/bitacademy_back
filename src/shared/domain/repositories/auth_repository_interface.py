@@ -7,7 +7,7 @@ class IAuthRepository(ABC):
     @abstractmethod
     def create_user(self, user: User) -> User:
         pass
-
+    
     @abstractmethod
     def get_all_users(self) -> List[User]:
         pass

@@ -46,8 +46,9 @@ def get_requester_user(admin=False):
         'created_at': now,
         'updated_at': now,
         'email_verified': True,
+        'phone_verified': True,
         'enabled': True,
-        'phone': '51000000000'
+        'phone': '+5511999999999'
     })
 
     return user.to_auth_dto()

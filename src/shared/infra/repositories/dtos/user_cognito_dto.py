@@ -17,7 +17,18 @@ class UserCognitoDTO:
     created_at: str
     updated_at: str
     email_verified: bool
+    phone_verified: bool
     enabled: bool
+
+    TO_COGNITO_DICT = {
+        'email': 'email',
+        'name': 'name',
+        'role': 'custom:role',
+        'phone': 'phone_number'
+    }
+
+    FROM_COGNITO_DICT = { value: key for key, value in TO_COGNITO_DICT.items() }
+    FROM_COGNITO_DICT['sub'] = 'user_id'
 
     @staticmethod
     def parse_attribute(name, value) -> dict:
@@ -27,7 +38,7 @@ class UserCognitoDTO:
     def from_cognito(data: dict) -> 'UserCognitoDTO':
         user_data = next((value for key, value in data.items() if 'Attribute' in key), None)
         user_data = { UserCognitoDTO.FROM_COGNITO_DICT[att['Name']]: att['Value'] for att in user_data if att['Name'] in UserCognitoDTO.FROM_COGNITO_DICT }
-        
+
         user_data['enabled'] = data.get('Enabled')
         user_data['status'] = data.get('UserStatus')
 
@@ -47,32 +58,35 @@ class UserCognitoDTO:
             extra_attributes[attr_obj['Name']] = attr_obj['Value']
 
         user_data['email_verified'] = extra_attributes['email_verified'] if 'email_verified' in extra_attributes else False
+        user_data['phone_verified'] = extra_attributes['phone_verified'] if 'phone_verified' in extra_attributes else False
 
         return UserCognitoDTO(
             user_id=str(user_data['user_id']),
-            email=str(user_data['email']),
             name=str(user_data['name']),
+            email=str(user_data['email']),
+            phone=str(user_data['phone']) if 'phone' in user_data else '',
             role = ROLE[user_data['role']] if 'role' in user_data else ROLE.GUEST,
-            enabled=bool(user_data['enabled']),
             user_status=USER_STATUS[user_data['status']],
             created_at=str(user_data['created_at']),
             updated_at=str(user_data['updated_at']),
             email_verified=bool(user_data['email_verified']),
-            phone=str(user_data['phone']) if 'phone' in user_data else ''
+            phone_verified=bool(user_data['phone_verified']),
+            enabled=bool(user_data['enabled'])
         )
     
     @staticmethod
     def from_user(user: User):
         return UserCognitoDTO(
             user_id=user.user_id,
-            email=user.email,
             name=user.name,
-            role=user.role,
+            email=user.email,
             phone=user.phone,
+            role=user.role,
             user_status=user.user_status,
             created_at=user.created_at,
             updated_at=user.updated_at,
             email_verified=user.email_verified,
+            phone_verified=user.phone_verified,
             enabled=user.enabled
         )
 
@@ -86,6 +100,7 @@ class UserCognitoDTO:
         created_at: str,
         updated_at: str,
         email_verified: bool,
+        phone_verified: bool,
         enabled: bool
     ):
         self.user_id = user_id
@@ -97,17 +112,8 @@ class UserCognitoDTO:
         self.created_at = created_at
         self.updated_at = updated_at
         self.email_verified = email_verified
+        self.phone_verified = phone_verified
         self.enabled = enabled
-
-    TO_COGNITO_DICT = {
-        'email': 'email',
-        'name': 'name',
-        'role': 'custom:role',
-        'phone': 'phone_number'
-    }
-
-    FROM_COGNITO_DICT = { value: key for key, value in TO_COGNITO_DICT.items() }
-    FROM_COGNITO_DICT['sub'] = 'user_id'
 
     def to_cognito_attributes(self) -> List[dict]:
         user_attributes = []
@@ -135,5 +141,6 @@ class UserCognitoDTO:
             created_at=self.created_at,
             updated_at=self.updated_at,
             email_verified=self.email_verified,
+            phone_verified=self.phone_verified,
             enabled=self.enabled
         )
