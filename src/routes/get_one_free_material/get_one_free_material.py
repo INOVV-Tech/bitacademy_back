@@ -29,7 +29,7 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(request.data)
+            response = Usecase().execute(request.query_params)
             
             return OK(body=response)
         except MissingParameters as error:
@@ -45,24 +45,24 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(free_material_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
-        if FreeMaterial.data_contains_valid_id(request_data):
-            return self.query_with_id(request_data)
+    def execute(self, request_params: dict) -> dict:
+        if FreeMaterial.data_contains_valid_id(request_params):
+            return self.query_with_id(request_params)
 
-        if FreeMaterial.data_contains_valid_title(request_data):
-            return self.query_with_title(request_data)
+        if FreeMaterial.data_contains_valid_title(request_params):
+            return self.query_with_title(request_params)
 
         return { 'error': 'Nenhum identificador encontrado' }
     
-    def query_with_id(self, request_data: dict) -> dict:
-        free_material = self.repository.free_material_repo.get_one(request_data['id'])
+    def query_with_id(self, request_params: dict) -> dict:
+        free_material = self.repository.free_material_repo.get_one(request_params['id'])
 
         return {
             'free_material': free_material.to_public_dict() if free_material is not None else None
         }
     
-    def query_with_title(self, request_data: dict) -> dict:
-        free_material = self.repository.free_material_repo.get_one_by_title(request_data['title'])
+    def query_with_title(self, request_params: dict) -> dict:
+        free_material = self.repository.free_material_repo.get_one_by_title(request_params['title'])
 
         return {
             'free_material': free_material.to_public_dict() if free_material is not None else None

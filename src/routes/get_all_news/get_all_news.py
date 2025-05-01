@@ -38,7 +38,7 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user, request.data)
+            response = Usecase().execute(requester_user, request.query_params)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -57,24 +57,24 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(news_repo=True)
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if not is_valid_getall_object(request_data):
+    def execute(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        if not is_valid_getall_object(request_params):
             return { 'error': 'Filtro de consulta inválido' }
         
         title = ''
 
-        if News.data_contains_valid_title(request_data):
-            title = request_data['title'].strip()
+        if News.data_contains_valid_title(request_params):
+            title = request_params['title'].strip()
 
         tags = []
         
-        if News.data_contains_valid_tags(request_data):
-            tags = News.norm_tags(request_data['tags'])
+        if News.data_contains_valid_tags(request_params):
+            tags = News.norm_tags(request_params['tags'])
         
         vip_level = None
 
-        if News.data_contains_valid_vip_level(request_data):
-            vip_level = VIP_LEVEL(request_data['vip_level'])
+        if News.data_contains_valid_vip_level(request_params):
+            vip_level = VIP_LEVEL(request_params['vip_level'])
 
         if requester_user.role not in VIP_USER_ROLES:
             vip_level = VIP_LEVEL.FREE
@@ -83,9 +83,9 @@ class Usecase:
             title=title,
             tags=tags,
             vip_level=vip_level,
-            limit=request_data['limit'],
-            last_evaluated_key=request_data['last_evaluated_key'],
-            sort_order=request_data['sort_order']
+            limit=request_params['limit'],
+            last_evaluated_key=request_params['last_evaluated_key'],
+            sort_order=request_params['sort_order']
         )
 
         db_data['news_list'] = [ x.to_public_dict() for x in db_data['news_list'] ]

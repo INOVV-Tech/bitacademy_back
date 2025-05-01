@@ -20,7 +20,7 @@ class Test_ToolLambda:
 
     def get_body(self):
         return {
-            'requester_user': get_requester_user(admin=False)
+            'requester_user': get_requester_user(admin=True)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
@@ -54,14 +54,16 @@ class Test_ToolLambda:
     @pytest.mark.skip(reason='Done')
     def test_lambda_get_all(self):
         body = self.get_body()
-        
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+
+        query_params = {
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -71,14 +73,16 @@ class Test_ToolLambda:
     def test_lambda_get_all_with_tags(self):
         body = self.get_body()
 
-        body['tags'] = [ 'teste' ]
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'tags': [ 'teste' ],
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -88,11 +92,13 @@ class Test_ToolLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = '1450b3b8-c22d-4df5-9c19-85da8c81bad4'
+        query_params = {
+            'id': 'c035bbf8-b48b-47f8-9cf8-7da4fbbf9123'
+        }
 
         controller = GetOneController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -102,11 +108,13 @@ class Test_ToolLambda:
     def test_lambda_get_one_by_title(self):
         body = self.get_body()
 
-        body['title'] = 'Test Tool'
+        query_params = {
+            'title': 'Test Tool'
+        }
 
         controller = GetOneController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
         

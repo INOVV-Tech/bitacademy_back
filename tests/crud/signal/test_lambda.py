@@ -26,7 +26,7 @@ class Test_SignalLambda:
 
     def get_body(self):
         return {
-            'requester_user': get_requester_user(admin=False)
+            'requester_user': get_requester_user(admin=True)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
@@ -94,14 +94,15 @@ class Test_SignalLambda:
     def test_lambda_get_all(self):
         body = self.get_body()
 
-        # body['title'] = 'Bitcoio'
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -111,14 +112,16 @@ class Test_SignalLambda:
     def test_lambda_get_all_by_base_asset(self):
         body = self.get_body()
 
-        body['base_asset'] = 'BTC'
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'base_asset': 'BTC',
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -128,14 +131,16 @@ class Test_SignalLambda:
     def test_lambda_get_all_by_exchanges(self):
         body = self.get_body()
 
-        body['exchanges'] = [ EXCHANGE.BINANCE.value ]
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'exchanges': [ EXCHANGE.BINANCE.value ],
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -144,15 +149,17 @@ class Test_SignalLambda:
     @pytest.mark.skip(reason='Done')
     def test_lambda_get_all_by_markets(self):
         body = self.get_body()
-
-        body['markets'] = [ MARKET.SPOT.value, MARKET.FUTURES_USDT.value ]
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        
+        query_params = {
+            'markets': [ MARKET.SPOT.value, MARKET.FUTURES_USDT.value ],
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -162,14 +169,16 @@ class Test_SignalLambda:
     def test_lambda_get_all_by_trade_sides(self):
         body = self.get_body()
 
-        body['trade_sides'] = [ TRADE_SIDE.LONG.value ]
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'trade_sides': [ TRADE_SIDE.LONG.value ],
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -179,14 +188,16 @@ class Test_SignalLambda:
     def test_lambda_get_all_by_status(self):
         body = self.get_body()
 
-        body['signal_status'] = [ SIGNAL_STATUS.ENTRY_WAIT.value ]
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'signal_status': [ SIGNAL_STATUS.ENTRY_WAIT.value ],
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -196,14 +207,16 @@ class Test_SignalLambda:
     def test_lambda_get_all_by_vip_level(self):
         body = self.get_body()
 
-        body['vip_level'] = VIP_LEVEL.FREE.value
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'vip_level': VIP_LEVEL.FREE.value,
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -213,14 +226,16 @@ class Test_SignalLambda:
     def test_lambda_get_all_by_trade_strat(self):
         body = self.get_body()
 
-        body['trade_strats'] = [ TRADE_STRAT.DAY_TRADING.value ]
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'trade_strats': [ TRADE_STRAT.DAY_TRADING.value ],
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -230,11 +245,13 @@ class Test_SignalLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = '677b7446-fc63-4612-be16-301da08b8b1f'
+        query_params = {
+            'id': '9a34da84-4242-4012-98a1-ba61dec4df3f'
+        }
 
         controller = GetOneController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 

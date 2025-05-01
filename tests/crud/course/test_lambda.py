@@ -20,7 +20,7 @@ class Test_CourseLambda:
 
     def get_body(self):
         return {
-            'requester_user': get_requester_user(admin=False)
+            'requester_user': get_requester_user(admin=True)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
@@ -58,13 +58,15 @@ class Test_CourseLambda:
     def test_lambda_get_all(self):
         body = self.get_body()
         
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -74,15 +76,17 @@ class Test_CourseLambda:
     def test_lambda_get_all_with_tags(self):
         body = self.get_body()
 
-        body['tags'] = [ 'teste' ]
-        body['vip_level'] = 1
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'tags': [ 'teste' ],
+            'vip_level': 1,
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -92,11 +96,13 @@ class Test_CourseLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = 'b25f803e-6776-42df-8ec8-809f465e03e3'
+        query_params = {
+            'id': 'e160f143-1bb2-4d19-9b39-99e5b2799ca4'
+        }
 
         controller = GetOneController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -106,11 +112,13 @@ class Test_CourseLambda:
     def test_lambda_get_one_by_title(self):
         body = self.get_body()
 
-        body['title'] = 'Test Course'
+        query_params = {
+            'title': 'Test Course'
+        }
 
         controller = GetOneController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
         

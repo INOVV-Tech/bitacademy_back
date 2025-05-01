@@ -30,7 +30,7 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(request.data)
+            response = Usecase().execute(request.query_params)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -49,26 +49,26 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(free_material_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
-        if not is_valid_getall_object(request_data):
+    def execute(self, request_params: dict) -> dict:
+        if not is_valid_getall_object(request_params):
             return { 'error': 'Filtro de consulta inválido' }
         
         title = ''
 
-        if FreeMaterial.data_contains_valid_title(request_data):
-            title = request_data['title'].strip()
+        if FreeMaterial.data_contains_valid_title(request_params):
+            title = request_params['title'].strip()
         
         tags = []
         
-        if FreeMaterial.data_contains_valid_tags(request_data):
-            tags = FreeMaterial.norm_tags(request_data['tags'])
+        if FreeMaterial.data_contains_valid_tags(request_params):
+            tags = FreeMaterial.norm_tags(request_params['tags'])
 
         db_data = self.repository.free_material_repo.get_all(
             title=title,
             tags=tags,
-            limit=request_data['limit'],
-            last_evaluated_key=request_data['last_evaluated_key'],
-            sort_order=request_data['sort_order']
+            limit=request_params['limit'],
+            last_evaluated_key=request_params['last_evaluated_key'],
+            sort_order=request_params['sort_order']
         )
 
         db_data['free_materials'] = [ x.to_public_dict() for x in db_data['free_materials'] ]

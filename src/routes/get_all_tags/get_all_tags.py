@@ -31,7 +31,7 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(request.data)
+            response = Usecase().execute(request.query_params)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -50,20 +50,20 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(tag_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
-        if not is_valid_getall_object(request_data):
+    def execute(self, request_params: dict) -> dict:
+        if not is_valid_getall_object(request_params):
             return { 'error': 'Filtro de consulta inválido' }
         
         title = ''
 
-        if Tag.data_contains_valid_title(request_data):
-            title = Tag.norm_title(request_data['title'])
+        if Tag.data_contains_valid_title(request_params):
+            title = Tag.norm_title(request_params['title'])
 
         db_data = self.repository.tag_repo.get_all(
             title=title,
-            limit=request_data['limit'],
-            last_evaluated_key=request_data['last_evaluated_key'],
-            sort_order=request_data['sort_order']
+            limit=request_params['limit'],
+            last_evaluated_key=request_params['last_evaluated_key'],
+            sort_order=request_params['sort_order']
         )
 
         db_data['tags'] = [ x.to_public_dict() for x in db_data['tags'] ]

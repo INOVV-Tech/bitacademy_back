@@ -36,7 +36,7 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user, request.data)
+            response = Usecase().execute(requester_user, request.query_params)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -55,14 +55,14 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(signal_repo=True)
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if Signal.data_contains_valid_id(request_data):
-            return self.query_with_id(requester_user, request_data)
+    def execute(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        if Signal.data_contains_valid_id(request_params):
+            return self.query_with_id(requester_user, request_params)
 
         return { 'error': 'Nenhum identificador encontrado' }
     
-    def query_with_id(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        signal = self.repository.signal_repo.get_one(request_data['id'])
+    def query_with_id(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        signal = self.repository.signal_repo.get_one(request_params['id'])
 
         if signal is not None:
             if signal.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:

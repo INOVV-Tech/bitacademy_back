@@ -55,13 +55,15 @@ class Test_FreeMaterialLambda:
     def test_lambda_get_all(self):
         body = self.get_body()
 
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -71,14 +73,16 @@ class Test_FreeMaterialLambda:
     def test_lambda_get_all_with_tags(self):
         body = self.get_body()
 
-        body['tags'] = [ 'teste' ]
-        body['limit'] = 10
-        body['last_evaluated_key'] = ''
-        body['sort_order'] = 'desc'
+        query_params = {
+            'tags': 'teste',
+            'limit': 10,
+            'last_evaluated_key': '',
+            'sort_order': 'desc'
+        }
 
         controller = GetAllController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -88,11 +92,13 @@ class Test_FreeMaterialLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = 'e3bf2dfd-67ef-445f-8d54-7387a1be2e0f'
+        query_params = {
+            'id': '49a58e4b-c559-454e-82b2-3e5eecf0be33'
+        }
 
         controller = GetOneController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
 
@@ -102,11 +108,13 @@ class Test_FreeMaterialLambda:
     def test_lambda_get_one_by_title(self):
         body = self.get_body()
 
-        body['title'] = 'O que são criptomoedas?'
+        query_params = {
+            'title': 'O que são criptomoedas?'
+        }
 
         controller = GetOneController()
 
-        response = self.call_lambda(controller, body)
+        response = self.call_lambda(controller, body, query_params=query_params)
 
         self.print_data(response.data)
         

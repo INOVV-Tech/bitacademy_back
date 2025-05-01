@@ -36,7 +36,7 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user, request.data)
+            response = Usecase().execute(requester_user, request.query_params)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -55,17 +55,17 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(course_repo=True)
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if Course.data_contains_valid_id(request_data):
-            return self.query_with_id(requester_user, request_data)
+    def execute(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        if Course.data_contains_valid_id(request_params):
+            return self.query_with_id(requester_user, request_params)
 
-        if Course.data_contains_valid_title(request_data):
-            return self.query_with_title(requester_user, request_data)
+        if Course.data_contains_valid_title(request_params):
+            return self.query_with_title(requester_user, request_params)
         
         return { 'error': 'Nenhum identificador encontrado' }
     
-    def query_with_id(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        course = self.repository.course_repo.get_one(request_data['id'])
+    def query_with_id(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        course = self.repository.course_repo.get_one(request_params['id'])
 
         if course is not None:
             if course.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:
@@ -75,8 +75,8 @@ class Usecase:
             'course': course.to_public_dict() if course is not None else None
         }
     
-    def query_with_title(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        course = self.repository.course_repo.get_one_by_title(request_data['title'])
+    def query_with_title(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        course = self.repository.course_repo.get_one_by_title(request_params['title'])
 
         if course is not None:
             if course.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:

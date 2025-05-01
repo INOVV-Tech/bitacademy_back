@@ -44,7 +44,7 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user, request.data)
+            response = Usecase().execute(requester_user, request.query_params)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -63,59 +63,59 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(signal_repo=True)
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if not is_valid_getall_object(request_data):
+    def execute(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        if not is_valid_getall_object(request_params):
             return { 'error': 'Filtro de consulta inválido' }
         
         title = ''
 
-        if Signal.data_contains_valid_title(request_data):
-            title = request_data['title'].strip()
+        if Signal.data_contains_valid_title(request_params):
+            title = request_params['title'].strip()
 
         base_asset = ''
 
-        if Signal.data_contains_valid_base_asset(request_data):
-            base_asset = Signal.norm_asset(request_data['base_asset'])
+        if Signal.data_contains_valid_base_asset(request_params):
+            base_asset = Signal.norm_asset(request_params['base_asset'])
 
         exchanges = []
 
-        if is_valid_entity_string_list(request_data, 'exchanges', min_length=1, max_length=EXCHANGE.length()):
-            for exchange in request_data['exchanges']:
+        if is_valid_entity_string_list(request_params, 'exchanges', min_length=1, max_length=EXCHANGE.length()):
+            for exchange in request_params['exchanges']:
                 if Signal.data_contains_valid_exchange({ 'exchange': exchange }):
                     exchanges.append(EXCHANGE[exchange])
 
         markets = []
 
-        if is_valid_entity_string_list(request_data, 'markets', min_length=1, max_length=MARKET.length()):
-            for market in request_data['markets']:
+        if is_valid_entity_string_list(request_params, 'markets', min_length=1, max_length=MARKET.length()):
+            for market in request_params['markets']:
                 if Signal.data_contains_valid_market({ 'market': market }):
                     markets.append(MARKET[market])
 
         trade_sides = []
 
-        if is_valid_entity_string_list(request_data, 'trade_sides', min_length=1, max_length=TRADE_SIDE.length()):
-            for trade_side in request_data['trade_sides']:
+        if is_valid_entity_string_list(request_params, 'trade_sides', min_length=1, max_length=TRADE_SIDE.length()):
+            for trade_side in request_params['trade_sides']:
                 if Signal.data_contains_valid_trade_side({ 'trade_side': trade_side }):
                     trade_sides.append(TRADE_SIDE[trade_side])
 
         signal_status = []
 
-        if is_valid_entity_string_list(request_data, 'signal_status', min_length=1, max_length=SIGNAL_STATUS.length()):
-            for status in request_data['signal_status']:
+        if is_valid_entity_string_list(request_params, 'signal_status', min_length=1, max_length=SIGNAL_STATUS.length()):
+            for status in request_params['signal_status']:
                 if Signal.data_contains_valid_status({ 'status': status }):
                     signal_status.append(SIGNAL_STATUS[status])
 
         trade_strats = []
 
-        if is_valid_entity_string_list(request_data, 'trade_strats', min_length=1, max_length=TRADE_STRAT.length()):
-            for trade_strat in request_data['trade_strats']:
+        if is_valid_entity_string_list(request_params, 'trade_strats', min_length=1, max_length=TRADE_STRAT.length()):
+            for trade_strat in request_params['trade_strats']:
                 if Signal.data_contains_valid_trade_strat({ 'trade_strat': trade_strat }):
                     trade_strats.append(TRADE_STRAT[trade_strat])
 
         vip_level = None
 
-        if Signal.data_contains_valid_vip_level(request_data):
-            vip_level = VIP_LEVEL(request_data['vip_level'])
+        if Signal.data_contains_valid_vip_level(request_params):
+            vip_level = VIP_LEVEL(request_params['vip_level'])
 
         if requester_user.role not in VIP_USER_ROLES:
             vip_level = VIP_LEVEL.FREE
@@ -129,9 +129,9 @@ class Usecase:
             signal_status=signal_status,
             trade_strats=trade_strats,
             vip_level=vip_level,
-            limit=request_data['limit'],
-            last_evaluated_key=request_data['last_evaluated_key'],
-            sort_order=request_data['sort_order']
+            limit=request_params['limit'],
+            last_evaluated_key=request_params['last_evaluated_key'],
+            sort_order=request_params['sort_order']
         )
 
         db_data['signals'] = [ x.to_public_dict() for x in db_data['signals'] ]
