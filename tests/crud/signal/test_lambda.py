@@ -26,7 +26,7 @@ class Test_SignalLambda:
 
     def get_body(self):
         return {
-            'requester_user': get_requester_user(admin=True)
+            'requester_user': get_requester_user(admin=False)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
@@ -230,7 +230,7 @@ class Test_SignalLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = 'f488e153-35dd-49d5-a278-272b40a4541e'
+        body['id'] = '677b7446-fc63-4612-be16-301da08b8b1f'
 
         controller = GetOneController()
 

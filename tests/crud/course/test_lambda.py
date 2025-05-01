@@ -20,7 +20,7 @@ class Test_CourseLambda:
 
     def get_body(self):
         return {
-            'requester_user': get_requester_user(admin=True)
+            'requester_user': get_requester_user(admin=False)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
@@ -41,7 +41,7 @@ class Test_CourseLambda:
             'teachers': [ 'Rogério Silva' ],
             'external_url': 'https://www.youtube.com/',
             'tags': [ 'teste', 'free' ],
-            'vip_level': 1,
+            'vip_level': 0,
             'cover_img': cover_img,
             'card_img': cover_img
         }
@@ -92,7 +92,7 @@ class Test_CourseLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = '22a4fc15-2a22-4f1a-8b54-a035150331a2'
+        body['id'] = 'b25f803e-6776-42df-8ec8-809f465e03e3'
 
         controller = GetOneController()
 

@@ -12,24 +12,41 @@ from src.shared.domain.entities.course import Course
 
 from src.shared.utils.entity import is_valid_getall_object
 
-ALLOWED_USER_ROLES = [ ROLE.ADMIN, ROLE.CLIENT ]
+ALLOWED_USER_ROLES = [
+    ROLE.GUEST,
+    ROLE.AFFILIATE,
+    ROLE.VIP,
+    ROLE.TEACHER,
+    ROLE.ADMIN
+]
+
+VIP_USER_ROLES = [
+    ROLE.VIP,
+    ROLE.TEACHER,
+    ROLE.ADMIN
+]
 
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
+            if 'requester_user' not in request.data:
+                raise MissingParameters('requester_user')
+            
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
 
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(request.data)
+            response = Usecase().execute(requester_user, request.data)
 
             if 'error' in response:
                 return BadRequest(response['error'])
             
             return OK(body=response)
         except MissingParameters as error:
+            return BadRequest(error.message)
+        except ForbiddenAction as error:
             return BadRequest(error.message)
         except:
             return InternalServerError('Erro interno de servidor')
@@ -40,7 +57,7 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(course_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
+    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
         if not is_valid_getall_object(request_data):
             return { 'error': 'Filtro de consulta inválido' }
         
@@ -58,6 +75,9 @@ class Usecase:
 
         if Course.data_contains_valid_vip_level(request_data):
             vip_level = VIP_LEVEL(request_data['vip_level'])
+
+        if requester_user.role not in VIP_USER_ROLES:
+            vip_level = VIP_LEVEL.FREE
 
         db_data = self.repository.course_repo.get_all(
             title=title,

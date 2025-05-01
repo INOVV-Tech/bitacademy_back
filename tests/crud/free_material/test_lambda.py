@@ -88,7 +88,7 @@ class Test_FreeMaterialLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = 'd50ca4ee-c5ad-45ac-9de8-23e2b4f094f6'
+        body['id'] = 'e3bf2dfd-67ef-445f-8d54-7387a1be2e0f'
 
         controller = GetOneController()
 
@@ -120,7 +120,7 @@ class Test_FreeMaterialLambda:
             encode_base64=True, base64_prefix='data:image/png;base64')
 
         body['free_material'] = {
-            'id': 'd50ca4ee-c5ad-45ac-9de8-23e2b4f094f6',
+            'id': 'e3bf2dfd-67ef-445f-8d54-7387a1be2e0f',
             'title': 'UPDATED',
             'description': 'UPDATED',
             'cover_img': cover_img,
@@ -140,7 +140,7 @@ class Test_FreeMaterialLambda:
     def test_lambda_delete(self):
         body = self.get_body()
 
-        body['id'] = 'd50ca4ee-c5ad-45ac-9de8-23e2b4f094f6'
+        body['id'] = 'e3bf2dfd-67ef-445f-8d54-7387a1be2e0f'
 
         controller = DeleteController()
 

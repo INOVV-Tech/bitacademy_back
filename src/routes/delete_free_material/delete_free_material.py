@@ -15,6 +15,9 @@ class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
+            if 'requester_user' not in request.data:
+                raise MissingParameters('requester_user')
+            
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
             
             if requester_user.role not in ALLOWED_USER_ROLES:
@@ -27,6 +30,8 @@ class Controller:
             
             return OK(body=response)
         except MissingParameters as error:
+            return BadRequest(error.message)
+        except ForbiddenAction as error:
             return BadRequest(error.message)
         except:
             return InternalServerError('Erro interno de servidor')

@@ -1,5 +1,8 @@
 from enum import Enum
 
 class ROLE(Enum):
-    CLIENT = 'CLIENT'
+    GUEST = 'GUEST'
+    AFFILIATE = 'AFFILIATE'
+    VIP = 'VIP'
+    TEACHER = 'TEACHER'
     ADMIN = 'ADMIN'

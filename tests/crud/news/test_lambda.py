@@ -20,7 +20,7 @@ class Test_NewsLambda:
 
     def get_body(self):
         return {
-            'requester_user': get_requester_user(admin=True)
+            'requester_user': get_requester_user(admin=False)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
@@ -91,7 +91,7 @@ class Test_NewsLambda:
     def test_lambda_get_one(self):
         body = self.get_body()
 
-        body['id'] = 'bddb8f04-a2cf-47d9-812a-350a5e7217d2'
+        body['id'] = '2e7cde25-bfca-4212-8d52-079aa71190d0'
 
         controller = GetOneController()
 

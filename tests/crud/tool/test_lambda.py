@@ -20,7 +20,7 @@ class Test_ToolLambda:
 
     def get_body(self):
         return {
-            'requester_user': get_requester_user(admin=True)
+            'requester_user': get_requester_user(admin=False)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):

@@ -42,7 +42,7 @@ class Test_SignalCronjob:
 
         assert True
 
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_cronjob_update(self):
         controller = UpdateController()
 
