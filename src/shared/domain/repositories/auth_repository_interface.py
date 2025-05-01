@@ -11,7 +11,7 @@ class IAuthRepository(ABC):
     @abstractmethod
     def get_all_users(self) -> List[User]:
         pass
-
+    
     @abstractmethod
     def get_user_by_email(self, email: str) -> User:
         pass
@@ -19,7 +19,7 @@ class IAuthRepository(ABC):
     @abstractmethod
     def update_user(self, email: str, attributes_to_update: dict, enabled: bool = None) -> User:
         pass
-
+    
     @abstractmethod
     def refresh_token(self, refresh_token: str) -> Tuple[str, str, str]:
         pass

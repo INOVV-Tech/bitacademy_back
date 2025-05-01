@@ -27,7 +27,7 @@ class UserCognitoDTO:
     def from_cognito(data: dict) -> 'UserCognitoDTO':
         user_data = next((value for key, value in data.items() if 'Attribute' in key), None)
         user_data = { UserCognitoDTO.FROM_COGNITO_DICT[att['Name']]: att['Value'] for att in user_data if att['Name'] in UserCognitoDTO.FROM_COGNITO_DICT }
-
+        
         user_data['enabled'] = data.get('Enabled')
         user_data['status'] = data.get('UserStatus')
 

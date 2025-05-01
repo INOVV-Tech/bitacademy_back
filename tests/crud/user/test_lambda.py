@@ -32,11 +32,10 @@ class Test_UserLambda:
     def test_lambda_create(self):
         body = self.get_auth_body()
 
-        body['requester_user'] = {
-            'name': 'mazc',
-            'email': 'marcocoimbra01@gmail.com',
-            'role': ROLE.ADMIN.value
-        }
+        body['requester_user']['user_id'] = '9d7dcecd-cd67-4824-a73b-2386f1ec1c23'
+        body['requester_user']['name'] = 'mazc'
+        body['requester_user']['email'] = 'marcocoimbra01@gmail.com'
+        body['requester_user']['role'] = ROLE.ADMIN.value
 
         controller = CreateController()
 
