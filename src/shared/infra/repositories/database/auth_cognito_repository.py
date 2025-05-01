@@ -12,14 +12,52 @@ from src.shared.helpers.errors.errors import DuplicatedItem, EntityError, Forbid
 from src.shared.infra.repositories.dtos.user_cognito_dto import UserCognitoDTO
 
 class AuthCognitoRepository(IAuthRepository):
-    client: boto3.client
-    user_pool_id: str
     client_id: str
+    user_pool_id: str
+
+    client: boto3.client
 
     def __init__(self):
-        self.client = boto3.client('cognito-idp', region_name=Environments.region)
-        self.user_pool_id = Environments.user_pool_id
         self.client_id = Environments.app_client_id
+        self.user_pool_id = Environments.user_pool_id
+
+        self.client = boto3.client('cognito-idp', region_name=Environments.region)
+    
+    def create_user(self, user: User) -> User:
+        cognito_attributes = [
+            {
+                'Name': 'email',
+                'Value': user.email
+            },
+            {
+                'Name': 'name',
+                'Value': user.name
+            },
+            {
+                'Phone': 'phone',
+                'Value': user.phone
+            },
+            {
+                'Name': 'custom:role',
+                'Value': user.role.value
+            }
+        ]
+
+        try:
+            self.client.admin_create_user(
+                UserPoolId=self.user_pool_id,
+                Username=user.email,
+                DesiredDeliveryMediums=[ 'EMAIL' ],
+                UserAttributes=cognito_attributes
+            )
+                
+            return self.get_user_by_email(user.email)
+        except self.client.exceptions.UsernameExistsException:
+            raise DuplicatedItem('user')
+        except self.client.exceptions.InvalidParameterException as e:
+            raise EntityError(e.response.get('Error').get('Message'))
+        except:
+            raise Exception('Cognito falhou por um motivo desconhecido')
     
     def get_all_users(self, page: int) -> List[User]:
         try:
@@ -51,39 +89,8 @@ class AuthCognitoRepository(IAuthRepository):
             raise EntityError(e.response.get('Error').get('Message'))
         except self.client.exceptions.InvalidParameterException as e:
             raise EntityError(e.response.get('Error').get('Message'))
-
-    def create_user(self, email: str, name: str, phone, role: ROLE) -> User:
-        cognito_attributes = [
-            {
-                'Name': 'email',
-                'Value': email
-            },
-            {
-                'Name': 'name',
-                'Value': name
-            },
-            {
-                'Phone': 'phone',
-                'Value': phone
-            },
-            {
-                'Name': 'custom:general_role',
-                'Value': role.value
-            },
-        ]
-
-        try:
-            self.client.admin_create_user(
-                UserPoolId=self.user_pool_id,
-                Username=email,
-                DesiredDeliveryMediums=["EMAIL"],
-                UserAttributes=cognito_attributes)
-                
-            return self.get_user_by_email(email)
-        except self.client.exceptions.UsernameExistsException:
-            raise DuplicatedItem("user")
-        except self.client.exceptions.InvalidParameterException as e:
-            raise EntityError(e.response.get('Error').get('Message'))
+        except:
+            raise Exception('Cognito falhou por um motivo desconhecido')
     
     def get_user_by_email(self, email: str) -> User:
         try:
@@ -98,8 +105,8 @@ class AuthCognitoRepository(IAuthRepository):
             user = UserCognitoDTO.from_cognito(response).to_entity()
                 
             return user
-        except self.client.exceptions.UserNotFoundException:
-            return None
+        except:
+            raise None
     
     def update_user(self, email: str, attributes_to_update: dict, enabled: bool = None) -> User:
         try:
@@ -124,7 +131,9 @@ class AuthCognitoRepository(IAuthRepository):
             return user
         except self.client.exceptions.InvalidParameterException as e:
             raise EntityError(e.response.get('Error').get('Message'))
-    
+        except:
+            raise Exception('Cognito falhou por um motivo desconhecido')
+
     def refresh_token(self, refresh_token: str) -> Tuple[str, str, str]:
         try:
             response = self.client.initiate_auth(
@@ -146,6 +155,8 @@ class AuthCognitoRepository(IAuthRepository):
                 raise InvalidTokenError(message=e.response.get('Error').get('Message'))
             else:
                 raise ForbiddenAction(message=e.response.get('Error').get('Message'))
+        except:
+            raise Exception('Cognito falhou por um motivo desconhecido')
     
     def enable_user(self, user_email: str) -> None:
         try:
@@ -157,6 +168,8 @@ class AuthCognitoRepository(IAuthRepository):
             raise EntityError(e.response.get('Error').get('Message'))
         except self.client.exceptions.InvalidParameterException as e:
             raise EntityError(e.response.get('Error').get('Message'))
+        except:
+            raise Exception('Cognito falhou por um motivo desconhecido')
     
     def disable_user(self, user_email: str) -> None:
         try:
@@ -168,3 +181,5 @@ class AuthCognitoRepository(IAuthRepository):
             raise EntityError(e.response.get('Error').get('Message'))
         except self.client.exceptions.InvalidParameterException as e:
             raise EntityError(e.response.get('Error').get('Message'))
+        except:
+            raise Exception('Cognito falhou por um motivo desconhecido')

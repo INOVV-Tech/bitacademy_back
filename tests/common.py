@@ -50,7 +50,7 @@ def get_requester_user(admin=False):
         'phone': '51000000000'
     })
 
-    return user.to_api_dto()
+    return user.to_auth_dto()
 
 def load_resource(filename, encode_base64=True, base64_prefix=''):
     root_directory = get_root_directory()

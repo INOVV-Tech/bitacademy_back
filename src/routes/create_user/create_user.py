@@ -1,14 +1,12 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
+from src.shared.helpers.external_interfaces.http_codes import Created, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.enums.vip_level import VIP_LEVEL
-from src.shared.domain.entities.course import Course
 
 ALLOWED_USER_ROLES = [
     ROLE.GUEST,
@@ -18,11 +16,7 @@ ALLOWED_USER_ROLES = [
     ROLE.ADMIN
 ]
 
-VIP_USER_ROLES = [
-    ROLE.VIP,
-    ROLE.TEACHER,
-    ROLE.ADMIN
-]
+import traceback
 
 class Controller:
     @staticmethod
@@ -36,54 +30,33 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user, request.data)
+            response = Usecase().execute(requester_user)
 
             if 'error' in response:
                 return BadRequest(response['error'])
             
-            return OK(body=response)
+            return Created(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except ForbiddenAction as error:
             return BadRequest(error.message)
-        except:
+        except Exception as ex:
+            print('saopasopopsa', str(ex))
+            print(traceback.format_exc())
             return InternalServerError('Erro interno de servidor')
 
 class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(course_repo=True)
+        self.repository = Repository(auth_repo=True)
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if Course.data_contains_valid_id(request_data):
-            return self.query_with_id(requester_user, request_data)
-
-        if Course.data_contains_valid_title(request_data):
-            return self.query_with_title(requester_user, request_data)
-        
-        return { 'error': 'Nenhum identificador encontrado' }
-    
-    def query_with_id(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        course = self.repository.course_repo.get_one(request_data['id'])
-
-        if course is not None:
-            if course.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:
-                return { 'error': 'Acesso não autorizado' }
+    def execute(self, requester_user: AuthAuthorizerDTO) -> dict:
+        user = requester_user.to_new_user()
+        user_created = self.repository.auth_repo.create_user(user)
 
         return {
-            'course': course.to_public_dict() if course is not None else None
-        }
-    
-    def query_with_title(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        course = self.repository.course_repo.get_one_by_title(request_data['title'])
-
-        if course is not None:
-            if course.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:
-                return { 'error': 'Acesso não autorizado' }
-
-        return {
-            'course': course.to_public_dict() if course is not None else None
+            'user': user_created.to_public_dict()
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

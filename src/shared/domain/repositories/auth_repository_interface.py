@@ -2,15 +2,14 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple
 
 from src.shared.domain.entities.user import User
-from src.shared.domain.enums.role import ROLE
 
 class IAuthRepository(ABC):
     @abstractmethod
-    def get_all_users(self) -> List[User]:
+    def create_user(self, user: User) -> User:
         pass
-    
+
     @abstractmethod
-    def create_user(self, email: str, name: str, phone: str, role: ROLE) -> User:
+    def get_all_users(self) -> List[User]:
         pass
 
     @abstractmethod

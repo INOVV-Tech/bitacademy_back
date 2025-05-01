@@ -46,12 +46,14 @@ class User(BaseModel): # Cognito
 	def from_dict(self, data: dict) -> 'User':
 		return User.from_dict_static(data)
 
-	def to_api_dto(self) -> dict:
+	def to_auth_dto(self) -> dict:
 		return {
 			'user_id': self.user_id,
 			'name': self.name,
 			'email': self.email,
-			'role': self.role.value,
+			'phone_number': self.phone,
+			'custom:role': self.role.value,
+			'enabled': self.enabled,
 			'email_verified': self.email_verified
 		}
 
