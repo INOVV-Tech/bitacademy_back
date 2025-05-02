@@ -60,7 +60,7 @@ class Test_CourseLambda:
         
         query_params = {
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -80,7 +80,7 @@ class Test_CourseLambda:
             'tags': [ 'teste' ],
             'vip_level': 1,
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 

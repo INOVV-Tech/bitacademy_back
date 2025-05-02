@@ -34,22 +34,54 @@ class Test_NewsLambda:
 
         cover_img = load_resource('catbeach.png',
             encode_base64=True, base64_prefix='data:image/png;base64')
+        
+        news_list = [
+            {
+                'title': 'Test News 1',
+                'header': 'uhul header',
+                'content': 'Conteúdo teste da notícia',
+                'tags': [ 'teste', 'free' ],
+                'vip_level': 1,
+                'cover_img': cover_img,
+                'card_img': cover_img
+            },
+            {
+                'title': 'Test News 2',
+                'header': 'uhul header',
+                'content': 'Conteúdo teste da notícia',
+                'tags': [ 'teste', 'free' ],
+                'vip_level': 1,
+                'cover_img': cover_img,
+                'card_img': cover_img
+            },
+            {
+                'title': 'Test News 3',
+                'header': 'uhul header',
+                'content': 'Conteúdo teste da notícia',
+                'tags': [ 'teste', 'free' ],
+                'vip_level': 1,
+                'cover_img': cover_img,
+                'card_img': cover_img
+            },
+            {
+                'title': 'Test News 4',
+                'header': 'uhul header',
+                'content': 'Conteúdo teste da notícia',
+                'tags': [ 'teste', 'free' ],
+                'vip_level': 1,
+                'cover_img': cover_img,
+                'card_img': cover_img
+            }
+        ]
 
-        body['news'] = {
-            'title': 'Test News',
-            'header': 'uhul header',
-            'content': 'Conteúdo teste da notícia',
-            'tags': [ 'teste', 'free' ],
-            'vip_level': 1,
-            'cover_img': cover_img,
-            'card_img': cover_img
-        }
+        for news in news_list:
+            body['news'] = news
 
-        controller = CreateController()
+            controller = CreateController()
 
-        response = self.call_lambda(controller, body)
+            response = self.call_lambda(controller, body)
 
-        self.print_data(response.data)
+            self.print_data(response.data)
 
         assert response.status_code == 201
 
@@ -58,8 +90,8 @@ class Test_NewsLambda:
         body = self.get_body()
 
         query_params = {
-            'limit': 10,
-            'last_evaluated_key': '',
+            'limit': 2,
+            'next_cursor': 'eyJTSyI6ICJNRVRBREFUQSIsICJHU0lfRU5USVRZX0dFVEFMTF9TSyI6ICJEQVRFIzE3NDYxNDQwNDUiLCAiUEsiOiAiTkVXUyM0ZDI5OTM4Ni05Zjc3LTQ5M2UtOTRmYy1jNzQxM2Q1Zjc3M2YiLCAiR1NJX0VOVElUWV9HRVRBTExfUEsiOiAiSU5ERVgjTkVXUyJ9',
             'sort_order': 'desc'
         }
 
@@ -79,7 +111,7 @@ class Test_NewsLambda:
             'tags': [ 'teste' ],
             'vip_level': 1,
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 

@@ -8,8 +8,8 @@ class IFreeMaterialRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, title: str = '', tags: list[str] = [], limit: int = 10, last_evaluated_key: str = '', \
-        sort_order: str = 'desc') -> dict:
+    def get_all(self, title: str = '', tags: list[str] = [], limit: int = 10, \
+        last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
         pass
     
     @abstractmethod

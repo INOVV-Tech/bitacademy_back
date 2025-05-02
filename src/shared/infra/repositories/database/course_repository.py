@@ -48,7 +48,7 @@ class CourseRepositoryDynamo(ICourseRepository):
         return course
 
     def get_all(self, title: str = '', tags: list[str] = [], vip_level: VIP_LEVEL | None = None, \
-        limit: int = 10, last_evaluated_key: str = '', sort_order: str = 'desc') -> dict:
+        limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
         filter_expressions = []
 
         if title != '':
@@ -86,9 +86,16 @@ class CourseRepositoryDynamo(ICourseRepository):
             scan_index_forward=False if sort_order == 'desc' else True
         )
         
+        count_response = self.dynamo.count(
+            index_name='GetAllEntities',
+            partition_key=self.course_gsi_entity_get_all_pk(),
+            filter_expression=filter_expression,
+        )
+        
         return {
             'courses': [ Course.from_dict_static(item) for item in response['items'] ],
-            'last_evaluated_key': response.get('last_evaluated_key')
+            'last_evaluated_key': response.get('last_evaluated_key'),
+            'total': count_response['count']
         }
     
     def get_one(self, id: str) -> Course | None:

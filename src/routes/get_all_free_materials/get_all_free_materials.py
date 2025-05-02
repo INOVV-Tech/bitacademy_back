@@ -8,7 +8,9 @@ from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorize
 
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.entities.free_material import FreeMaterial
+
 from src.shared.utils.entity import is_valid_getall_object
+from src.shared.utils.pagination import encode_cursor_get_all, decode_cursor
 
 ALLOWED_USER_ROLES = [
     ROLE.GUEST,
@@ -67,13 +69,16 @@ class Usecase:
             title=title,
             tags=tags,
             limit=request_params['limit'],
-            last_evaluated_key=request_params['last_evaluated_key'],
+            last_evaluated_key=decode_cursor(request_params['next_cursor']),
             sort_order=request_params['sort_order']
         )
 
-        db_data['free_materials'] = [ x.to_public_dict() for x in db_data['free_materials'] ]
-
-        return db_data
+        return encode_cursor_get_all(
+            db_data=db_data,
+            item_key='free_materials',
+            limit=request_params['limit'],
+            last_evaluated_key=db_data['last_evaluated_key']
+        )
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

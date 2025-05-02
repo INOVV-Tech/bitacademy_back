@@ -29,7 +29,7 @@ class Test_TagsLambda:
 
         query_params = {
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -48,7 +48,7 @@ class Test_TagsLambda:
         query_params = {
             'title': 'fr',
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 

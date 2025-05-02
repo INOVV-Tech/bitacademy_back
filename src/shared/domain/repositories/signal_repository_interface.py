@@ -23,7 +23,7 @@ class ISignalRepository(ABC):
         signal_status: list[SIGNAL_STATUS] = [],
         vip_level: VIP_LEVEL | None = None,
         trade_strats: list[TRADE_STRAT] = [],
-        limit: int = 10, last_evaluated_key: str  = '', sort_order: str = 'desc') -> dict:
+        limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
         pass
     
     @abstractmethod

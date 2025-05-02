@@ -90,11 +90,11 @@ def is_valid_getall_object(data: dict) -> bool:
     if not is_valid_entity_int(data, 'limit', 1, 1000):
         return False
     
-    if 'last_evaluated_key' in data:
-        if not is_valid_entity_string(data, 'last_evaluated_key', min_length=0, max_length=256):
+    if 'next_cursor' in data:
+        if not is_valid_entity_string(data, 'next_cursor', min_length=0, max_length=1024):
             return False
     else:
-        data['last_evaluated_key'] = ''
+        data['next_cursor'] = ''
 
     if 'sort_order' in data:
         if not isinstance(data['sort_order'], str) \

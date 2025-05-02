@@ -57,7 +57,7 @@ class Test_FreeMaterialLambda:
 
         query_params = {
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -76,7 +76,7 @@ class Test_FreeMaterialLambda:
         query_params = {
             'tags': 'teste',
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 

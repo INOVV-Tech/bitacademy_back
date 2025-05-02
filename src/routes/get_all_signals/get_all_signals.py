@@ -17,6 +17,7 @@ from src.shared.domain.entities.signal import Signal
 
 from src.shared.utils.entity import is_valid_getall_object, \
     is_valid_entity_string_list
+from src.shared.utils.pagination import encode_cursor_get_all, decode_cursor
 
 ALLOWED_USER_ROLES = [
     ROLE.GUEST,
@@ -130,13 +131,16 @@ class Usecase:
             trade_strats=trade_strats,
             vip_level=vip_level,
             limit=request_params['limit'],
-            last_evaluated_key=request_params['last_evaluated_key'],
+            last_evaluated_key=decode_cursor(request_params['next_cursor']),
             sort_order=request_params['sort_order']
         )
-
-        db_data['signals'] = [ x.to_public_dict() for x in db_data['signals'] ]
-
-        return db_data
+        
+        return encode_cursor_get_all(
+            db_data=db_data,
+            item_key='signals',
+            limit=request_params['limit'],
+            last_evaluated_key=db_data['last_evaluated_key']
+        )
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

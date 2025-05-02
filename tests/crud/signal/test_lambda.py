@@ -96,7 +96,7 @@ class Test_SignalLambda:
 
         query_params = {
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -115,7 +115,7 @@ class Test_SignalLambda:
         query_params = {
             'base_asset': 'BTC',
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -134,7 +134,7 @@ class Test_SignalLambda:
         query_params = {
             'exchanges': [ EXCHANGE.BINANCE.value ],
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -153,7 +153,7 @@ class Test_SignalLambda:
         query_params = {
             'markets': [ MARKET.SPOT.value, MARKET.FUTURES_USDT.value ],
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -172,7 +172,7 @@ class Test_SignalLambda:
         query_params = {
             'trade_sides': [ TRADE_SIDE.LONG.value ],
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -191,7 +191,7 @@ class Test_SignalLambda:
         query_params = {
             'signal_status': [ SIGNAL_STATUS.ENTRY_WAIT.value ],
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -210,7 +210,7 @@ class Test_SignalLambda:
         query_params = {
             'vip_level': VIP_LEVEL.FREE.value,
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 
@@ -229,7 +229,7 @@ class Test_SignalLambda:
         query_params = {
             'trade_strats': [ TRADE_STRAT.DAY_TRADING.value ],
             'limit': 10,
-            'last_evaluated_key': '',
+            'next_cursor': '',
             'sort_order': 'desc'
         }
 

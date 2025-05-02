@@ -115,6 +115,38 @@ class DynamoDatasource:
             'items': response.get('Items', []),
             'last_evaluated_key': response.get('LastEvaluatedKey')
         }
+    
+    def count(
+        self,
+        partition_key: str,
+        sort_key=None,
+        index_name=None,
+        filter_expression=None
+    ):
+        key_config = self._get_key_config(index_name=index_name)
+
+        key_condition = Key(key_config['partition_key']).eq(partition_key)
+
+        if sort_key and key_config.get('sort_key'):
+            key_condition &= Key(key_config['sort_key']).eq(sort_key)
+
+        kwargs = {
+            'KeyConditionExpression': key_condition,
+        }
+
+        if index_name:
+            kwargs['IndexName'] = index_name
+        
+        if filter_expression:
+            kwargs['FilterExpression'] = filter_expression
+
+        kwargs['Select'] = 'COUNT'
+
+        response = self.dynamo_table.query(**kwargs)
+
+        return {
+            'count': response['Count']
+        }
 
     def scan_items(self, filter_expression=None, limit=None, exclusive_start_key=None):
         """

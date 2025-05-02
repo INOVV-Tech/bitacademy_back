@@ -11,6 +11,7 @@ from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.domain.entities.course import Course
 
 from src.shared.utils.entity import is_valid_getall_object
+from src.shared.utils.pagination import encode_cursor_get_all, decode_cursor
 
 ALLOWED_USER_ROLES = [
     ROLE.GUEST,
@@ -84,13 +85,16 @@ class Usecase:
             tags=tags,
             vip_level=vip_level,
             limit=request_params['limit'],
-            last_evaluated_key=request_params['last_evaluated_key'],
+            last_evaluated_key=decode_cursor(request_params['next_cursor']),
             sort_order=request_params['sort_order']
         )
 
-        db_data['courses'] = [ x.to_public_dict() for x in db_data['courses'] ]
-
-        return db_data
+        return encode_cursor_get_all(
+            db_data=db_data,
+            item_key='courses',
+            limit=request_params['limit'],
+            last_evaluated_key=db_data['last_evaluated_key']
+        )
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)
