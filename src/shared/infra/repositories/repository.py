@@ -5,7 +5,6 @@ from src.shared.infra.external.s3_datasource import S3Datasource
 
 ### INTERFACES ###
 
-from src.shared.domain.repositories.auth_repository_interface import IAuthRepository
 from src.shared.domain.repositories.free_material_repository_interface import IFreeMaterialRepository
 from src.shared.domain.repositories.course_repository_interface import ICourseRepository
 from src.shared.domain.repositories.home_coins_repository_interface import IHomeCoinsRepository
@@ -16,7 +15,6 @@ from src.shared.domain.repositories.signal_repository_interface import ISignalRe
 
 ### REPOSITORIES ###
 
-from src.shared.infra.repositories.database.auth_cognito_repository import AuthCognitoRepository
 from src.shared.infra.repositories.database.free_material_repository import FreeMaterialRepositoryDynamo
 from src.shared.infra.repositories.database.course_repository import CourseRepositoryDynamo
 from src.shared.infra.repositories.database.home_coins_repository import HomeCoinsRepositoryDynamo
@@ -26,7 +24,6 @@ from src.shared.infra.repositories.database.tag_repository import TagRepositoryD
 from src.shared.infra.repositories.database.signal_repository import SignalRepositoryDynamo
 
 class Repository:
-    auth_repo: IAuthRepository
     free_material_repo: IFreeMaterialRepository
     course_repo: ICourseRepository
     home_coins_repo: IHomeCoinsRepository
@@ -37,7 +34,6 @@ class Repository:
 
     def __init__(
         self,
-        auth_repo: bool = False,
         free_material_repo: bool = False,
         course_repo: bool = False,
         home_coins_repo: bool= False,
@@ -52,7 +48,6 @@ class Repository:
             self._initialize_mock_repositories()
         else:
             self._initialize_database_repositories(
-                auth_repo,
                 free_material_repo,
                 course_repo,
                 home_coins_repo,
@@ -71,11 +66,8 @@ class Repository:
     def _initialize_mock_repositories(self):
         pass
         
-    def _initialize_database_repositories(self, auth_repo: bool, free_material_repo: bool, course_repo: bool, \
+    def _initialize_database_repositories(self, free_material_repo: bool, course_repo: bool, \
         home_coins_repo: bool, news_repo: bool, tool_repo: bool, tag_repo: bool, signal_repo: bool):
-        if auth_repo:
-            self.auth_repo = AuthCognitoRepository()
-
         dynamo = DynamoDatasource(
             dynamo_table_name=Environments.dynamo_table_name,
             region=Environments.region,

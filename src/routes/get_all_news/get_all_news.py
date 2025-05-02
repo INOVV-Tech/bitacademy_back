@@ -31,10 +31,12 @@ class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
-            if 'requester_user' not in request.data:
+            requester_user = request.data.get('requester_user')
+
+            if requester_user is None:
                 raise MissingParameters('requester_user')
             
-            requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
+            requester_user = AuthAuthorizerDTO.from_api_gateway(requester_user)
 
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')

@@ -21,7 +21,7 @@ class LambdaStack(Construct):
             environment=environment_variables,
             timeout=Duration.seconds(15)
         )
-
+        
         api_resource.add_resource(module_name.replace('_', '-')).add_method(method, 
             integration=LambdaIntegration(function), authorizer=authorizer)
         

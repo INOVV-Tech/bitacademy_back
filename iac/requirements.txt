@@ -5,3 +5,4 @@ aws-xray-sdk==2.11.0
 pytest==6.2.5
 python-dotenv==1.0.1
 boto3==1.35.97
+flask==3.1.0
