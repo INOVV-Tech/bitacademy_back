@@ -113,7 +113,7 @@ class Test_CommunityLambda:
             encode_base64=True, base64_prefix='data:image/png;base64')
 
         body['community_channel'] = {
-            'id': 'd283d22a-2386-4e05-8a46-e8b1fa4a9ba9',
+            'id': '4d5d9c1f-841e-471a-8f21-c6e104765393',
             'title': 'Airdrops UPDATED',
             'icon_img': icon_img,
             'permissions': CommunityChannelPermissions(GUEST=COMMUNITY_PERMISSION.READ).to_dict()

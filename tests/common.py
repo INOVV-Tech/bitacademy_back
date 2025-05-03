@@ -32,7 +32,7 @@ def get_requester_user(admin=False):
     name = 'bit_user_' + random_string()
     email = name + '@gmail.com'
 
-    role = ROLE.ADMIN.value if admin else ROLE.GUEST.value
+    role = ROLE.ADMIN.value if admin else ROLE.TEACHER.value
     user_status = USER_STATUS.CONFIRMED.value
     
     now = now_timestamp()

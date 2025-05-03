@@ -9,7 +9,10 @@ from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorize
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.entities.community import CommunityChannel
 
-ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
+ALLOWED_USER_ROLES = [
+    ROLE.TEACHER,
+    ROLE.ADMIN
+]
 
 class Controller:
     @staticmethod
@@ -25,7 +28,7 @@ class Controller:
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(request.data)
+            response = Usecase().execute(requester_user, request.data)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -44,7 +47,7 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(community_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
+    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
         if 'community_channel' not in request_data \
             or not isinstance(request_data['community_channel'], dict):
             return { 'error': 'Campo "community_channel" não foi encontrado' }
@@ -58,6 +61,9 @@ class Usecase:
 
         if community_channel is None:
             return { 'error': 'Canal de comunidade não foi encontrado' }
+        
+        if not community_channel.permissions.is_edit_role(requester_user.role):
+            return { 'error': 'Usuário não tem permissão para editar o canal de comunidade' }
         
         updated_fields = community_channel.update_from_dict(community_channel_update_data)
 
