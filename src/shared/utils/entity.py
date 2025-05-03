@@ -25,7 +25,12 @@ def is_valid_entity_int(data: dict, field_key: str, min_value = 0, max_value = 1
     if field_key not in data:
         return False
     
-    if not isinstance(data[field_key], int):
+    # TODO: handle negative integers
+    if isinstance(data[field_key], int):
+        pass
+    elif isinstance(data[field_key], str) and data[field_key].isdigit():
+        data[field_key] = int(data[field_key])
+    else:
         return False
     
     if data[field_key] < min_value or data[field_key] > max_value:
@@ -87,8 +92,11 @@ def is_valid_entity_string_list(data: dict, field_key: str, min_length: int = 0,
     return True
 
 def is_valid_getall_object(data: dict) -> bool:
-    if not is_valid_entity_int(data, 'limit', 1, 1000):
-        return False
+    if 'limit' in data:
+        if not is_valid_entity_int(data, 'limit', 1, 100):
+            return False
+    else:
+        data['limit'] = 10
     
     if 'next_cursor' in data:
         if not is_valid_entity_string(data, 'next_cursor', min_length=0, max_length=1024):
@@ -141,10 +149,7 @@ def is_valid_entity_string_enum(data: dict, field_key: str, enum: Enum) -> bool:
     return data[field_key] in [ x.value for x in enum ]
 
 def is_valid_entity_int_enum(data: dict, field_key: str, enum: Enum) -> bool:
-    if field_key not in data:
-        return False
-    
-    if not isinstance(data[field_key], int):
+    if not is_valid_entity_int(data, field_key):
         return False
     
     return data[field_key] in [ x for x in enum ]
