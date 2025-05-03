@@ -82,6 +82,9 @@ def is_valid_entity_string_list(data: dict, field_key: str, min_length: int = 0,
     elif isinstance(data[field_key], str):
         try:
             data[field_key] = json.loads(data[field_key])
+
+            if not isinstance(data[field_key], list):
+                return False
         except:
             return False
     else:
