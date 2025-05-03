@@ -2,7 +2,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id, is_valid_entity_uuid, \
-    is_valid_entity_string, is_valid_entity_string_enum, is_valid_entity_base64_string
+    is_valid_entity_string, is_valid_entity_string_enum, is_valid_entity_base64_string, \
+    is_valid_entity_dict
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
 
@@ -10,6 +11,25 @@ from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 
 class CommunityChannelPermissions:
+    @staticmethod
+    def data_contains_valid_permissions(data: dict) -> bool:
+        if not is_valid_entity_string_enum(data, 'GUEST', COMMUNITY_PERMISSION):
+            return False
+        
+        if not is_valid_entity_string_enum(data, 'AFFILIATE', COMMUNITY_PERMISSION):
+            return False
+        
+        if not is_valid_entity_string_enum(data, 'VIP', COMMUNITY_PERMISSION):
+            return False
+        
+        if not is_valid_entity_string_enum(data, 'TEACHER', COMMUNITY_PERMISSION):
+            return False
+        
+        if not is_valid_entity_string_enum(data, 'ADMIN', COMMUNITY_PERMISSION):
+            return False
+        
+        return True
+
     @staticmethod
     def from_dict_static(data: dict) -> 'CommunityChannelPermissions':
         return CommunityChannelPermissions(
@@ -76,6 +96,13 @@ class CommunityChannel(BaseModel):
     @staticmethod
     def data_contains_valid_icon_img(data: dict) -> bool:
         return is_valid_entity_base64_string(data, 'icon_img')
+    
+    @staticmethod
+    def data_contains_valid_permissions(data: dict) -> bool:
+        if not is_valid_entity_dict(data, 'permissions'):
+            return False
+
+        return CommunityChannelPermissions.data_contains_valid_permissions(data['permissions'])
 
     @staticmethod
     def from_request_data(data: dict, user_id: str) -> 'tuple[str, CommunityChannel | None]':
@@ -87,13 +114,16 @@ class CommunityChannel(BaseModel):
         
         if not CommunityChannel.data_contains_valid_icon_img(data):
             return ('Imagem de ícone inválida', None)
+        
+        if not CommunityChannel.data_contains_valid_permissions(data):
+            return ('Permissões de canal de comunidade inválidas', None)
 
         community_channel = CommunityChannel(
             id=random_entity_id(),
             title=data['title'].strip(),
             type=COMMUNITY_TYPE[data['type']],
             icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
-            permissions=None,
+            permissions=CommunityChannelPermissions.from_dict_static(data),
             created_at=now_timestamp(),
             user_id=user_id
         )
@@ -105,11 +135,10 @@ class CommunityChannel(BaseModel):
         return CommunityChannel(
             id=data['id'],
             title=data['title'],
-            description=data['description'],
-            cover_img=ObjectStorageFile.from_dict_static(data['cover_img']),
+            type=COMMUNITY_TYPE[data['type']],
+            icon_img=ObjectStorageFile.from_dict_static(data['icon_img']),
+            permissions=CommunityChannelPermissions.from_dict_static(data['permissions']),
             created_at=int(data['created_at']),
-            external_url=data['external_url'],
-            tags=data['tags'],
             user_id=data['user_id']
         )
 
@@ -128,5 +157,22 @@ class CommunityChannel(BaseModel):
     
     def update_from_dict(self, data: dict) -> dict:
         updated_fields = {}
+
+        if CommunityChannel.data_contains_valid_title(data):
+            self.title = data['title'].strip()
+
+            updated_fields['title'] = self.title
+        
+        if CommunityChannel.data_contains_valid_icon_img(data):
+            self.icon_img = ObjectStorageFile.from_base64_data(data['icon_img'])
+
+            updated_fields['icon_img'] = self.icon_img
+        
+        if CommunityChannel.data_contains_valid_permissions(data):
+            self.permissions = CommunityChannelPermissions.from_dict_static(data['permissions'])
+
+            updated_fields['permissions'] = self.permissions
+        
+        updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 
         return updated_fields
