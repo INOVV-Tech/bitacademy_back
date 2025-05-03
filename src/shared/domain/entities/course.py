@@ -5,7 +5,7 @@ from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id, \
     is_valid_entity_string, is_valid_entity_url, is_valid_entity_string_list, \
-    is_valid_uuid, is_valid_entity_base64_string
+    is_valid_uuid, is_valid_entity_base64_string, is_valid_entity_int_enum
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
 
@@ -46,13 +46,7 @@ class Course(BaseModel):
     
     @staticmethod
     def data_contains_valid_vip_level(data: dict) -> bool:
-        if 'vip_level' not in data:
-            return False
-        
-        if not isinstance(data['vip_level'], int):
-            return False
-        
-        return data['vip_level'] in [ x for x in VIP_LEVEL ]
+        return is_valid_entity_int_enum(data, 'vip_level', VIP_LEVEL)
     
     @staticmethod
     def norm_tags(tags: list[str]) -> list[str]:
