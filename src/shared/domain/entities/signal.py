@@ -9,7 +9,7 @@ from src.shared.domain.enums.trade_strat import TRADE_STRAT
 
 from src.shared.utils.decimal import Decimal
 from src.shared.utils.time import now_timestamp
-from src.shared.utils.entity import random_entity_id, is_valid_uuid, \
+from src.shared.utils.entity import random_entity_id, is_valid_entity_uuid, \
     is_valid_entity_string_enum, is_valid_entity_int_enum, is_valid_entity_string, \
     is_valid_entity_decimal
 
@@ -105,7 +105,7 @@ class Signal(BaseModel):
 
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
-        return is_valid_uuid(data, 'id', version=4)
+        return is_valid_entity_uuid(data, 'id', version=4)
     
     @staticmethod
     def data_contains_valid_title(data: dict) -> bool:
@@ -162,7 +162,7 @@ class Signal(BaseModel):
     @staticmethod
     def norm_asset(asset: str) -> str:
         return asset.strip().lower()
-
+    
     @staticmethod
     def from_request_data(data: dict, user_id: str) -> 'tuple[str, Signal | None]':
         if not Signal.data_contains_valid_title(data):

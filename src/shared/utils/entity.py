@@ -102,29 +102,7 @@ def is_valid_entity_string_list(data: dict, field_key: str, min_length: int = 0,
     
     return True
 
-def is_valid_getall_object(data: dict) -> bool:
-    if 'limit' in data:
-        if not is_valid_entity_int(data, 'limit', 1, 100):
-            return False
-    else:
-        data['limit'] = 10
-    
-    if 'next_cursor' in data:
-        if not is_valid_entity_string(data, 'next_cursor', min_length=0, max_length=1024):
-            return False
-    else:
-        data['next_cursor'] = ''
-
-    if 'sort_order' in data:
-        if not isinstance(data['sort_order'], str) \
-            or data['sort_order'] not in [ 'asc', 'desc' ]:
-            return False
-    else:
-        data['sort_order'] = 'desc'
-    
-    return True
-
-def is_valid_uuid(data: dict, field_key: str, version: int = 4) -> bool:
+def is_valid_entity_uuid(data: dict, field_key: str, version: int = 4) -> bool:
     try:
         uuid_obj = uuid.UUID(data[field_key], version=version)
 
@@ -180,3 +158,25 @@ def is_valid_entity_decimal(data: dict, field_key: str, min_value = '0', max_val
         pass
 
     return False
+
+def is_valid_getall_object(data: dict) -> bool:
+    if 'limit' in data:
+        if not is_valid_entity_int(data, 'limit', 1, 100):
+            return False
+    else:
+        data['limit'] = 10
+    
+    if 'next_cursor' in data:
+        if not is_valid_entity_string(data, 'next_cursor', min_length=0, max_length=1024):
+            return False
+    else:
+        data['next_cursor'] = ''
+
+    if 'sort_order' in data:
+        if not isinstance(data['sort_order'], str) \
+            or data['sort_order'] not in [ 'asc', 'desc' ]:
+            return False
+    else:
+        data['sort_order'] = 'desc'
+    
+    return True

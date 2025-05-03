@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id, \
     is_valid_entity_string, is_valid_entity_url, is_valid_entity_string_list, \
-    is_valid_uuid, is_valid_entity_base64_string
+    is_valid_entity_uuid, is_valid_entity_base64_string
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
 
@@ -21,7 +21,7 @@ class FreeMaterial(BaseModel):
 
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
-        return is_valid_uuid(data, 'id', version=4)
+        return is_valid_entity_uuid(data, 'id', version=4)
     
     @staticmethod
     def data_contains_valid_title(data: dict) -> bool:
@@ -36,6 +36,10 @@ class FreeMaterial(BaseModel):
         return is_valid_entity_url(data, 'external_url')
     
     @staticmethod
+    def data_contains_valid_cover_img(data: dict) -> bool:
+        return is_valid_entity_base64_string(data, 'cover_img')
+    
+    @staticmethod
     def data_contains_valid_tags(data: dict) -> bool:
         return is_valid_entity_string_list(data, 'tags', min_length=0)
     
@@ -45,20 +49,20 @@ class FreeMaterial(BaseModel):
 
     @staticmethod
     def from_request_data(data: dict, user_id: str) -> 'tuple[str, FreeMaterial | None]':
-        if not is_valid_entity_string(data, 'title', min_length=2, max_length=256):
+        if not FreeMaterial.data_contains_valid_title(data):
             return ('Título inválido', None)
         
-        if not is_valid_entity_string(data, 'description', min_length=2, max_length=2048):
+        if not FreeMaterial.data_contains_valid_description(data):
             return ('Descrição inválida', None)
         
-        if not is_valid_entity_url(data, 'external_url'):
+        if not FreeMaterial.data_contains_valid_external_url(data):
             return ('Link externo inválido', None)
         
-        if not is_valid_entity_base64_string(data, 'cover_img'):
+        if not FreeMaterial.data_contains_valid_cover_img(data):
             return ('Imagem de capa inválida', None)
         
         if 'tags' in data:
-            if not is_valid_entity_string_list(data, 'tags', min_length=0):
+            if not FreeMaterial.data_contains_valid_tags(data):
                 return ('Lista de tags inválida', None)
             
             tags = FreeMaterial.norm_tags(data['tags'])
@@ -110,33 +114,33 @@ class FreeMaterial(BaseModel):
         result = self.to_dict()
 
         del result['user_id']
-
+        
         return result
     
     def update_from_dict(self, data: dict) -> dict:
         updated_fields = {}
 
-        if self.data_contains_valid_title(data):
+        if FreeMaterial.data_contains_valid_title(data):
             self.title = data['title'].strip()
 
             updated_fields['title'] = self.title
 
-        if self.data_contains_valid_external_url(data):
+        if FreeMaterial.data_contains_valid_external_url(data):
             self.external_url = data['external_url'].strip()
 
             updated_fields['external_url'] = self.external_url
 
-        if self.data_contains_valid_tags(data):
+        if FreeMaterial.data_contains_valid_tags(data):
             self.tags = FreeMaterial.norm_tags(data['tags'])
 
             updated_fields['tags'] = self.tags
 
-        if self.data_contains_valid_description(data):
+        if FreeMaterial.data_contains_valid_description(data):
             self.description = data['description'].strip()
 
             updated_fields['description'] = self.description
 
-        if is_valid_entity_base64_string(data, 'cover_img'):
+        if FreeMaterial.data_contains_valid_cover_img(data):
             self.cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
 
             updated_fields['cover_img'] = self.cover_img

@@ -5,7 +5,7 @@ from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id, \
     is_valid_entity_string, is_valid_entity_string_list, \
-    is_valid_uuid, is_valid_entity_base64_string, is_valid_entity_int_enum
+    is_valid_entity_uuid, is_valid_entity_base64_string, is_valid_entity_int_enum
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
 
@@ -25,7 +25,7 @@ class News(BaseModel):
 
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
-        return is_valid_uuid(data, 'id', version=4)
+        return is_valid_entity_uuid(data, 'id', version=4)
     
     @staticmethod
     def data_contains_valid_title(data: dict) -> bool:
@@ -38,6 +38,14 @@ class News(BaseModel):
     @staticmethod
     def data_contains_valid_content(data: dict) -> bool:
         return is_valid_entity_string(data, 'content', min_length=2, max_length=8128)
+    
+    @staticmethod
+    def data_contains_valid_cover_img(data: dict) -> bool:
+        return is_valid_entity_base64_string(data, 'cover_img')
+    
+    @staticmethod
+    def data_contains_valid_card_img(data: dict) -> bool:
+        return is_valid_entity_base64_string(data, 'card_img')
     
     @staticmethod
     def data_contains_valid_tags(data: dict) -> bool:
@@ -53,23 +61,23 @@ class News(BaseModel):
 
     @staticmethod
     def from_request_data(data: dict, user_id: str) -> 'tuple[str, News | None]':
-        if not is_valid_entity_string(data, 'title', min_length=2, max_length=512):
+        if not News.data_contains_valid_title(data):
             return ('Título inválido', None)
         
-        if not is_valid_entity_string(data, 'header', min_length=2, max_length=1024):
+        if not News.data_contains_valid_header(data):
             return ('Título inválido', None)
 
-        if not is_valid_entity_string(data, 'content', min_length=2, max_length=2048):
+        if not News.data_contains_valid_content(data):
             return ('Conteúdo inválido', None)
         
-        if not is_valid_entity_base64_string(data, 'cover_img'):
+        if not News.data_contains_valid_cover_img(data):
             return ('Imagem de capa inválida', None)
-        
-        if not is_valid_entity_base64_string(data, 'card_img'):
+
+        if not News.data_contains_valid_card_img(data):
             return ('Imagem de capa inválida', None)
         
         if 'tags' in data:
-            if not is_valid_entity_string_list(data, 'tags', min_length=0):
+            if not News.data_contains_valid_tags(data):
                 return ('Lista de tags inválida', None)
             
             tags = News.norm_tags(data['tags'])
@@ -136,37 +144,37 @@ class News(BaseModel):
     def update_from_dict(self, data: dict) -> dict:
         updated_fields = {}
 
-        if self.data_contains_valid_title(data):
+        if News.data_contains_valid_title(data):
             self.title = data['title'].strip()
 
             updated_fields['title'] = self.title
 
-        if self.data_contains_valid_header(data):
+        if News.data_contains_valid_header(data):
             self.header = data['header'].strip()
 
             updated_fields['header'] = self.header
 
-        if self.data_contains_valid_content(data):
+        if News.data_contains_valid_content(data):
             self.content = data['content'].strip()
 
             updated_fields['content'] = self.content
 
-        if self.data_contains_valid_tags(data):
+        if News.data_contains_valid_tags(data):
             self.tags = News.norm_tags(data['tags'])
 
             updated_fields['tags'] = self.tags
 
-        if self.data_contains_valid_vip_level(data):
+        if News.data_contains_valid_vip_level(data):
             self.vip_level = VIP_LEVEL(data['vip_level'])
 
             updated_fields['vip_level'] = self.vip_level
 
-        if is_valid_entity_base64_string(data, 'cover_img'):
+        if News.data_contains_valid_cover_img(data):
             self.cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
 
             updated_fields['cover_img'] = self.cover_img
-
-        if is_valid_entity_base64_string(data, 'card_img'):
+        
+        if News.data_contains_valid_card_img(data):
             self.card_img = ObjectStorageFile.from_base64_data(data['card_img'])
 
             updated_fields['card_img'] = self.card_img
