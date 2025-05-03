@@ -68,7 +68,7 @@ class Usecase:
 
         if signal is not None:
             if signal.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:
-                return { 'error': 'Acesso não autorizado' }
+                return { 'signal': None }
 
         return {
             'signal': signal.to_public_dict() if signal is not None else None

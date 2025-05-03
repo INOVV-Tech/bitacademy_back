@@ -71,7 +71,7 @@ class Usecase:
 
         if news is not None:
             if news.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:
-                return { 'error': 'Acesso não autorizado' }
+                return { 'news': None }
 
         return {
             'news': news.to_public_dict() if news is not None else None
@@ -82,7 +82,7 @@ class Usecase:
 
         if news is not None:
             if news.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:
-                return { 'error': 'Acesso não autorizado' }
+                return { 'news': None }
 
         return {
             'news': news.to_public_dict() if news is not None else None

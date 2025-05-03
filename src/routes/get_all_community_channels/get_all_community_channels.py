@@ -83,7 +83,8 @@ class Usecase:
             db_data=db_data,
             item_key='community_channels',
             limit=request_params['limit'],
-            last_evaluated_key=db_data['last_evaluated_key']
+            last_evaluated_key=db_data['last_evaluated_key'],
+            public_args=[ requester_user.role ]
         )
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

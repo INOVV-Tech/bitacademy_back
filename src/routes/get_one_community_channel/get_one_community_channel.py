@@ -64,10 +64,10 @@ class Usecase:
 
         if community_channel is not None:
             if community_channel.permissions.is_forbidden(requester_user.role):
-                return { 'error': 'Acesso não autorizado' }
+                return { 'community_channel': None }
         
         return {
-            'community_channel': community_channel.to_public_dict() if community_channel is not None else None
+            'community_channel': community_channel.to_public_dict(requester_user.role) if community_channel is not None else None
         }
     
     def query_with_title(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
@@ -75,10 +75,10 @@ class Usecase:
 
         if community_channel is not None:
             if community_channel.permissions.is_forbidden(requester_user.role):
-                return { 'error': 'Acesso não autorizado' }
+                return { 'community_channel': None }
 
         return {
-            'community_channel': community_channel.to_public_dict() if community_channel is not None else None
+            'community_channel': community_channel.to_public_dict(requester_user.role) if community_channel is not None else None
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

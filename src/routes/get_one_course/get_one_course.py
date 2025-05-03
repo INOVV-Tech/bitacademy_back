@@ -71,7 +71,7 @@ class Usecase:
 
         if course is not None:
             if course.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:
-                return { 'error': 'Acesso não autorizado' }
+                return { 'course': None }
 
         return {
             'course': course.to_public_dict() if course is not None else None
@@ -82,7 +82,7 @@ class Usecase:
 
         if course is not None:
             if course.vip_level > VIP_LEVEL.FREE and requester_user.role not in VIP_USER_ROLES:
-                return { 'error': 'Acesso não autorizado' }
+                return { 'course': None }
 
         return {
             'course': course.to_public_dict() if course is not None else None

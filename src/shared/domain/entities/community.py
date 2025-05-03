@@ -63,8 +63,15 @@ class CommunityChannelPermissions:
             'ADMIN': self.ADMIN.value
         }
     
-    def to_public_dict(self) -> dict:
-        return self.to_dict()
+    def to_public_dict(self, role: ROLE | None = None) -> dict:
+        result = self.to_dict()
+
+        if role is not None and not self.is_edit_role(role):
+            for role_field in ROLE:
+                if role_field != role:
+                    del result[role_field.value]
+
+        return result
     
     def update_from_dict(self, data: dict) -> dict:
         updated_fields = {}
@@ -73,6 +80,9 @@ class CommunityChannelPermissions:
     
     def is_forbidden(self, role: ROLE) -> bool:
         return getattr(self, role.value) == COMMUNITY_PERMISSION.FORBIDDEN
+    
+    def is_edit_role(self, role: ROLE) -> bool:
+        return getattr(self, role.value) == COMMUNITY_PERMISSION.READ_WRITE_EDIT
 
 class CommunityChannel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -127,7 +137,7 @@ class CommunityChannel(BaseModel):
             title=data['title'].strip(),
             comm_type=COMMUNITY_TYPE[data['comm_type']],
             icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
-            permissions=CommunityChannelPermissions.from_dict_static(data),
+            permissions=CommunityChannelPermissions.from_dict_static(data['permissions']),
             created_at=now_timestamp(),
             user_id=user_id
         )
@@ -147,15 +157,26 @@ class CommunityChannel(BaseModel):
         )
 
     def to_dict(self) -> dict:
-        return {}
+        return {
+            'id': self.id,
+            'title': self.title,
+            'comm_type': self.comm_type.value,
+            'icon_img': self.icon_img.to_dict(),
+            'permissions': self.permissions.to_dict(),
+            'created_at': self.created_at,
+            'user_id': self.user_id
+        }
     
     def from_dict(self, data: dict) -> 'CommunityChannel':
         return self.from_dict_static(data)
     
-    def to_public_dict(self) -> dict:
+    def to_public_dict(self, role: ROLE | None = None) -> dict:
         result = self.to_dict()
 
         del result['user_id']
+
+        if role is not None:
+            result['permissions'] = self.permissions.to_public_dict(role)
 
         return result
     

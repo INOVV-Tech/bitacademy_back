@@ -61,7 +61,7 @@ class Usecase:
         if 'error' in upload_cover_resp:
             return upload_cover_resp
         
-        self.repository.community_repo.create(community_channel)
+        self.repository.community_repo.create_channel(community_channel)
 
         return {
             'community_channel': community_channel.to_public_dict()

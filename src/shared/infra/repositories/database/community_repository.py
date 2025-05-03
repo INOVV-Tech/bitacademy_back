@@ -56,7 +56,7 @@ class CommunityRepositoryDynamo(ICommunityRepository):
         user_role: ROLE | None = None,
         limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
         filter_expressions = []
-
+        
         if title != '':
             filter_expressions.append(Attr('title').contains(title))
 
