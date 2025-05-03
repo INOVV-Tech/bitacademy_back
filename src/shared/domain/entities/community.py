@@ -7,6 +7,7 @@ from src.shared.utils.entity import random_entity_id, is_valid_entity_uuid, \
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
 
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 
@@ -69,13 +70,16 @@ class CommunityChannelPermissions:
         updated_fields = {}
 
         return updated_fields
+    
+    def is_forbidden(self, role: ROLE) -> bool:
+        return getattr(self, role.value) == COMMUNITY_PERMISSION.FORBIDDEN
 
 class CommunityChannel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
     id: str
     title: str
-    type: COMMUNITY_TYPE
+    comm_type: COMMUNITY_TYPE
     icon_img: ObjectStorageFile
     permissions: CommunityChannelPermissions
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
@@ -90,8 +94,8 @@ class CommunityChannel(BaseModel):
         return is_valid_entity_string(data, 'title', min_length=2, max_length=512)
     
     @staticmethod
-    def data_contains_valid_type(data: dict) -> bool:
-        return is_valid_entity_string_enum(data, 'type', COMMUNITY_TYPE)
+    def data_contains_valid_comm_type(data: dict) -> bool:
+        return is_valid_entity_string_enum(data, 'comm_type', COMMUNITY_TYPE)
     
     @staticmethod
     def data_contains_valid_icon_img(data: dict) -> bool:
@@ -109,7 +113,7 @@ class CommunityChannel(BaseModel):
         if not CommunityChannel.data_contains_valid_title(data):
             return ('Título inválido', None)
         
-        if not CommunityChannel.data_contains_valid_type(data):
+        if not CommunityChannel.data_contains_valid_comm_type(data):
             return ('Tipo de canal de comunidade inválido', None)
         
         if not CommunityChannel.data_contains_valid_icon_img(data):
@@ -121,7 +125,7 @@ class CommunityChannel(BaseModel):
         community_channel = CommunityChannel(
             id=random_entity_id(),
             title=data['title'].strip(),
-            type=COMMUNITY_TYPE[data['type']],
+            comm_type=COMMUNITY_TYPE[data['comm_type']],
             icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
             permissions=CommunityChannelPermissions.from_dict_static(data),
             created_at=now_timestamp(),
@@ -135,7 +139,7 @@ class CommunityChannel(BaseModel):
         return CommunityChannel(
             id=data['id'],
             title=data['title'],
-            type=COMMUNITY_TYPE[data['type']],
+            comm_type=COMMUNITY_TYPE[data['comm_type']],
             icon_img=ObjectStorageFile.from_dict_static(data['icon_img']),
             permissions=CommunityChannelPermissions.from_dict_static(data['permissions']),
             created_at=int(data['created_at']),

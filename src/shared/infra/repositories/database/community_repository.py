@@ -4,7 +4,9 @@ from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 
 from src.shared.domain.repositories.community_repository_interface import ICommunityRepository
 
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
+from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 from src.shared.domain.entities.community import CommunityChannel
 
 from src.shared.infra.external.key_formatters import encode_idx_pk
@@ -48,23 +50,29 @@ class CommunityRepositoryDynamo(ICommunityRepository):
 
         return community_channel
 
-    def get_all_channels(self, title: str = '', types: list[COMMUNITY_TYPE] = [], limit: int = 10, \
-        last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
+    def get_all_channels(self,
+        title: str = '',
+        comm_types: list[COMMUNITY_TYPE] = [],
+        user_role: ROLE | None = None,
+        limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
         filter_expressions = []
 
         if title != '':
             filter_expressions.append(Attr('title').contains(title))
 
-        if len(types) > 0:
-            types_filter_expression = None
+        if len(comm_types) > 0:
+            comm_types_filter_expression = None
 
-            for type in types:
-                if types_filter_expression is None:
-                    types_filter_expression = Attr('type').eq(type.value)
+            for comm_type in comm_types:
+                if comm_types_filter_expression is None:
+                    comm_types_filter_expression = Attr('comm_type').eq(comm_type.value)
                 else:
-                    types_filter_expression |= Attr('type').eq(type.value)
+                    comm_types_filter_expression |= Attr('comm_type').eq(comm_type.value)
 
-            filter_expressions.append(types_filter_expression)
+            filter_expressions.append(comm_types_filter_expression)
+
+        if user_role is not None:
+            filter_expressions.append(Attr(f'permissions.{user_role.value}').ne(COMMUNITY_PERMISSION.FORBIDDEN))
 
         filter_expression= None
 

@@ -268,6 +268,48 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        ### COMMUNITY ###
+
+        self.create_community_channel = self.create_lambda_api_gateway_integration(
+            module_name='create_community_channel',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_all_community_channels = self.create_lambda_api_gateway_integration(
+            module_name='get_all_community_channels',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_one_community_channel = self.create_lambda_api_gateway_integration(
+            module_name='get_one_community_channel',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.update_community_channel = self.create_lambda_api_gateway_integration(
+            module_name='update_community_channel',
+            method='PUT',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.delete_community_channel = self.create_lambda_api_gateway_integration(
+            module_name='delete_community_channel',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -303,7 +345,13 @@ class LambdaStack(Construct):
             self.get_all_signals,
             self.get_one_signal,
             self.update_signal,
-            self.delete_signal
+            self.delete_signal,
+
+            self.create_community_channel,
+            self.get_all_community_channels,
+            self.get_one_community_channel,
+            self.update_community_channel,
+            self.delete_community_channel
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -339,5 +387,11 @@ class LambdaStack(Construct):
             self.get_all_signals,
             self.get_one_signal,
             self.update_signal,
-            self.delete_signal
+            self.delete_signal,
+
+            self.create_community_channel,
+            self.get_all_community_channels,
+            self.get_one_community_channel,
+            self.update_community_channel,
+            self.delete_community_channel
         ]

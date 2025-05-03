@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.entities.community import CommunityChannel
 
@@ -10,8 +11,11 @@ class ICommunityRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all_channels(self, title: str = '', types: list[COMMUNITY_TYPE] = [], limit: int = 10, \
-        last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
+    def get_all_channels(self,
+        title: str = '',
+        comm_types: list[COMMUNITY_TYPE] = [],
+        user_role: ROLE | None = None,
+        limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
         pass
     
     @abstractmethod
