@@ -12,6 +12,7 @@ from src.shared.domain.repositories.news_repository_interface import INewsReposi
 from src.shared.domain.repositories.tool_repository_interface import IToolRepository
 from src.shared.domain.repositories.tag_repository_interface import ITagRepository
 from src.shared.domain.repositories.signal_repository_interface import ISignalRepository
+from src.shared.domain.repositories.community_repository_interface import ICommunityRepository
 
 ### REPOSITORIES ###
 
@@ -22,6 +23,7 @@ from src.shared.infra.repositories.database.news_repository import NewsRepositor
 from src.shared.infra.repositories.database.tool_repository import ToolRepositoryDynamo
 from src.shared.infra.repositories.database.tag_repository import TagRepositoryDynamo
 from src.shared.infra.repositories.database.signal_repository import SignalRepositoryDynamo
+from src.shared.infra.repositories.database.community_repository import CommunityRepositoryDynamo
 
 class Repository:
     free_material_repo: IFreeMaterialRepository
@@ -31,6 +33,7 @@ class Repository:
     tool_repo: IToolRepository
     tag_repo: ITagRepository
     signal_repo: ISignalRepository
+    community_repo: ICommunityRepository
 
     def __init__(
         self,
@@ -40,7 +43,8 @@ class Repository:
         news_repo: bool = False,
         tool_repo: bool = False,
         tag_repo: bool = False,
-        signal_repo: bool = False
+        signal_repo: bool = False,
+        community_repo: bool = False
     ):
         self.session = None
 
@@ -54,7 +58,8 @@ class Repository:
                 news_repo,
                 tool_repo,
                 tag_repo,
-                signal_repo
+                signal_repo,
+                community_repo
             )
 
     def get_s3_datasource(self) -> S3Datasource:
@@ -67,7 +72,8 @@ class Repository:
         pass
         
     def _initialize_database_repositories(self, free_material_repo: bool, course_repo: bool, \
-        home_coins_repo: bool, news_repo: bool, tool_repo: bool, tag_repo: bool, signal_repo: bool):
+        home_coins_repo: bool, news_repo: bool, tool_repo: bool, tag_repo: bool, signal_repo: bool, \
+        community_repo: bool):
         dynamo = DynamoDatasource(
             dynamo_table_name=Environments.dynamo_table_name,
             region=Environments.region,
@@ -94,3 +100,6 @@ class Repository:
 
         if signal_repo:
             self.signal_repo = SignalRepositoryDynamo(dynamo)
+
+        if community_repo:
+            self.community_repo = CommunityRepositoryDynamo(dynamo)
