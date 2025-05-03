@@ -72,7 +72,7 @@ class CommunityRepositoryDynamo(ICommunityRepository):
             filter_expressions.append(comm_types_filter_expression)
 
         if user_role is not None:
-            filter_expressions.append(Attr(f'permissions.{user_role.value}').ne(COMMUNITY_PERMISSION.FORBIDDEN))
+            filter_expressions.append(Attr(f'permissions.{user_role.value}').ne(COMMUNITY_PERMISSION.FORBIDDEN.value))
 
         filter_expression= None
 
