@@ -1,4 +1,5 @@
 import re
+import json
 import uuid
 import base64
 from enum import Enum
@@ -76,7 +77,14 @@ def is_valid_entity_string_list(data: dict, field_key: str, min_length: int = 0,
     if field_key not in data:
         return False
     
-    if not isinstance(data[field_key], list):
+    if isinstance(data[field_key], list):
+        pass
+    elif isinstance(data[field_key], str):
+        try:
+            data[field_key] = json.loads(data[field_key])
+        except:
+            return False
+    else:
         return False
 
     if len(data[field_key]) < min_length or len(data[field_key]) > max_length:
@@ -88,7 +96,7 @@ def is_valid_entity_string_list(data: dict, field_key: str, min_length: int = 0,
         
         if len(item) < min_str_length or len(item) > max_str_length:
             return False
-
+    
     return True
 
 def is_valid_getall_object(data: dict) -> bool:
