@@ -67,3 +67,6 @@ def load_resource(filename, encode_base64=True, base64_prefix=''):
 
     return data
 
+def write_base64(root_directory, base64):
+    with open(os.path.join(root_directory, 'tests', '.resources', 'test.txt'), 'wb') as file:
+        file.write(base64.encode('utf8'))
