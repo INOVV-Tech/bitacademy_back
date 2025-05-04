@@ -17,3 +17,7 @@ MESSAGE_ALPHABET_PATTERNS = [
 TMP_ALPHABET_REGEX = ''.join(MESSAGE_ALPHABET_PATTERNS)
 
 MESSAGE_ALPHABET_REGEX = re.compile(f'([{TMP_ALPHABET_REGEX}])')
+
+BLEACH_ALLOWED_TAGS = [ 'strong', 'em', 'del', 'code', 'pre', 'a', 'h1', 'h2', 'h3', 'blockquote', 'ul', 'ol', 'li', 'hr' ]
+BLEACH_ALLOWED_ATTRIBUTES = {}
+BLEACH_ALLOWED_PROTOCOLS = [ 'http', 'https' ]

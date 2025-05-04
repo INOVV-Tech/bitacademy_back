@@ -5,6 +5,8 @@ from src.shared.utils.time import now_timestamp
 from src.shared.messaging.constants import MAX_MESSAGE_CHARACTERS, \
     MESSAGE_ALPHABET_REGEX
 
+from src.shared.messaging.sanitize import sanitize_input_msg
+
 def parse_input_msg(input_content: str) -> CommunityMessage | None:
     if not isinstance(input_content, str):
         return None
@@ -16,14 +18,11 @@ def parse_input_msg(input_content: str) -> CommunityMessage | None:
 
     alphabet_filter = MESSAGE_ALPHABET_REGEX.findall(input_content)
     input_content = ''.join([ x[0] for x in alphabet_filter ])
-    
+
     if len(input_content) == 0:
         return None
 
-    # apply sanitation
-        # remove invalid patterns
-
-    input_content = input_content.strip()
+    input_content = sanitize_input_msg(input_content).strip()
 
     if len(input_content) == 0:
         return None
