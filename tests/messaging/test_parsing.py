@@ -17,19 +17,17 @@ class Test_MessagingParsing:
 
     @pytest.mark.skip(reason='Done')
     def test_input_msg(self):
-        msg = parse_input_msg(TEST_INPUT_CONTENT)
+        (error, raw_content) = parse_input_msg(TEST_INPUT_CONTENT)
 
-        assert msg != None
-
-        self.print_data(msg.to_dict())
+        assert raw_content != None
 
     @pytest.mark.skip(reason='Done')
     def test_performance(self):
         ini = now_timestamp_milli()
 
-        for i in range(0, 1):
+        for i in range(0, 1000):
             parse_input_msg(TEST_INPUT_CONTENT)
         
         diff = now_timestamp_milli() - ini
 
-        print(f'Time diff (ms) = {diff}')
+        print(f'Time diff (ms) = {diff}') # 723ms

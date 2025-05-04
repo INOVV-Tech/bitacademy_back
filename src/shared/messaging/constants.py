@@ -1,6 +1,7 @@
 import re
 
 MAX_MESSAGE_CHARACTERS = 3500
+MAX_MESSAGES_PER_BATCH = 1000
 
 MESSAGE_ALPHABET_PATTERNS = [
     r'A-Za-z0-9À-ÿØ-öø-ÿ \:\<\>@\[\]\/\\\`\"\'\(\)\.\,\;\?\!\~\+\-\=\_\#\$\%\^\&\*\|\{\}', # Default
