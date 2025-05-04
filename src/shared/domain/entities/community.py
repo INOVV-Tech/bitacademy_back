@@ -73,11 +73,6 @@ class CommunityChannelPermissions:
 
         return result
     
-    def update_from_dict(self, data: dict) -> dict:
-        updated_fields = {}
-
-        return updated_fields
-    
     def is_forbidden(self, role: ROLE) -> bool:
         return getattr(self, role.value) == COMMUNITY_PERMISSION.FORBIDDEN
     
@@ -279,14 +274,23 @@ class CommunityForumTopic(BaseModel):
         return result
 
 class CommunityMessage:
-    def __init__(self, created_at: int):
+    def __init__(self, raw_content: str, created_at: int, user_id: str | None = None):
+        self.raw_content = raw_content
         self.created_at = created_at
+        self.user_id = user_id
+
+    def to_dict(self) -> dict:
+        return {
+            'raw_content': self.raw_content,
+            'created_at': self.created_at,
+            'user_id': self.user_id
+        }
 
 class CommunityMessageBatch(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     channel_id: str
-    forum_topic_id: str
+    forum_topic_id: str | None
     messages: list[CommunityMessage]
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
