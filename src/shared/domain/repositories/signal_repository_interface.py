@@ -35,5 +35,5 @@ class ISignalRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id: str) -> Signal | None:
+    def delete(self, id: str) -> int:
         pass

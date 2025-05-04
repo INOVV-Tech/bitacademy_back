@@ -26,5 +26,5 @@ class INewsRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id: str) -> News | None:
+    def delete(self, id: str) -> int:
         pass

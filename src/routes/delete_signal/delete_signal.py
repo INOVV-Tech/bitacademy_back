@@ -48,11 +48,12 @@ class Usecase:
         if not Signal.data_contains_valid_id(request_data):
             return { 'error': 'Identificador de sinal inválido' }
         
-        signal = self.repository.signal_repo.delete(request_data['id'])
+        delete_result = self.repository.signal_repo.delete(request_data['id'])
     
-        return {
-            'signal': signal.to_public_dict() if signal is not None else None
-        }
+        if delete_result != 200:
+            return { 'error': f'Delete falhou com status "{delete_result}"' }
+
+        return {}
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

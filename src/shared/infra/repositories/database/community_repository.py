@@ -7,7 +7,8 @@ from src.shared.domain.repositories.community_repository_interface import ICommu
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
-from src.shared.domain.entities.community import CommunityChannel
+from src.shared.domain.entities.community import CommunityChannel, \
+    CommunityForumTopic
 
 from src.shared.infra.external.key_formatters import encode_idx_pk
 
@@ -137,13 +138,122 @@ class CommunityRepositoryDynamo(ICommunityRepository):
         
         return community_channel
 
-    def delete_channel(self, id: str) -> CommunityChannel | None:
-        data = self.dynamo.delete_item(
+    def delete_channel(self, id: str) -> int:
+        resp = self.dynamo.delete_item(
             partition_key=self.community_channel_partition_key_format_from_id(id),
             sort_key=self.community_channel_sort_key_format()
         )
 
-        if 'Attributes' not in data:
-            return None
+        return resp['ResponseMetadata']['HTTPStatusCode']
+    
+    def role_can_read_channel(self, channel_id: str, user_role: ROLE) -> bool:
+        filter_expression = Attr(f'permissions.{user_role.value}').ne(COMMUNITY_PERMISSION.FORBIDDEN.value)
+
+        count_response = self.dynamo.count(
+            partition_key=self.community_channel_partition_key_format_from_id(channel_id),
+            filter_expression=filter_expression,
+        )
+
+        return count_response['count'] > 0
+    
+    def role_can_edit_channel(self, channel_id: str, user_role: ROLE) -> bool:
+        filter_expression = Attr(f'permissions.{user_role.value}').eq(COMMUNITY_PERMISSION.READ_WRITE_EDIT.value)
+
+        count_response = self.dynamo.count(
+            partition_key=self.community_channel_partition_key_format_from_id(channel_id),
+            filter_expression=filter_expression,
+        )
+
+        return count_response['count'] > 0
+
+    ### FORUM ###
+    @staticmethod
+    def community_forum_topic_partition_key_format(community_forum_topic: CommunityForumTopic) -> str:
+        return f'COMMUNITY_FORUM_TOPIC#{community_forum_topic.id}'
+    
+    @staticmethod
+    def community_forum_topic_partition_key_format_from_id(id: str) -> str:
+        return f'COMMUNITY_FORUM_TOPIC#{id}'
+    
+    @staticmethod
+    def community_forum_topic_sort_key_format() -> str:
+        return 'METADATA'
+
+    @staticmethod
+    def community_forum_topic_gsi_entity_get_all_pk(community_forum_topic: CommunityForumTopic) -> str:
+        return f'INDEX#COMMUNITY_FORUM_TOPIC#{community_forum_topic.channel_id}'
+    
+    @staticmethod
+    def community_forum_topic_gsi_entity_get_all_pk_from_id(channel_id: str) -> str:
+        return f'INDEX#COMMUNITY_FORUM_TOPIC#{channel_id}'
+    
+    @staticmethod
+    def community_forum_topic_gsi_entity_get_all_sk(community_forum_topic: CommunityForumTopic) -> str:
+        return f'DATE#{community_forum_topic.created_at}'
+
+    def create_forum_topic(self, community_forum_topic: CommunityForumTopic) -> CommunityForumTopic:
+        item = community_forum_topic.to_dict()
+
+        item['PK'] = self.community_forum_topic_partition_key_format(community_forum_topic)
+        item['SK'] = self.community_forum_topic_sort_key_format()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.community_forum_topic_gsi_entity_get_all_pk(community_forum_topic)
+        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.community_forum_topic_gsi_entity_get_all_sk(community_forum_topic)
+
+        self.dynamo.put_item(item=item)
+
+        return community_forum_topic
+
+    def get_channel_forum_topics(self,
+        channel_id: str,
+        title: str = '',
+        limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
+        filter_expressions = []
         
-        return CommunityChannel.from_dict_static(data['Attributes'])
+        if title != '':
+            filter_expressions.append(Attr('title').contains(title))
+
+        filter_expression= None
+
+        if len(filter_expressions) > 0:
+            for f_exp in filter_expressions:
+                if filter_expression is None:
+                    filter_expression = f_exp
+                else:
+                    filter_expression &= f_exp
+
+        response = self.dynamo.query(
+            index_name='GetAllEntities',
+            partition_key=self.community_forum_topic_gsi_entity_get_all_pk_from_id(channel_id),
+            limit=limit,
+            exclusive_start_key=last_evaluated_key if last_evaluated_key != '' else None,
+            filter_expression=filter_expression,
+            scan_index_forward=False if sort_order == 'desc' else True
+        )
+
+        count_response = self.dynamo.count(
+            index_name='GetAllEntities',
+            partition_key=self.community_forum_topic_gsi_entity_get_all_pk_from_id(channel_id),
+            filter_expression=filter_expression,
+        )
+        
+        return {
+            'community_forum_topics': [ CommunityForumTopic.from_dict_static(item) for item in response['items'] ],
+            'last_evaluated_key': response.get('last_evaluated_key'),
+            'total': count_response['count']
+        }
+    
+    def get_one_forum_topic(self, id: str) -> CommunityForumTopic | None:
+        data = self.dynamo.get_item(
+            partition_key=self.community_forum_topic_partition_key_format_from_id(id),
+            sort_key=self.community_forum_topic_sort_key_format()
+        )
+
+        return CommunityForumTopic.from_dict_static(data['Item']) if 'Item' in data else None
+    
+    def delete_forum_topic(self, id: str) -> int:
+        resp = self.dynamo.delete_item(
+            partition_key=self.community_forum_topic_partition_key_format_from_id(id),
+            sort_key=self.community_forum_topic_sort_key_format()
+        )
+
+        return resp['ResponseMetadata']['HTTPStatusCode']

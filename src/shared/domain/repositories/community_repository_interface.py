@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
-from src.shared.domain.entities.community import CommunityChannel
+from src.shared.domain.entities.community import CommunityChannel, \
+    CommunityForumTopic
 
 class ICommunityRepository(ABC):
     ### CHANNEL ###
@@ -31,5 +32,33 @@ class ICommunityRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_channel(self, id: str) -> CommunityChannel | None:
+    def delete_channel(self, id: str) -> int:
+        pass
+
+    @abstractmethod
+    def role_can_read_channel(self, channel_id: str, user_role: ROLE) -> bool:
+        pass
+
+    @abstractmethod
+    def role_can_edit_channel(self, channel_id: str, user_role: ROLE) -> bool:
+        pass
+
+    ### FORUM ###
+    @abstractmethod
+    def create_forum_topic(self, community_forum_topic: CommunityForumTopic) -> CommunityForumTopic:
+        pass
+
+    @abstractmethod
+    def get_channel_forum_topics(self,
+        channel_id: str,
+        title: str = '',
+        limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
+        pass
+
+    @abstractmethod
+    def get_one_forum_topic(self, id: str) -> CommunityForumTopic | None:
+        pass
+
+    @abstractmethod
+    def delete_forum_topic(self, id: str) -> int:
         pass

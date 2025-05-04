@@ -131,13 +131,10 @@ class NewsRepositoryDynamo(INewsRepository):
         
         return news
 
-    def delete(self, id: str) -> News | None:
-        data = self.dynamo.delete_item(
+    def delete(self, id: str) -> int:
+        resp = self.dynamo.delete_item(
             partition_key=self.news_partition_key_format_from_id(id),
             sort_key=self.news_sort_key_format()
         )
 
-        if 'Attributes' not in data:
-            return None
-
-        return News.from_dict_static(data['Attributes'])
+        return resp['ResponseMetadata']['HTTPStatusCode']

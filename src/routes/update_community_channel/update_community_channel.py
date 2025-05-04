@@ -73,10 +73,10 @@ class Usecase:
         if 'icon_img' in updated_fields:
             s3_datasource = self.repository.get_s3_datasource()
 
-            upload_resp = community_channel.icon_img.store_in_s3(s3_datasource)
+            upload_icon_resp = community_channel.icon_img.store_in_s3(s3_datasource)
 
-            if 'error' in upload_resp:
-                return upload_resp
+            if 'error' in upload_icon_resp:
+                return upload_icon_resp
 
         self.repository.community_repo.update_channel(community_channel)
 

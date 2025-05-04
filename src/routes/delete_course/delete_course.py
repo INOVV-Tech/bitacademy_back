@@ -48,11 +48,12 @@ class Usecase:
         if not Course.data_contains_valid_id(request_data):
             return { 'error': 'Identificador de curso inválido' }
         
-        course = self.repository.course_repo.delete(request_data['id'])
-    
-        return {
-            'course': course.to_public_dict() if course is not None else None
-        }
+        delete_result = self.repository.course_repo.delete(request_data['id'])
+
+        if delete_result != 200:
+            return { 'error': f'Delete falhou com status "{delete_result}"' }
+
+        return {}
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

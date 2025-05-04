@@ -26,5 +26,5 @@ class ICourseRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id: str) -> Course | None:
+    def delete(self, id: str) -> int:
         pass

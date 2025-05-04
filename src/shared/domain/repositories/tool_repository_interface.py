@@ -25,5 +25,5 @@ class IToolRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id: str) -> Tool | None:
+    def delete(self, id: str) -> int:
         pass

@@ -201,3 +201,93 @@ class CommunityChannel(BaseModel):
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 
         return updated_fields
+    
+class CommunityForumTopic(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    
+    id: str
+    channel_id: str
+    title: str
+    icon_img: ObjectStorageFile
+    created_at: int = Field(..., gt=0, description='Timestamp in seconds')
+    user_id: str
+
+    @staticmethod
+    def data_contains_valid_id(data: dict) -> bool:
+        return is_valid_entity_uuid(data, 'id', version=4)
+    
+    @staticmethod
+    def data_contains_valid_channel_id(data: dict) -> bool:
+        return is_valid_entity_uuid(data, 'channel_id', version=4)
+    
+    @staticmethod
+    def data_contains_valid_title(data: dict) -> bool:
+        return is_valid_entity_string(data, 'title', min_length=2, max_length=512)
+    
+    @staticmethod
+    def data_contains_valid_icon_img(data: dict) -> bool:
+        return is_valid_entity_base64_string(data, 'icon_img')
+
+    @staticmethod
+    def from_request_data(data: dict, user_id: str) -> 'tuple[str, CommunityForumTopic | None]':
+        if not CommunityForumTopic.data_contains_valid_title(data):
+            return ('Título inválido', None)
+        
+        if not CommunityForumTopic.data_contains_valid_channel_id(data):
+            return ('Identificador de canal de comunidade inválido', None)
+        
+        if not CommunityForumTopic.data_contains_valid_icon_img(data):
+            return ('Imagem de ícone inválida', None)
+
+        community_forum_topic = CommunityForumTopic(
+            id=random_entity_id(),
+            channel_id=data['channel_id'],
+            title=data['title'].strip(),
+            icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
+            created_at=now_timestamp(),
+            user_id=user_id
+        )
+
+        return ('', community_forum_topic)
+
+    @staticmethod
+    def from_dict_static(data: dict) -> 'CommunityForumTopic':
+        return CommunityForumTopic(
+            id=data['id'],
+            channel_id=data['channel_id'],
+            title=data['title'],
+            icon_img=ObjectStorageFile.from_dict_static(data['icon_img']),
+            created_at=int(data['created_at']),
+            user_id=data['user_id']
+        )
+
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'channel_id': self.channel_id,
+            'title': self.title,
+            'icon_img': self.icon_img.to_dict(),
+            'created_at': self.created_at,
+            'user_id': self.user_id
+        }
+    
+    def to_public_dict(self) -> dict:
+        result = self.to_dict()
+
+        del result['user_id']
+
+        return result
+
+class CommunityMessage:
+    def __init__(self, created_at: int):
+        self.created_at = created_at
+
+class CommunityMessageBatch(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    channel_id: str
+    forum_topic_id: str
+    messages: list[CommunityMessage]
+    created_at: int = Field(..., gt=0, description='Timestamp in seconds')
+    updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
+

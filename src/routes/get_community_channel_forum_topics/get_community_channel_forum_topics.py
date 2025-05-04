@@ -7,9 +7,18 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.tool import Tool
+from src.shared.domain.entities.community import CommunityForumTopic
 
-ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
+from src.shared.utils.entity import is_valid_getall_object
+from src.shared.utils.pagination import encode_cursor_get_all, decode_cursor
+
+ALLOWED_USER_ROLES = [
+    ROLE.GUEST,
+    ROLE.AFFILIATE,
+    ROLE.VIP,
+    ROLE.TEACHER,
+    ROLE.ADMIN
+]
 
 class Controller:
     @staticmethod
@@ -21,11 +30,11 @@ class Controller:
                 raise MissingParameters('requester_user')
             
             requester_user = AuthAuthorizerDTO.from_api_gateway(requester_user)
-            
+
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(request.data)
+            response = Usecase().execute(requester_user, request.query_params)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -42,18 +51,37 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(tool_repo=True)
+        self.repository = Repository(community_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
-        if not Tool.data_contains_valid_id(request_data):
-            return { 'error': 'Identificador de ferramenta inválido' }
+    def execute(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        if not is_valid_getall_object(request_params):
+            return { 'error': 'Filtro de consulta inválido' }
         
-        delete_result = self.repository.tool_repo.delete(request_data['id'])
-    
-        if delete_result != 200:
-            return { 'error': f'Delete falhou com status "{delete_result}"' }
+        if not CommunityForumTopic.data_contains_valid_channel_id(request_params):
+            return { 'error': 'Identificador de canal de comunidade inválido' }
+        
+        if not self.repository.community_repo.role_can_read_channel(request_params['channel_id'], requester_user.role):
+            return { 'error': 'O canal de comunidade não existe ou o usuário não tem permissão para lê-lo' }
+        
+        title = ''
 
-        return {}
+        if CommunityForumTopic.data_contains_valid_title(request_params):
+            title = request_params['title'].strip()
+
+        db_data = self.repository.community_repo.get_channel_forum_topics(
+            channel_id=request_params['channel_id'],
+            title=title,
+            limit=request_params['limit'],
+            last_evaluated_key=decode_cursor(request_params['next_cursor']),
+            sort_order=request_params['sort_order']
+        )
+
+        return encode_cursor_get_all(
+            db_data=db_data,
+            item_key='community_forum_topics',
+            limit=request_params['limit'],
+            last_evaluated_key=db_data['last_evaluated_key']
+        )
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

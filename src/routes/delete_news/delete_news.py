@@ -48,11 +48,12 @@ class Usecase:
         if not News.data_contains_valid_id(request_data):
             return { 'error': 'Identificador de notícia inválido' }
         
-        new = self.repository.news_repo.delete(request_data['id'])
+        delete_result = self.repository.news_repo.delete(request_data['id'])
     
-        return {
-            'new': new.to_public_dict() if new is not None else None
-        }
+        if delete_result != 200:
+            return { 'error': f'Delete falhou com status "{delete_result}"' }
+
+        return {}
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

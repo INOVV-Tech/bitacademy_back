@@ -48,11 +48,12 @@ class Usecase:
         if not FreeMaterial.data_contains_valid_id(request_data):
             return { 'error': 'Identificador de material inválido' }
         
-        free_material = self.repository.free_material_repo.delete(request_data['id'])
+        delete_result = self.repository.free_material_repo.delete(request_data['id'])
     
-        return {
-            'free_material': free_material.to_public_dict() if free_material is not None else None
-        }
+        if delete_result != 200:
+            return { 'error': f'Delete falhou com status "{delete_result}"' }
+
+        return {}
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

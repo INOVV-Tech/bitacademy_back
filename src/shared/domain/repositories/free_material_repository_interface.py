@@ -25,6 +25,6 @@ class IFreeMaterialRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id: str) -> FreeMaterial | None:
+    def delete(self, id: str) -> int:
         pass
 

@@ -22,7 +22,7 @@ class PriceSnapshot:
     def from_dict_static(data: dict) -> 'PriceSnapshot':
         return PriceSnapshot(
             price=Decimal(data['price']) if ('price' in data and data['price'] is not None) else None,
-            timestamp=data['timestamp'] if 'timestamp' in data else None
+            timestamp=int(data['timestamp']) if 'timestamp' in data else None
         )
 
     def __init__(self, price: Decimal | None = None, timestamp: int | None = None):

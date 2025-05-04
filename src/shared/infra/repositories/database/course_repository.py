@@ -131,13 +131,10 @@ class CourseRepositoryDynamo(ICourseRepository):
         
         return course
 
-    def delete(self, id: str) -> Course | None:
-        data = self.dynamo.delete_item(
+    def delete(self, id: str) -> int:
+        resp = self.dynamo.delete_item(
             partition_key=self.course_partition_key_format_from_id(id),
             sort_key=self.course_sort_key_format()
         )
 
-        if 'Attributes' not in data:
-            return None
-
-        return Course.from_dict_static(data['Attributes'])
+        return resp['ResponseMetadata']['HTTPStatusCode']

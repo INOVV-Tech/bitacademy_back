@@ -310,6 +310,30 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        self.create_community_forum_topic = self.create_lambda_api_gateway_integration(
+            module_name='create_community_forum_topic',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_community_channel_forum_topics = self.create_lambda_api_gateway_integration(
+            module_name='get_community_channel_forum_topics',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.delete_community_forum_topic = self.create_lambda_api_gateway_integration(
+            module_name='delete_community_forum_topic',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -351,7 +375,10 @@ class LambdaStack(Construct):
             self.get_all_community_channels,
             self.get_one_community_channel,
             self.update_community_channel,
-            self.delete_community_channel
+            self.delete_community_channel,
+            self.create_community_forum_topic,
+            self.get_community_channel_forum_topics,
+            self.delete_community_forum_topic
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -393,5 +420,8 @@ class LambdaStack(Construct):
             self.get_all_community_channels,
             self.get_one_community_channel,
             self.update_community_channel,
-            self.delete_community_channel
+            self.delete_community_channel,
+            self.create_community_forum_topic,
+            self.get_community_channel_forum_topics,
+            self.delete_community_forum_topic
         ]
