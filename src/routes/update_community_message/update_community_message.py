@@ -7,7 +7,8 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.community import CommunityChannel
+from src.shared.domain.enums.community_type import COMMUNITY_TYPE
+from src.shared.domain.entities.community import CommunityMessage
 
 ALLOWED_USER_ROLES = [
     ROLE.TEACHER,
@@ -43,21 +44,26 @@ class Controller:
 
 class Usecase:
     repository: Repository
-
+    
     def __init__(self):
         self.repository = Repository(community_repo=True)
 
     def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if 'community_channel' not in request_data \
-            or not isinstance(request_data['community_channel'], dict):
-            return { 'error': 'Campo "community_channel" não foi encontrado' }
+        if 'community_message' not in request_data \
+            or not isinstance(request_data['community_message'], dict):
+            return { 'error': 'Campo "community_message" não foi encontrado' }
         
-        community_channel_update_data = request_data['community_channel']
+        community_message_update_data = request_data['community_message']
 
-        if not CommunityChannel.data_contains_valid_id(community_channel_update_data):
-            return { 'error': 'Identificador de canal de comunidade inválido' }
+        if not CommunityMessage.data_contains_valid_id(community_message_update_data):
+            return { 'error': 'Identificador de mensagem de comunidade inválido' }
         
-        community_channel = self.repository.community_repo.get_one_channel(community_channel_update_data['id'])
+        community_message = self.repository.community_repo.get_one_message(community_message_update_data['id'])
+
+        if community_message is None:
+            return { 'error': 'Mensagem de comunidade não foi encontrada' }
+        
+        community_channel = self.repository.community_repo.get_one_channel(community_message.channel_id)
 
         if community_channel is None:
             return { 'error': 'Canal de comunidade não foi encontrado' }
@@ -65,23 +71,20 @@ class Usecase:
         if not community_channel.permissions.is_edit_role(requester_user.role):
             return { 'error': 'Usuário não tem permissão para editar o canal de comunidade' }
         
-        updated_fields = community_channel.update_from_dict(community_channel_update_data)
+        if community_channel.comm_type == COMMUNITY_TYPE.CHAT and community_message.user_id != requester_user.user_id:
+            return { 'error': 'Usuário não pode editar mensagens de terceiros em canais do tipo CHAT' }
+        
+        updated_fields = community_message.update_from_dict(community_message_update_data)
 
         if not updated_fields['any_updated']:
-            return { 'community_channel': None }
+            return { 'community_message': None }
+        
+        community_message.user_id = requester_user.user_id
 
-        if 'icon_img' in updated_fields:
-            s3_datasource = self.repository.get_s3_datasource()
-
-            upload_icon_resp = community_channel.icon_img.store_in_s3(s3_datasource)
-
-            if 'error' in upload_icon_resp:
-                return upload_icon_resp
-
-        self.repository.community_repo.update_channel(community_channel)
+        self.repository.community_repo.update_message(community_message)
 
         return {
-            'community_channel': community_channel.to_public_dict()
+            'community_message': community_message.to_public_dict()
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

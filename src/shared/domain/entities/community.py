@@ -11,7 +11,7 @@ from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 
-from src.shared.messaging.constants import MAX_MESSAGES_PER_BATCH
+from src.shared.messaging.parser import parse_input_msg
 
 class CommunityChannelPermissions:
     @staticmethod
@@ -286,78 +286,6 @@ class CommunityForumTopic(BaseModel):
 
         return result
 
-class CommunityMessage:
-    @staticmethod
-    def from_dict_static(data: dict) -> 'CommunityMessage':
-        return CommunityMessage(
-            raw_content=data['raw_content'],
-            created_at=int(data['created_at']),
-            updated_at=int(data['updated_at']),
-            user_id=data['user_id'] if 'user_id' in data else None
-        )
-
-    def __init__(self, raw_content: str, created_at: int, updated_at: int, user_id: str):
-        self.raw_content = raw_content
-        self.created_at = created_at
-        self.updated_at = updated_at
-        self.user_id = user_id
-
-    def to_dict(self) -> dict:
-        return {
-            'raw_content': self.raw_content,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'user_id': self.user_id
-        }
-    
-    def to_public_dict(self) -> dict:
-        return self.to_dict()
-
-class CommunityMessageBatch(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    id: str
-    channel_id: str
-    forum_topic_id: str | None
-    messages: list[CommunityMessage]
-    created_at: int = Field(..., gt=0, description='Timestamp in seconds')
-    updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
-
-    @staticmethod
-    def from_dict_static(data: dict) -> 'CommunityMessageBatch':
-        return CommunityMessageBatch(
-            id=data['id'],
-            channel_id=data['channel_id'],
-            forum_topic_id=data['forum_topic_id'] if 'forum_topic_id' in data else None,
-            messages=[ CommunityMessage.from_dict_static(x) for x in data['messages'] ],
-            created_at=int(data['created_at']),
-            updated_at=int(data['updated_at'])
-        )
-
-    def to_dict(self) -> dict:
-        return {
-            'id': self.id,
-            'channel_id': self.channel_id,
-            'forum_topic_id': self.forum_topic_id,
-            'messages': [ x.to_dict() for x in self.messages ],
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
-        }
-    
-    def to_public_dict(self) -> dict:
-        return self.to_dict()
-
-    def push_message(self, msg: CommunityMessage) -> bool:
-        if self.is_full():
-            return False
-        
-        self.messages.append(msg)
-
-        return True
-    
-    def is_full(self) -> bool:
-        return len(self.messages) == MAX_MESSAGES_PER_BATCH
-
 class CommunitySession(BaseModel):
     connection_id: str
     user_id: str
@@ -386,3 +314,61 @@ class CommunitySession(BaseModel):
     
     def to_public_dict(self) -> dict:
         return self.to_dict()
+
+class CommunityMessage(BaseModel):
+    id: str
+    channel_id: str
+    forum_topic_id: str | None
+    raw_content: str
+    created_at: int = Field(..., gt=0, description='Timestamp in seconds')
+    updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
+    user_id: str
+
+    @staticmethod
+    def data_contains_valid_id(data: dict) -> bool:
+        return is_valid_entity_uuid(data, 'id', version=4)
+
+    @staticmethod
+    def from_dict_static(data: dict) -> 'CommunityMessage':
+        return CommunityMessage(
+            id=data['id'],
+            channel_id=data['channel_id'],
+            forum_topic_id=data['forum_topic_id'] if 'forum_topic_id' in data else None,
+            raw_content=data['raw_content'],
+            created_at=int(data['created_at']),
+            updated_at=int(data['updated_at']),
+            user_id=data['user_id']
+        )
+    
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'channel_id': self.channel_id,
+            'forum_topic_id': self.forum_topic_id,
+            'raw_content': self.raw_content,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'user_id': self.user_id
+        }
+    
+    def to_public_dict(self, extra_data: dict = {}) -> dict:
+        result = self.to_dict()
+
+        for key, value in extra_data.items():
+            result[key] = value
+
+        return result
+    
+    def update_from_dict(self, data: dict) -> dict:
+        updated_fields = {}
+
+        if 'raw_content' in data:
+            (error, raw_content) = parse_input_msg(data['raw_content'])
+
+            if error != '':
+                self.raw_content = raw_content
+                updated_fields['raw_content'] = self.raw_content
+        
+        updated_fields['any_updated'] = len(updated_fields.keys()) > 0
+
+        return updated_fields

@@ -7,9 +7,15 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.entities.community import CommunityChannel
+
+from src.shared.utils.entity import is_valid_getall_object, \
+    is_valid_entity_uuid, is_valid_entity_timestamp
+from src.shared.utils.pagination import encode_cursor_get_all, decode_cursor
 
 ALLOWED_USER_ROLES = [
+    ROLE.GUEST,
+    ROLE.AFFILIATE,
+    ROLE.VIP,
     ROLE.TEACHER,
     ROLE.ADMIN
 ]
@@ -24,11 +30,11 @@ class Controller:
                 raise MissingParameters('requester_user')
             
             requester_user = AuthAuthorizerDTO.from_api_gateway(requester_user)
-            
+
             if requester_user.role not in ALLOWED_USER_ROLES:
                 raise ForbiddenAction('Acesso não autorizado')
             
-            response = Usecase().execute(requester_user, request.data)
+            response = Usecase().execute(requester_user, request.query_params)
 
             if 'error' in response:
                 return BadRequest(response['error'])
@@ -47,42 +53,47 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(community_repo=True)
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
-        if 'community_channel' not in request_data \
-            or not isinstance(request_data['community_channel'], dict):
-            return { 'error': 'Campo "community_channel" não foi encontrado' }
+    def execute(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
+        if not is_valid_getall_object(request_params):
+            return { 'error': 'Filtro de consulta inválido' }
         
-        community_channel_update_data = request_data['community_channel']
-
-        if not CommunityChannel.data_contains_valid_id(community_channel_update_data):
-            return { 'error': 'Identificador de canal de comunidade inválido' }
+        if not is_valid_entity_uuid(request_params, 'channel_id', version=4):
+            return { 'error': 'Identificador de canal de comunidade não foi encontrado' }
         
-        community_channel = self.repository.community_repo.get_one_channel(community_channel_update_data['id'])
-
-        if community_channel is None:
-            return { 'error': 'Canal de comunidade não foi encontrado' }
+        if not self.repository.community_repo.role_can_read_channel(request_params['channel_id'], requester_user.role):
+            return { 'error': 'O canal de comunidade não existe ou o usuário não tem permissão para lê-lo' }
         
-        if not community_channel.permissions.is_edit_role(requester_user.role):
-            return { 'error': 'Usuário não tem permissão para editar o canal de comunidade' }
-        
-        updated_fields = community_channel.update_from_dict(community_channel_update_data)
+        forum_topic_id = None
 
-        if not updated_fields['any_updated']:
-            return { 'community_channel': None }
+        if is_valid_entity_uuid(request_params, 'forum_topic_id', version=4):
+            forum_topic_id = request_params['forum_topic_id']
 
-        if 'icon_img' in updated_fields:
-            s3_datasource = self.repository.get_s3_datasource()
+        ini_timestamp = None
+        end_timestamp = None
 
-            upload_icon_resp = community_channel.icon_img.store_in_s3(s3_datasource)
+        if is_valid_entity_timestamp(request_params, 'ini_timestamp'):
+            ini_timestamp = request_params['ini_timestamp']
 
-            if 'error' in upload_icon_resp:
-                return upload_icon_resp
+        if is_valid_entity_timestamp(request_params, 'end_timestamp'):
+            end_timestamp = request_params['end_timestamp']
 
-        self.repository.community_repo.update_channel(community_channel)
+        db_data = self.repository.community_repo.get_channel_messages(
+            channel_id=request_params['channel_id'],
+            forum_topic_id=forum_topic_id,
+            ini_timestamp=ini_timestamp,
+            end_timestamp=end_timestamp,
+            limit=request_params['limit'],
+            last_evaluated_key=decode_cursor(request_params['next_cursor']),
+            sort_order=request_params['sort_order']
+        )
 
-        return {
-            'community_channel': community_channel.to_public_dict()
-        }
+        return encode_cursor_get_all(
+            db_data=db_data,
+            item_key='community_messages',
+            limit=request_params['limit'],
+            last_evaluated_key=db_data['last_evaluated_key'],
+            public_args=[]
+        )
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

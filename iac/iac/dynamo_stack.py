@@ -25,6 +25,7 @@ class DynamoStack(Construct):
                 type=aws_dynamodb.AttributeType.STRING
             ),
             point_in_time_recovery=True,
+            time_to_live_attribute='ttl',
             billing_mode=aws_dynamodb.BillingMode.PAY_PER_REQUEST,
             removal_policy=removal_policy
         )

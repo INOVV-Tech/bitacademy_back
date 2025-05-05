@@ -334,6 +334,30 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        self.get_community_channel_messages = self.create_lambda_api_gateway_integration(
+            module_name='get_community_channel_messages',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+        
+        self.update_community_message = self.create_lambda_api_gateway_integration(
+            module_name='update_community_message',
+            method='PUT',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.delete_community_message = self.create_lambda_api_gateway_integration(
+            module_name='delete_community_message',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -378,7 +402,10 @@ class LambdaStack(Construct):
             self.delete_community_channel,
             self.create_community_forum_topic,
             self.get_community_channel_forum_topics,
-            self.delete_community_forum_topic
+            self.delete_community_forum_topic,            
+            self.get_community_channel_messages,
+            self.update_community_message,
+            self.delete_community_message
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -423,5 +450,8 @@ class LambdaStack(Construct):
             self.delete_community_channel,
             self.create_community_forum_topic,
             self.get_community_channel_forum_topics,
-            self.delete_community_forum_topic
+            self.delete_community_forum_topic,
+            self.get_community_channel_messages,
+            self.update_community_message,
+            self.delete_community_message
         ]

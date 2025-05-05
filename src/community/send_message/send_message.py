@@ -12,6 +12,7 @@ from src.shared.domain.entities.community import CommunityChannel, \
 from src.shared.messaging.parser import parse_input_msg
 
 from src.shared.utils.time import now_timestamp
+from src.shared.utils.entity import random_entity_id
 
 def fail_resp(error: str, code: int = 400):
     return { 'statusCode': code, 'body': error }
@@ -68,18 +69,22 @@ def push_chat_msg(request_context: dict, repository: Repository, connection_id: 
     now = now_timestamp()
 
     msg = CommunityMessage(
+        id=random_entity_id(),
+        channel_id=channel_id,
+        forum_topic_id=None,
         raw_content=raw_content,
         created_at=now,
         updated_at=now,
         user_id=community_session.user_id
     )
-    
+
+    msg_data = msg.to_public_dict()
     read_roles = community_channel.permissions.get_all_read_roles()
 
     if len(read_roles) > 0:
-        broadcast_msg(request_context, repository, read_roles, msg, { 'channel_id': channel_id })
+        broadcast_msg(request_context, repository, read_roles, msg_data)
 
-    # store message
+    repository.community_repo.create_message(msg)
     
     return ok_resp()
 
@@ -103,47 +108,44 @@ def push_forum_msg(request_context: dict, repository: Repository, connection_id:
     now = now_timestamp()
 
     msg = CommunityMessage(
+        id=random_entity_id(),
+        channel_id=community_forum_topic.channel_id,
+        forum_topic_id=community_forum_topic.id,
         raw_content=raw_content,
         created_at=now,
         updated_at=now,
         user_id=community_session.user_id
     )
     
+    msg_data = msg.to_public_dict()
     read_roles = community_channel.permissions.get_all_read_roles()
 
     if len(read_roles) > 0:
-        msg_ref = {
-            'channel_id': community_forum_topic.channel_id,
-            'forum_topic_id': forum_topic_id
-        }
+        broadcast_msg(request_context, repository, read_roles, msg_data)
 
-        broadcast_msg(request_context, repository, read_roles, msg, msg_ref)
-
-    # store message
+    repository.community_repo.create_message(msg)
     
     return ok_resp()
 
 def broadcast_msg(request_context: dict, repository: Repository, read_roles: list[ROLE], \
-    msg: CommunityMessage, msg_ref: dict):
+    msg_data: dict):
     stage = request_context.get('stage', '')
     domain_name = request_context.get('domainName', '')
     
-    apigateway = boto3.client('apigatewaymanagementapi',
+    api_gateway = boto3.client('apigatewaymanagementapi',
         endpoint_url=f'https://{domain_name}/{stage}',
         config=Config(connect_timeout=1, retries={ 'max_attempts': 0 })
     )
 
-    payload = json.dumps({
-        'ref': msg_ref,
-        'message': msg.to_public_dict()
-    }).encode('utf-8')
+    payload = json.dumps({ 'action': 'channel_message', 'message': msg_data }) \
+        .encode('utf-8')
 
     for role in read_roles:
         community_sessions = repository.community_repo.get_sessions_by_role(role)
         
         for community_session in community_sessions:
             try:
-                apigateway.post_to_connection(
+                api_gateway.post_to_connection(
                     ConnectionId=community_session.connection_id,
                     Data=payload
                 )

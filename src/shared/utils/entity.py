@@ -159,6 +159,9 @@ def is_valid_entity_decimal(data: dict, field_key: str, min_value = '0', max_val
 
     return False
 
+def is_valid_entity_timestamp(data: dict, field_key: str) -> bool:
+    return is_valid_entity_int(data, field_key, max_value=9999999999)
+
 def is_valid_getall_object(data: dict) -> bool:
     if 'limit' in data:
         if not is_valid_entity_int(data, 'limit', 1, 100):

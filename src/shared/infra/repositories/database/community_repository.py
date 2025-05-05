@@ -8,9 +8,11 @@ from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 from src.shared.domain.entities.community import CommunityChannel, \
-    CommunityForumTopic, CommunitySession
+    CommunityForumTopic, CommunitySession, CommunityMessage
 
 from src.shared.infra.external.key_formatters import encode_idx_pk
+
+from src.shared.utils.time import now_timestamp
 
 class CommunityRepositoryDynamo(ICommunityRepository):
     dynamo: DynamoDatasource
@@ -353,6 +355,120 @@ class CommunityRepositoryDynamo(ICommunityRepository):
         resp = self.dynamo.delete_item(
             partition_key=self.community_session_partition_key_format_from_id(connection_id),
             sort_key=self.community_session_sort_key_format()
+        )
+
+        return resp['ResponseMetadata']['HTTPStatusCode']
+    
+    ### MESSAGE ###
+    @staticmethod
+    def community_message_partition_key_format(community_message: CommunityMessage) -> str:
+        return f'COMMUNITY_MESSAGE#{community_message.id}'
+    
+    @staticmethod
+    def community_message_partition_key_format_from_id(id: str) -> str:
+        return f'COMMUNITY_MESSAGE#{id}'
+    
+    @staticmethod
+    def community_message_sort_key_format() -> str:
+        return 'METADATA'
+    
+    @staticmethod
+    def community_message_gsi_entity_get_all_pk(community_message: CommunityMessage) -> str:
+        return f'INDEX#COMMUNITY_MESSAGE#{community_message.channel_id}'
+    
+    @staticmethod
+    def community_message_gsi_entity_get_all_pk_from_id(channel_id: str) -> str:
+        return f'INDEX#COMMUNITY_MESSAGE#{channel_id}'
+    
+    @staticmethod
+    def community_message_gsi_entity_get_by_id_sk(community_message: CommunityMessage) -> str:
+        return f'DATE#{community_message.created_at}'
+
+    def create_message(self, community_message: CommunityMessage) -> CommunityMessage:
+        item = community_message.to_dict()
+
+        item['PK'] = self.community_message_partition_key_format(community_message)
+        item['SK'] = self.community_message_sort_key_format()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.community_message_gsi_entity_get_all_pk(community_message)
+        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.community_message_gsi_entity_get_by_id_sk(community_message)
+
+        self.dynamo.put_item(item=item)
+
+        return community_message
+    
+    def get_channel_messages(self,
+        channel_id: str,
+        forum_topic_id: str | None = None,
+        ini_timestamp: int | None = None,
+        end_timestamp: int | None = None,
+        limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
+        filter_expressions = []
+
+        if forum_topic_id is not None:
+            filter_expressions.append(Attr('forum_topic_id').eq(forum_topic_id))
+
+        if ini_timestamp is not None:
+            filter_expressions.append(Attr('created_at').gte(ini_timestamp))
+
+        if end_timestamp is not None:
+            filter_expressions.append(Attr('created_at').lte(end_timestamp))
+
+        filter_expression= None
+
+        if len(filter_expressions) > 0:
+            for f_exp in filter_expressions:
+                if filter_expression is None:
+                    filter_expression = f_exp
+                else:
+                    filter_expression &= f_exp
+
+        response = self.dynamo.query(
+            index_name='GetAllEntities',
+            partition_key=self.community_message_gsi_entity_get_all_pk_from_id(channel_id),
+            limit=limit,
+            exclusive_start_key=last_evaluated_key if last_evaluated_key != '' else None,
+            filter_expression=filter_expression,
+            scan_index_forward=False if sort_order == 'desc' else True
+        )
+
+        count_response = self.dynamo.count(
+            index_name='GetAllEntities',
+            partition_key=self.community_message_gsi_entity_get_all_pk_from_id(channel_id),
+            filter_expression=filter_expression,
+        )
+        
+        return {
+            'community_messages': [ CommunityMessage.from_dict_static(item) for item in response['items'] ],
+            'last_evaluated_key': response.get('last_evaluated_key'),
+            'total': count_response['count']
+        }
+    
+    def get_one_message(self, id: str) -> CommunityMessage | None:
+        data = self.dynamo.get_item(
+            partition_key=self.community_message_partition_key_format_from_id(id),
+            sort_key=self.community_message_sort_key_format()
+        )
+
+        return CommunityMessage.from_dict_static(data['Item']) if 'Item' in data else None
+    
+    def update_message(self, community_message: CommunityMessage) -> CommunityMessage:
+        community_message.updated_at = now_timestamp()
+
+        item = community_message.to_dict()
+
+        item['PK'] = self.community_message_partition_key_format(community_message)
+        item['SK'] = self.community_message_sort_key_format()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.community_message_gsi_entity_get_all_pk(community_message)
+        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.community_message_gsi_entity_get_by_id_sk(community_message)
+
+        self.dynamo.put_item(item=item)
+
+        return community_message
+    
+    def delete_message(self, id: str) -> int:
+        resp = self.dynamo.delete_item(
+            partition_key=self.community_message_partition_key_format_from_id(id),
+            sort_key=self.community_message_sort_key_format()
         )
 
         return resp['ResponseMetadata']['HTTPStatusCode']
