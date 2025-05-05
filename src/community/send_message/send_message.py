@@ -22,12 +22,10 @@ def lambda_handler(event, context) -> dict:
 
     message = body.get('message', None)
     channel_id = body.get('channel_id', None)
+    forum_topic_id = body.get('forum_topic_id', None)
 
     if message is None:
         return fail_resp(f'Campo "message" não foi encontrado')
-
-    if not CommunityChannel.data_contains_valid_id({ 'id': channel_id }):
-        return fail_resp(f'Campo "channel_id" não foi encontrado')
     
     (error, raw_content) = parse_input_msg(message)
 
@@ -35,7 +33,16 @@ def lambda_handler(event, context) -> dict:
         return fail_resp(error)
     
     repository = Repository(community_repo=True)
+    
+    if CommunityChannel.data_contains_valid_id({ 'id': channel_id }):
+        return push_chat_msg(repository, connection_id, channel_id, raw_content)
+    
+    if CommunityForumTopic.data_contains_valid_id({ 'id': forum_topic_id }):
+        return push_forum_msg(repository, connection_id, forum_topic_id, raw_content)
+    
+    return fail_resp('Nenhum identificador de canal encontrado')
 
+def push_chat_msg(repository: Repository, connection_id: str, channel_id: str, raw_content: str) -> dict:
     community_session = repository.community_repo.get_one_session(connection_id)
 
     if community_session is None:
@@ -46,34 +53,48 @@ def lambda_handler(event, context) -> dict:
     if community_channel is None:
         return fail_resp('Canal de comunidade não foi encontrado')
     
-    if community_channel.comm_type == COMMUNITY_TYPE.FORUM:
-        forum_topic_id = body.get('forum_topic_id', None)
-
-        if not CommunityForumTopic.data_contains_valid_id({ 'id': forum_topic_id }):
-            return fail_resp(f'Campo "forum_topic_id" não foi encontrado')
-        
-        community_forum_topic = repository.community_repo.get_one_forum_topic(forum_topic_id)
-
-        if community_forum_topic is None:
-            return fail_resp('Fórum de comunidade não foi encontrado')
-        
-        return push_forum_msg(repository, community_session, community_channel, \
-            community_forum_topic, raw_content)
-
-    return push_chat_msg(repository, community_session, community_channel, raw_content)
-
-def push_forum_msg(repository: Repository, community_session: CommunitySession, \
-    community_channel: CommunityChannel, community_forum_topic: CommunityForumTopic, raw_content: str) -> dict:
-    pass
-
-def push_chat_msg(repository: Repository, community_session: CommunitySession, \
-    community_channel: CommunityChannel, raw_content: str) -> dict:
+    if community_channel.comm_type != COMMUNITY_TYPE.CHAT:
+        return fail_resp('Canal de comunidade não é um chat')
+    
     if not community_channel.permissions.is_write_role(community_session.user_role):
         return fail_resp('Usuário não tem permissão para escrever no canal')
     
     read_roles = community_channel.permissions.get_all_read_roles()
 
     for role in read_roles:
+        community_sessions = repository.community_repo.get_sessions_by_role(role)
+
+        # broadcast message
         pass
+
+    # store message
+    
+    return ok_resp()
+
+def push_forum_msg(repository: Repository, connection_id: str, forum_topic_id: str, raw_content: str) -> dict:
+    community_session = repository.community_repo.get_one_session(connection_id)
+
+    if community_session is None:
+        return fail_resp('Sessão não foi encontrada', 401)
+    
+    community_forum_topic = repository.community_repo.get_one_forum_topic(forum_topic_id)
+
+    if community_forum_topic is None:
+        return fail_resp('Fórum de comunidade não foi encontrado')
+    
+    community_channel = repository.community_repo.get_one_channel(community_forum_topic.channel_id)
+
+    if not community_channel.permissions.is_write_role(community_session.user_role):
+        return fail_resp('Usuário não tem permissão para escrever no canal')
+    
+    read_roles = community_channel.permissions.get_all_read_roles()
+
+    for role in read_roles:
+        community_sessions = repository.community_repo.get_sessions_by_role(role)
+
+        # broadcast message
+        pass
+
+    # store message
     
     return ok_resp()
