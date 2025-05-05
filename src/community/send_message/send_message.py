@@ -1,12 +1,17 @@
 import json
+import boto3
+from botocore.client import Config
 
 from src.shared.infra.repositories.repository import Repository
 
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.entities.community import CommunityChannel, \
-    CommunityForumTopic, CommunitySession
+    CommunityForumTopic, CommunityMessage
 
 from src.shared.messaging.parser import parse_input_msg
+
+from src.shared.utils.time import now_timestamp
 
 def fail_resp(error: str, code: int = 400):
     return { 'statusCode': code, 'body': error }
@@ -35,14 +40,15 @@ def lambda_handler(event, context) -> dict:
     repository = Repository(community_repo=True)
     
     if CommunityChannel.data_contains_valid_id({ 'id': channel_id }):
-        return push_chat_msg(repository, connection_id, channel_id, raw_content)
+        return push_chat_msg(request_context, repository, connection_id, channel_id, raw_content)
     
     if CommunityForumTopic.data_contains_valid_id({ 'id': forum_topic_id }):
-        return push_forum_msg(repository, connection_id, forum_topic_id, raw_content)
+        return push_forum_msg(request_context, repository, connection_id, forum_topic_id, raw_content)
     
     return fail_resp('Nenhum identificador de canal encontrado')
 
-def push_chat_msg(repository: Repository, connection_id: str, channel_id: str, raw_content: str) -> dict:
+def push_chat_msg(request_context: dict, repository: Repository, connection_id: str, \
+    channel_id: str, raw_content: str) -> dict:
     community_session = repository.community_repo.get_one_session(connection_id)
 
     if community_session is None:
@@ -58,20 +64,27 @@ def push_chat_msg(repository: Repository, connection_id: str, channel_id: str, r
     
     if not community_channel.permissions.is_write_role(community_session.user_role):
         return fail_resp('Usuário não tem permissão para escrever no canal')
+
+    now = now_timestamp()
+
+    msg = CommunityMessage(
+        raw_content=raw_content,
+        created_at=now,
+        updated_at=now,
+        user_id=community_session.user_id
+    )
     
     read_roles = community_channel.permissions.get_all_read_roles()
 
-    for role in read_roles:
-        community_sessions = repository.community_repo.get_sessions_by_role(role)
-
-        # broadcast message
-        pass
+    if len(read_roles) > 0:
+        broadcast_msg(request_context, repository, read_roles, msg, { 'channel_id': channel_id })
 
     # store message
     
     return ok_resp()
 
-def push_forum_msg(repository: Repository, connection_id: str, forum_topic_id: str, raw_content: str) -> dict:
+def push_forum_msg(request_context: dict, repository: Repository, connection_id: str, \
+    forum_topic_id: str, raw_content: str) -> dict:
     community_session = repository.community_repo.get_one_session(connection_id)
 
     if community_session is None:
@@ -87,14 +100,52 @@ def push_forum_msg(repository: Repository, connection_id: str, forum_topic_id: s
     if not community_channel.permissions.is_write_role(community_session.user_role):
         return fail_resp('Usuário não tem permissão para escrever no canal')
     
+    now = now_timestamp()
+
+    msg = CommunityMessage(
+        raw_content=raw_content,
+        created_at=now,
+        updated_at=now,
+        user_id=community_session.user_id
+    )
+    
     read_roles = community_channel.permissions.get_all_read_roles()
 
-    for role in read_roles:
-        community_sessions = repository.community_repo.get_sessions_by_role(role)
+    if len(read_roles) > 0:
+        msg_ref = {
+            'channel_id': community_forum_topic.channel_id,
+            'forum_topic_id': forum_topic_id
+        }
 
-        # broadcast message
-        pass
+        broadcast_msg(request_context, repository, read_roles, msg, msg_ref)
 
     # store message
     
     return ok_resp()
+
+def broadcast_msg(request_context: dict, repository: Repository, read_roles: list[ROLE], \
+    msg: CommunityMessage, msg_ref: dict):
+    stage = request_context.get('stage', '')
+    domain_name = request_context.get('domainName', '')
+    
+    apigateway = boto3.client('apigatewaymanagementapi',
+        endpoint_url=f'https://{domain_name}/{stage}',
+        config=Config(connect_timeout=1, retries={ 'max_attempts': 0 })
+    )
+
+    payload = json.dumps({
+        'ref': msg_ref,
+        'message': msg.to_public_dict()
+    }).encode('utf-8')
+
+    for role in read_roles:
+        community_sessions = repository.community_repo.get_sessions_by_role(role)
+        
+        for community_session in community_sessions:
+            try:
+                apigateway.post_to_connection(
+                    ConnectionId=community_session.connection_id,
+                    Data=payload
+                )
+            except:
+                pass
