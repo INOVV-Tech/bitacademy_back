@@ -44,8 +44,20 @@ class CommunityStack(Construct):
             timeout=Duration.seconds(15)
         )
 
+        self.comm_send_msg_fn = lambda_.Function(
+            self, 'SendMessage',
+            code=lambda_.Code.from_asset(f'../src/community/send_message'),
+            handle='send_message.lambda_handler',
+            runtime=lambda_.Runtime.PYTHON_3_11,
+            layers=[ self.comm_lambda_layer ],
+            memory_size=512,
+            environment=environment_variables,
+            timeout=Duration.seconds(15)
+        )
+
         dynamo_stack.dynamo_table.grant_read_write_data(self.comm_connect_fn)
         dynamo_stack.dynamo_table.grant_read_write_data(self.comm_disconnect_fn)
+        dynamo_stack.dynamo_table.grant_read_write_data(self.comm_send_msg_fn)
 
         self.comm_api = apigwv2.CfnApi(self, 'CommunityWebSocketApi',
             name='CommunityWebSocketApi',
@@ -65,7 +77,7 @@ class CommunityStack(Construct):
                 integration_type='AWS_PROXY',
                 integration_uri=f'arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/{fn.function_arn}/invocations'
             )
-
+            
             apigwv2.CfnRoute(self, f'{route_key}Route',
                 api_id=self.comm_api.ref,
                 route_key=route_key,
@@ -76,3 +88,4 @@ class CommunityStack(Construct):
 
         add_ws_route('$connect', self.comm_connect_fn)
         add_ws_route('$disconnect', self.comm_disconnect_fn)
+        add_ws_route('send_message', self.comm_send_msg_fn)

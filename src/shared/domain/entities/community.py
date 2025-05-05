@@ -80,6 +80,17 @@ class CommunityChannelPermissions:
     
     def is_edit_role(self, role: ROLE) -> bool:
         return getattr(self, role.value) == COMMUNITY_PERMISSION.READ_WRITE_EDIT
+    
+    def is_read_role(self, role: ROLE) -> bool:
+        return not self.is_forbidden(role)
+    
+    def is_write_role(self, role: ROLE) -> bool:
+        perm_value = getattr(self, role.value)
+
+        return perm_value == COMMUNITY_PERMISSION.READ_WRITE or perm_value == COMMUNITY_PERMISSION.READ_WRITE_EDIT
+    
+    def get_all_read_roles(self) -> list[ROLE]:
+        return [ x for x in ROLE if self.is_read_role(x) ]
 
 class CommunityChannel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
