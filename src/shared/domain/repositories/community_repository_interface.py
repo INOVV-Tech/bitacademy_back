@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.entities.community import CommunityChannel, \
-    CommunityForumTopic
+    CommunityForumTopic, CommunitySession
 
 class ICommunityRepository(ABC):
     ### CHANNEL ###
@@ -61,4 +61,29 @@ class ICommunityRepository(ABC):
 
     @abstractmethod
     def delete_forum_topic(self, id: str) -> int:
+        pass
+    
+    ### SESSION ###
+    @abstractmethod
+    def create_session(self, community_session: CommunitySession) -> CommunitySession:
+        pass
+
+    @abstractmethod
+    def get_one_session(self, connection_id: str) -> CommunitySession | None:
+        pass
+
+    @abstractmethod
+    def get_user_session(self, user_id: str) -> CommunitySession | None:
+        pass
+
+    @abstractmethod
+    def get_sessions_by_role(self, user_role: ROLE) -> list[CommunitySession]:
+        pass
+
+    @abstractmethod
+    def update_session(self, community_session: CommunitySession) -> CommunitySession:
+        pass
+
+    @abstractmethod
+    def delete_session(self, connection_id: str) -> int:
         pass

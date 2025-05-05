@@ -34,6 +34,10 @@ class DynamoDatasource:
                 'GetAllEntities': {
                     'partition_key': encode_idx_pk('GSI#ENTITY_GETALL#PK'),
                     'sort_key': encode_idx_pk('GSI#ENTITY_GETALL#SK')
+                },
+                'GetEntityById': {
+                    'partition_key': encode_idx_pk('GSI#ENTITY_GET_BY_ID#PK'),
+                    'sort_key': encode_idx_pk('GSI#ENTITY_GET_BY_ID#SK')
                 }
             }
         }

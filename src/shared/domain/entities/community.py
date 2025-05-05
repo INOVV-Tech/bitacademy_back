@@ -347,3 +347,31 @@ class CommunityMessageBatch(BaseModel):
     def is_full(self) -> bool:
         return len(self.messages) == MAX_MESSAGES_PER_BATCH
 
+class CommunitySession(BaseModel):
+    connection_id: str
+    user_id: str
+    user_name: str
+    user_role: ROLE
+    created_at: int = Field(..., gt=0, description='Timestamp in seconds')
+
+    @staticmethod
+    def from_dict_static(data: dict) -> 'CommunitySession':
+        return CommunitySession(
+            connection_id=data['connection_id'],
+            user_id=data['user_id'],
+            user_name=data['user_name'],
+            user_role=ROLE[data['user_role']],
+            created_at=int(data['created_at'])
+        )
+
+    def to_dict(self) -> dict:
+        return {
+            'connection_id': self.connection_id,
+            'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_role': self.user_role.value,
+            'created_at': self.created_at
+        }
+    
+    def to_public_dict(self) -> dict:
+        return self.to_dict()

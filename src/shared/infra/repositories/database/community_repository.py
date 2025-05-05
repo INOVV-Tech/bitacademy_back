@@ -8,7 +8,7 @@ from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 from src.shared.domain.entities.community import CommunityChannel, \
-    CommunityForumTopic
+    CommunityForumTopic, CommunitySession
 
 from src.shared.infra.external.key_formatters import encode_idx_pk
 
@@ -254,6 +254,105 @@ class CommunityRepositoryDynamo(ICommunityRepository):
         resp = self.dynamo.delete_item(
             partition_key=self.community_forum_topic_partition_key_format_from_id(id),
             sort_key=self.community_forum_topic_sort_key_format()
+        )
+
+        return resp['ResponseMetadata']['HTTPStatusCode']
+    
+    ### SESSION ###
+    @staticmethod
+    def community_session_partition_key_format(community_session: CommunitySession) -> str:
+        return f'COMMUNITY_SESSION#{community_session.connection_id}'
+    
+    @staticmethod
+    def community_session_partition_key_format_from_id(connection_id: str) -> str:
+        return f'COMMUNITY_SESSION#{connection_id}'
+    
+    @staticmethod
+    def community_session_sort_key_format() -> str:
+        return 'METADATA'
+
+    @staticmethod
+    def community_session_gsi_entity_get_all_pk(community_session: CommunitySession) -> str:
+        return f'INDEX#COMMUNITY_SESSION#{community_session.user_role.value}'
+    
+    @staticmethod
+    def community_session_gsi_entity_get_all_pk_from_role(user_role: ROLE) -> str:
+        return f'INDEX#COMMUNITY_SESSION#{user_role.value}'
+    
+    @staticmethod
+    def community_session_gsi_entity_get_all_sk(community_session: CommunitySession) -> str:
+        return f'DATE#{community_session.created_at}'
+    
+    @staticmethod
+    def community_session_gsi_entity_get_by_id_pk(community_session: CommunitySession) -> str:
+        return f'INDEX#COMMUNITY_SESSION#{community_session.user_id}'
+    
+    @staticmethod
+    def community_session_gsi_entity_get_by_id_pk_from_id(user_id: str) -> str:
+        return f'INDEX#COMMUNITY_SESSION#{user_id}'
+
+    @staticmethod
+    def community_session_gsi_entity_get_by_id_sk(community_session: CommunitySession) -> str:
+        return f'DATE#{community_session.created_at}'
+
+    def create_session(self, community_session: CommunitySession) -> CommunitySession:
+        item = community_session.to_dict()
+
+        item['PK'] = self.community_session_partition_key_format(community_session)
+        item['SK'] = self.community_session_sort_key_format()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.community_session_gsi_entity_get_all_pk(community_session)
+        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.community_session_gsi_entity_get_all_sk(community_session)
+        item[encode_idx_pk('GSI#ENTITY_GET_BY_ID#PK')] = self.community_session_gsi_entity_get_by_id_pk(community_session)
+        item[encode_idx_pk('GSI#ENTITY_GET_BY_ID#SK')] = self.community_session_gsi_entity_get_by_id_sk(community_session)
+
+        self.dynamo.put_item(item=item)
+
+        return community_session
+    
+    def get_one_session(self, connection_id: str) -> CommunitySession | None:
+        data = self.dynamo.get_item(
+            partition_key=self.community_session_partition_key_format_from_id(connection_id),
+            sort_key=self.community_session_sort_key_format()
+        )
+
+        return CommunitySession.from_dict_static(data['Item']) if 'Item' in data else None
+    
+    def get_user_session(self, user_id: str) -> CommunitySession | None:
+        data = self.dynamo.query(
+            index_name='GetEntityById',
+            partition_key=self.community_session_gsi_entity_get_by_id_pk_from_id(user_id)
+        )
+        
+        items = data['items']
+
+        return CommunitySession.from_dict_static(items[0]) if len(items) > 0 else None
+    
+    def get_sessions_by_role(self, user_role: ROLE) -> list[CommunitySession]:
+        response = self.dynamo.query(
+            index_name='GetAllEntities',
+            partition_key=self.community_session_gsi_entity_get_all_pk_from_role(user_role)
+        )
+
+        return [ CommunitySession.from_dict_static(item) for item in response['items'] ]
+    
+    def update_session(self, community_session: CommunitySession) -> CommunitySession:
+        item = community_session.to_dict()
+
+        item['PK'] = self.community_session_partition_key_format(community_session)
+        item['SK'] = self.community_session_sort_key_format()
+        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.community_session_gsi_entity_get_all_pk(community_session)
+        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.community_session_gsi_entity_get_all_sk(community_session)
+        item[encode_idx_pk('GSI#ENTITY_GET_BY_ID#PK')] = self.community_session_gsi_entity_get_by_id_pk(community_session)
+        item[encode_idx_pk('GSI#ENTITY_GET_BY_ID#SK')] = self.community_session_gsi_entity_get_by_id_sk(community_session)
+
+        self.dynamo.put_item(item=item)
+
+        return community_session
+    
+    def delete_session(self, connection_id: str) -> int:
+        resp = self.dynamo.delete_item(
+            partition_key=self.community_session_partition_key_format_from_id(connection_id),
+            sort_key=self.community_session_sort_key_format()
         )
 
         return resp['ResponseMetadata']['HTTPStatusCode']
