@@ -298,6 +298,9 @@ class CommunityMessage:
             'updated_at': self.updated_at,
             'user_id': self.user_id
         }
+    
+    def to_public_dict(self) -> dict:
+        return self.to_dict()
 
 class CommunityMessageBatch(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -329,6 +332,9 @@ class CommunityMessageBatch(BaseModel):
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
+    
+    def to_public_dict(self) -> dict:
+        return self.to_dict()
 
     def push_message(self, msg: CommunityMessage) -> bool:
         if self.is_full():
