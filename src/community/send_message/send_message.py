@@ -134,7 +134,7 @@ def broadcast_msg(request_context: dict, repository: Repository, read_roles: lis
     
     api_gateway = boto3.client('apigatewaymanagementapi',
         endpoint_url=f'https://{domain_name}/{stage}',
-        config=Config(connect_timeout=1, retries={ 'max_attempts': 0 })
+        config=Config(connect_timeout=1, retries={ 'max_attempts': 3 })
     )
 
     payload = json.dumps({ 'action': 'channel_message', 'message': msg_data }) \
