@@ -63,7 +63,7 @@ class FreeMaterialRepositoryDynamo(IFreeMaterialRepository):
 
             filter_expressions.append(tags_filter_expression)
 
-        filter_expression= None
+        filter_expression = None
 
         if len(filter_expressions) > 0:
             for f_exp in filter_expressions:
