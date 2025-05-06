@@ -356,7 +356,7 @@ class CommunityMessage(BaseModel):
 
         for key, value in extra_data.items():
             result[key] = value
-
+        
         return result
     
     def update_from_dict(self, data: dict) -> dict:
