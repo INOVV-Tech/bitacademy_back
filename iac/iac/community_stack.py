@@ -91,7 +91,7 @@ class CommunityStack(Construct):
         add_ws_route('$disconnect', self.comm_disconnect_fn)
         add_ws_route('send_message', self.comm_send_msg_fn)
 
-        self.comm_send_msg_fn.add_to_policy(
+        self.comm_send_msg_fn.add_to_role_policy(
             aws_iam.PolicyStatement(
                 effect=aws_iam.Effect.ALLOW,
                 actions=[ 'execute-api:ManageConnections' ],
