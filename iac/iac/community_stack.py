@@ -48,7 +48,7 @@ class CommunityStack(Construct):
         self.comm_send_msg_fn = lambda_.Function(
             self, 'SendMessage',
             code=lambda_.Code.from_asset(f'../src/community/send_message'),
-            handle='send_message.lambda_handler',
+            handler='send_message.lambda_handler',
             runtime=lambda_.Runtime.PYTHON_3_11,
             layers=[ self.comm_lambda_layer ],
             memory_size=512,
