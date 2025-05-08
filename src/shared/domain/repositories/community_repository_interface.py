@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.entities.community import CommunityChannel, \
-    CommunityForumTopic, CommunitySession, CommunityMessage
+    CommunityForumTopic, CommunitySessionLock, CommunitySession, CommunityMessage
 
 class ICommunityRepository(ABC):
     ### CHANNEL ###
@@ -54,7 +54,7 @@ class ICommunityRepository(ABC):
         title: str = '',
         limit: int = 10, last_evaluated_key: dict | None = None, sort_order: str = 'desc') -> dict:
         pass
-
+    
     @abstractmethod
     def get_one_forum_topic(self, id: str) -> CommunityForumTopic | None:
         pass
@@ -65,15 +65,23 @@ class ICommunityRepository(ABC):
     
     ### SESSION ###
     @abstractmethod
+    def acquire_session_lock(self, user_id: str, expire_seconds: int = 15) -> CommunitySessionLock | None:
+        pass
+    
+    @abstractmethod
+    def release_session_lock(self, user_id: str) -> int:
+        pass
+
+    @abstractmethod
     def create_session(self, community_session: CommunitySession) -> CommunitySession:
         pass
 
     @abstractmethod
     def get_one_session(self, connection_id: str) -> CommunitySession | None:
         pass
-
+    
     @abstractmethod
-    def get_user_session(self, user_id: str) -> CommunitySession | None:
+    def get_user_sessions(self, user_id: str) -> list[CommunitySession]:
         pass
 
     @abstractmethod
@@ -81,7 +89,7 @@ class ICommunityRepository(ABC):
         pass
 
     @abstractmethod
-    def update_session(self, community_session: CommunitySession) -> CommunitySession:
+    def count_user_sessions(self, user_id: str) -> int:
         pass
 
     @abstractmethod

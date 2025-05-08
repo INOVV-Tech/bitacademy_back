@@ -85,3 +85,5 @@ class IacStack(Stack):
 
         self.community_stack = CommunityStack(self, \
             environment_variables=ENVIRONMENT_VARIABLES, dynamo_stack=self.dynamo_stack)
+        
+        self.community_stack.comm_connect_fn.add_to_role_policy(cognito_admin_policy)

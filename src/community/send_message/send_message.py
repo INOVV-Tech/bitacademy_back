@@ -137,8 +137,10 @@ def broadcast_msg(request_context: dict, repository: Repository, read_roles: lis
         config=Config(connect_timeout=1, retries={ 'max_attempts': 3 })
     )
 
-    payload = json.dumps({ 'action': 'channel_message', 'message': msg_data }) \
-        .encode('utf-8')
+    payload = json.dumps({
+        'action': 'channel_message',
+        'message': msg_data 
+    }).encode('utf-8')
 
     for role in read_roles:
         community_sessions = repository.community_repo.get_sessions_by_role(role)

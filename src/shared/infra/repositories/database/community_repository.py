@@ -8,17 +8,21 @@ from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 from src.shared.domain.entities.community import CommunityChannel, \
-    CommunityForumTopic, CommunitySession, CommunityMessage
+    CommunityForumTopic, CommunitySessionLock, CommunitySession, CommunityMessage
 
 from src.shared.infra.external.key_formatters import encode_idx_pk
 
-from src.shared.utils.time import now_timestamp
+from src.shared.utils.time import now_timestamp, \
+    now_timestamp_milli
 
 class CommunityRepositoryDynamo(ICommunityRepository):
     dynamo: DynamoDatasource
     
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo
+
+    def get_dynamo_table(self):
+        return self.dynamo.dynamo_table
 
     ### CHANNEL ###
     @staticmethod
@@ -262,6 +266,14 @@ class CommunityRepositoryDynamo(ICommunityRepository):
     
     ### SESSION ###
     @staticmethod
+    def community_session_lock_partition_key_format(user_id: str) -> str:
+        return f'COMMUNITY_SESSION_LOCK#{user_id}'
+    
+    @staticmethod
+    def community_session_lock_sort_key_format() -> str:
+        return 'METADATA'
+
+    @staticmethod
     def community_session_partition_key_format(community_session: CommunitySession) -> str:
         return f'COMMUNITY_SESSION#{community_session.connection_id}'
     
@@ -296,6 +308,41 @@ class CommunityRepositoryDynamo(ICommunityRepository):
     @staticmethod
     def community_session_gsi_entity_get_by_id_sk(community_session: CommunitySession) -> str:
         return f'DATE#{community_session.created_at}'
+    
+    def acquire_session_lock(self, user_id: str, expire_seconds: int = 15) -> CommunitySessionLock | None:
+        now = now_timestamp_milli()
+        expire_timestamp = now + int(expire_seconds * 1000)
+
+        comm_lock = CommunitySessionLock(
+            expire_timestamp=expire_timestamp
+        )
+
+        try:
+            item = comm_lock.to_dict()
+
+            item['PK'] = self.community_session_lock_partition_key_format(user_id)
+            item['SK'] = self.community_session_lock_sort_key_format()
+
+            result = self.get_dynamo_table().put_item(
+                Item=item,
+                ConditionExpression='attribute_not_exists(PK) OR :now_timestamp >= expire_timestamp',
+                ExpressionAttributeValues={ ':now_timestamp': now }
+            )
+
+            if result['ResponseMetadata']['HTTPStatusCode'] != 200:
+                return None
+
+            return comm_lock
+        except:
+            return None
+    
+    def release_session_lock(self, user_id: str) -> int:
+        resp = self.dynamo.delete_item(
+            partition_key=self.community_session_lock_partition_key_format(user_id),
+            sort_key=self.community_session_lock_sort_key_format()
+        )
+
+        return resp['ResponseMetadata']['HTTPStatusCode']
 
     def create_session(self, community_session: CommunitySession) -> CommunitySession:
         item = community_session.to_dict()
@@ -319,15 +366,13 @@ class CommunityRepositoryDynamo(ICommunityRepository):
 
         return CommunitySession.from_dict_static(data['Item']) if 'Item' in data else None
     
-    def get_user_session(self, user_id: str) -> CommunitySession | None:
-        data = self.dynamo.query(
+    def get_user_sessions(self, user_id: str) -> list[CommunitySession]:
+        response = self.dynamo.query(
             index_name='GetEntityById',
             partition_key=self.community_session_gsi_entity_get_by_id_pk_from_id(user_id)
         )
-        
-        items = data['items']
 
-        return CommunitySession.from_dict_static(items[0]) if len(items) > 0 else None
+        return [ CommunitySession.from_dict_static(item) for item in response['items'] ]
     
     def get_sessions_by_role(self, user_role: ROLE) -> list[CommunitySession]:
         response = self.dynamo.query(
@@ -337,19 +382,13 @@ class CommunityRepositoryDynamo(ICommunityRepository):
 
         return [ CommunitySession.from_dict_static(item) for item in response['items'] ]
     
-    def update_session(self, community_session: CommunitySession) -> CommunitySession:
-        item = community_session.to_dict()
+    def count_user_sessions(self, user_id: str) -> int:
+        response = self.dynamo.count(
+            index_name='GetEntityById',
+            partition_key=self.community_session_gsi_entity_get_by_id_pk_from_id(user_id)
+        )
 
-        item['PK'] = self.community_session_partition_key_format(community_session)
-        item['SK'] = self.community_session_sort_key_format()
-        item[encode_idx_pk('GSI#ENTITY_GETALL#PK')] = self.community_session_gsi_entity_get_all_pk(community_session)
-        item[encode_idx_pk('GSI#ENTITY_GETALL#SK')] = self.community_session_gsi_entity_get_all_sk(community_session)
-        item[encode_idx_pk('GSI#ENTITY_GET_BY_ID#PK')] = self.community_session_gsi_entity_get_by_id_pk(community_session)
-        item[encode_idx_pk('GSI#ENTITY_GET_BY_ID#SK')] = self.community_session_gsi_entity_get_by_id_sk(community_session)
-
-        self.dynamo.put_item(item=item)
-
-        return community_session
+        return response['count']
     
     def delete_session(self, connection_id: str) -> int:
         resp = self.dynamo.delete_item(

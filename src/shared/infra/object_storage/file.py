@@ -11,6 +11,16 @@ class ObjectStorageFile:
     external_url: str
     base64_data: str
     created_at: int
+
+    @staticmethod
+    def dummy() -> 'ObjectStorageFile':
+        return ObjectStorageFile(
+            name='dummy',
+            mime_type='image/png',
+            external_url='https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
+            base64_data='',
+            created_at=now_timestamp()
+        )
     
     @staticmethod
     def from_base64_data(data: str, name: str = '', mime_type: str = '') -> 'ObjectStorageFile':
@@ -66,7 +76,9 @@ class ObjectStorageFile:
     
     def store_in_s3(self, s3_datasource: S3Datasource) -> dict:
         if len(self.external_url) > 0:
-            return { 'error': 'File already uploaded to s3' }
+            self.base64_data = ''
+            
+            return {}
         
         s3_key = hashlib.sha256(self.base64_data.encode('utf8')).hexdigest()
 

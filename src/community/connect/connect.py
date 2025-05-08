@@ -2,7 +2,7 @@ from src.shared.infra.repositories.repository import Repository
 
 from src.shared.domain.entities.community import CommunitySession
 
-from src.shared.utils.time import now_timestamp
+from src.shared.utils.time import now_timestamp, sleep_random_float
 from src.shared.utils.websocket_jwt import decode_cognito_jwt_token
 
 def lambda_handler(event, context) -> dict:
@@ -14,7 +14,7 @@ def lambda_handler(event, context) -> dict:
 
     if access_token is None:
         return { 'statusCode': 401, 'body': 'Token de acesso não foi encontrado ("auth=")' }
-
+    
     requester_user = decode_cognito_jwt_token(access_token)
 
     if requester_user is None:
@@ -22,22 +22,35 @@ def lambda_handler(event, context) -> dict:
     
     repository = Repository(community_repo=True)
 
-    community_session = repository.community_repo.get_user_session(requester_user.user_id)
+    session_lock = None
 
-    if community_session is not None:
-        community_session.connection_id = connection_id
-        repository.community_repo.update_session(community_session)
+    for i in range(0, 3):
+        session_lock = repository.community_repo.acquire_session_lock(requester_user.user_id)
+
+        if session_lock is not None:
+            break
         
-        return { 'statusCode': 200 }
+        sleep_random_float()
 
-    community_session = CommunitySession(
+    if session_lock is None:
+        return { 'statusCode': 401, 'body': 'Usuário não pode criar mais sessões no momento' }
+    
+    session_count = repository.community_repo.count_user_sessions(requester_user.user_id)
+
+    if session_count >= 3:
+        repository.community_repo.release_session_lock(requester_user.user_id)
+
+        return { 'statusCode': 401, 'body': 'Usuário não pode criar mais que 3 sessões' }
+
+    session = CommunitySession(
         connection_id=connection_id,
         user_id=requester_user.user_id,
         user_name=requester_user.name,
         user_role=requester_user.role,
         created_at=now_timestamp()
     )
-    
-    repository.community_repo.create_session(community_session)
+
+    repository.community_repo.create_session(session)
+    repository.community_repo.release_session_lock(requester_user.user_id)
 
     return { 'statusCode': 200 }

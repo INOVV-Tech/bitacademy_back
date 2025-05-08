@@ -4,7 +4,10 @@ import urllib.request
 import src.shared.pyjwt.jwt as jwt
 from src.shared.environments import Environments
 
+from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
+
+from src.shared.utils.time import now_timestamp
 
 JWKS_URL = f'https://cognito-idp.{Environments.region}.amazonaws.com/{Environments.user_pool_id}/.well-known/jwks.json'
 
@@ -26,6 +29,13 @@ def decode_cognito_jwt_token(token: str) -> AuthAuthorizerDTO | None:
         if claims is None:
             return None
         
-        return AuthAuthorizerDTO.from_api_gateway(claims)
+        if claims['exp'] <= now_timestamp():
+            return None
+
+        repository = Repository(auth_repo=True)
+
+        user_dto = repository.auth_repo.get_user_by_email(claims['email'])
+        
+        return AuthAuthorizerDTO.from_user_dto(user_dto)
     except:
         return None

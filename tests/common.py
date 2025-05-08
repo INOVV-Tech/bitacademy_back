@@ -6,9 +6,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.enums.user_status import USER_STATUS
 
-from src.shared.domain.entities.user import User
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id
@@ -28,27 +27,20 @@ def load_app_env(stage='DEV'):
 def random_string(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-def get_requester_user(admin=False):
+def get_requester_user(admin: bool = False) -> AuthAuthorizerDTO:
     name = 'bit_user_' + random_string()
     email = name + '@gmail.com'
 
     role = ROLE.ADMIN.value if admin else ROLE.TEACHER.value
-    user_status = USER_STATUS.CONFIRMED.value
-    
-    now = now_timestamp()
 
-    user = User.from_dict_static({
-        'user_id': random_entity_id(),
+    user = AuthAuthorizerDTO.from_api_gateway({
+        'sub': random_entity_id(),
         'name': name,
         'email': email,
-        'role': role,
-        'user_status': user_status,
-        'created_at': now,
-        'updated_at': now,
+        'phone_number': '+5511999999999',
+        'custom:role': role,
         'email_verified': True,
-        'phone_verified': True,
-        'enabled': True,
-        'phone': '+5511999999999'
+        'phone_verified': True
     })
 
     return user.to_auth_dto()

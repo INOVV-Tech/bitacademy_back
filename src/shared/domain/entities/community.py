@@ -134,8 +134,8 @@ class CommunityChannel(BaseModel):
         if not CommunityChannel.data_contains_valid_comm_type(data):
             return ('Tipo de canal de comunidade inválido', None)
         
-        if not CommunityChannel.data_contains_valid_icon_img(data):
-            return ('Imagem de ícone inválida', None)
+        # if not CommunityChannel.data_contains_valid_icon_img(data):
+        #     return ('Imagem de ícone inválida', None)
         
         if not CommunityChannel.data_contains_valid_permissions(data):
             return ('Permissões de canal de comunidade inválidas', None)
@@ -144,7 +144,8 @@ class CommunityChannel(BaseModel):
             id=random_entity_id(),
             title=data['title'].strip(),
             comm_type=COMMUNITY_TYPE[data['comm_type']],
-            icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
+            # icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
+            icon_img=ObjectStorageFile.dummy(),
             permissions=CommunityChannelPermissions.from_dict_static(data['permissions']),
             created_at=now_timestamp(),
             user_id=user_id
@@ -314,6 +315,20 @@ class CommunitySession(BaseModel):
     
     def to_public_dict(self) -> dict:
         return self.to_dict()
+    
+class CommunitySessionLock(BaseModel):
+    expire_timestamp: int = Field(..., description='Timestamp in milliseconds', gt=0)
+
+    @staticmethod
+    def from_dict_static(data: dict) -> 'CommunitySessionLock':
+        return CommunitySessionLock(
+            expire_timestamp=int(data['expire_timestamp'])
+        )
+    
+    def to_dict(self) -> dict:
+        return {
+            'expire_timestamp': self.expire_timestamp
+        }
 
 class CommunityMessage(BaseModel):
     id: str
