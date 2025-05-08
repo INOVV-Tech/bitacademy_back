@@ -11,16 +11,6 @@ class ObjectStorageFile:
     external_url: str
     base64_data: str
     created_at: int
-
-    @staticmethod
-    def dummy() -> 'ObjectStorageFile':
-        return ObjectStorageFile(
-            name='dummy',
-            mime_type='image/png',
-            external_url='https://www.svgrepo.com/show/508699/landscape-placeholder.svg',
-            base64_data='',
-            created_at=now_timestamp()
-        )
     
     @staticmethod
     def from_base64_data(data: str, name: str = '', mime_type: str = '') -> 'ObjectStorageFile':

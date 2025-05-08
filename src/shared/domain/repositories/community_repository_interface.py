@@ -71,11 +71,11 @@ class ICommunityRepository(ABC):
     @abstractmethod
     def release_session_lock(self, user_id: str) -> int:
         pass
-
+    
     @abstractmethod
     def create_session(self, community_session: CommunitySession) -> CommunitySession:
         pass
-
+    
     @abstractmethod
     def get_one_session(self, connection_id: str) -> CommunitySession | None:
         pass
