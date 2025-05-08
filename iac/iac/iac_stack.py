@@ -2,7 +2,8 @@ import os
 from aws_cdk import (
     Stack,
     aws_cognito,
-    aws_iam
+    aws_iam,
+    aws_s3
 )
 from constructs import Construct
 from .dynamo_stack import DynamoStack
@@ -20,6 +21,7 @@ class IacStack(Stack):
         self.user_pool_id = os.environ.get('USER_POOL_ID')
         self.app_client_id = os.environ.get('APP_CLIENT_ID')
         self.github_ref_name = os.environ.get('GITHUB_REF_NAME')
+        self.bucket_name = os.environ.get('BUCKET_NAME')
         
         self.dynamo_stack = DynamoStack(self)
 
@@ -50,7 +52,7 @@ class IacStack(Stack):
             'USER_POOL_ARN': self.user_pool_arn,
             'APP_CLIENT_ID': self.app_client_id,
             'DYNAMO_TABLE_NAME': self.dynamo_stack.dynamo_table.table_name,
-            'BUCKET_NAME': os.environ.get('BUCKET_NAME', ''),
+            'BUCKET_NAME': self.bucket_name,
             'CMC_API_KEY': os.environ.get('CMC_API_KEY', '')
         }
         
@@ -87,3 +89,10 @@ class IacStack(Stack):
             environment_variables=ENVIRONMENT_VARIABLES, dynamo_stack=self.dynamo_stack)
         
         self.community_stack.comm_connect_fn.add_to_role_policy(cognito_admin_policy)
+
+        ### S3 ###
+
+        bucket = aws_s3.Bucket.from_bucket_name(self, 'BitAcademy_ObjectStorage', self.bucket_name)
+
+        for f in self.lambda_stack.functions_that_need_dynamo_permissions:
+            bucket.grant_read_write(f)
