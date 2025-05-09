@@ -1,7 +1,9 @@
-from src.shared.environments import STAGE, Environments
+from src.shared.environments import Environments
 
-from src.shared.infra.external.dynamo_datasource import DynamoDatasource
+### DATA SOURCES ###
+
 from src.shared.infra.external.s3_datasource import S3Datasource
+from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 
 ### INTERFACES ###
 
@@ -15,6 +17,7 @@ from src.shared.domain.repositories.tool_repository_interface import IToolReposi
 from src.shared.domain.repositories.tag_repository_interface import ITagRepository
 from src.shared.domain.repositories.signal_repository_interface import ISignalRepository
 from src.shared.domain.repositories.community_repository_interface import ICommunityRepository
+from src.shared.domain.repositories.vip_subscription_repository_interface import IVipSubscriptionRepository
 
 ### REPOSITORIES ###
 
@@ -28,6 +31,7 @@ from src.shared.infra.repositories.database.tool_repository import ToolRepositor
 from src.shared.infra.repositories.database.tag_repository import TagRepositoryDynamo
 from src.shared.infra.repositories.database.signal_repository import SignalRepositoryDynamo
 from src.shared.infra.repositories.database.community_repository import CommunityRepositoryDynamo
+from src.shared.infra.repositories.database.vip_subscription_repository import VipSubscriptionRepositoryDynamo
 
 class Repository:
     auth_repo: IAuthRepository
@@ -40,6 +44,7 @@ class Repository:
     tag_repo: ITagRepository
     signal_repo: ISignalRepository
     community_repo: ICommunityRepository
+    vip_subscription_repo: IVipSubscriptionRepository
 
     def __init__(
         self,
@@ -51,7 +56,8 @@ class Repository:
         tool_repo: bool = False,
         tag_repo: bool = False,
         signal_repo: bool = False,
-        community_repo: bool = False
+        community_repo: bool = False,
+        vip_subscription_repo: bool = False
     ):
         self.session = None
 
@@ -64,7 +70,8 @@ class Repository:
             tool_repo,
             tag_repo,
             signal_repo,
-            community_repo
+            community_repo,
+            vip_subscription_repo
         )
 
     def get_s3_datasource(self) -> S3Datasource:
@@ -75,7 +82,7 @@ class Repository:
     
     def _initialize_database_repositories(self, auth_repo: bool, free_material_repo: bool, course_repo: bool, \
         home_coins_repo: bool, news_repo: bool, tool_repo: bool, tag_repo: bool, signal_repo: bool, \
-        community_repo: bool):
+        community_repo: bool, vip_subscription_repo: bool):
         if auth_repo:
             self.auth_repo = AuthRepositoryCognito()
 
@@ -108,3 +115,6 @@ class Repository:
 
         if community_repo:
             self.community_repo = CommunityRepositoryDynamo(dynamo)
+
+        if vip_subscription_repo:
+            self.vip_subscription_repo = VipSubscriptionRepositoryDynamo(dynamo)

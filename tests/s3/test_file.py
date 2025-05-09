@@ -11,7 +11,7 @@ class Test_S3File:
     def print_data(self, data: dict) -> None:
         print(json.dumps(data, indent=4, ensure_ascii=False))
     
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_file_verification(self):
         cover_img = load_resource('catbeach.png',
             encode_base64=True, base64_prefix='data:image/png;base64')

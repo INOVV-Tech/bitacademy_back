@@ -27,4 +27,3 @@ class IFreeMaterialRepository(ABC):
     @abstractmethod
     def delete(self, id: str) -> int:
         pass
-

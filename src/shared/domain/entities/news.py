@@ -11,7 +11,7 @@ from src.shared.infra.object_storage.file import ObjectStorageFile
 
 class News(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-
+    
     id: str
     title: str
     header: str
