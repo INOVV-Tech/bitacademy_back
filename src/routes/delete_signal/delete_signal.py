@@ -1,7 +1,5 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
-from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
@@ -9,34 +7,19 @@ from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorize
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.entities.signal import Signal
 
+from src.shared.utils.routing import controller_execute
+
 ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
-        try:
-            requester_user = request.data.get('requester_user')
-
-            if requester_user is None:
-                raise MissingParameters('requester_user')
-            
-            requester_user = AuthAuthorizerDTO.from_api_gateway(requester_user)
-            
-            if requester_user.role not in ALLOWED_USER_ROLES:
-                raise ForbiddenAction('Acesso não autorizado')
-            
-            response = Usecase().execute(request.data)
-
-            if 'error' in response:
-                return BadRequest(response['error'])
-            
-            return OK(body=response)
-        except MissingParameters as error:
-            return BadRequest(error.message)
-        except ForbiddenAction as error:
-            return BadRequest(error.message)
-        except:
-            return InternalServerError('Erro interno de servidor')
+        return controller_execute(
+            Usecase=Usecase,
+            request=request,
+            allowed_user_roles=ALLOWED_USER_ROLES,
+            fetch_vip_subscription=False
+        )
 
 class Usecase:
     repository: Repository
@@ -44,7 +27,7 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(signal_repo=True)
 
-    def execute(self, request_data: dict) -> dict:
+    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict, request_params: dict) -> dict:
         if not Signal.data_contains_valid_id(request_data):
             return { 'error': 'Identificador de sinal inválido' }
         

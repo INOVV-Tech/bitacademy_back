@@ -1,7 +1,5 @@
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import Created, InternalServerError, BadRequest
-from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
@@ -9,6 +7,8 @@ from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorize
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.entities.community import CommunityForumTopic
+
+from src.shared.utils.routing import controller_execute
 
 ALLOWED_USER_ROLES = [
     ROLE.TEACHER,
@@ -18,29 +18,12 @@ ALLOWED_USER_ROLES = [
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
-        try:
-            requester_user = request.data.get('requester_user')
-
-            if requester_user is None:
-                raise MissingParameters('requester_user')
-            
-            requester_user = AuthAuthorizerDTO.from_api_gateway(requester_user)
-
-            if requester_user.role not in ALLOWED_USER_ROLES:
-                raise ForbiddenAction('Acesso não autorizado')
-            
-            response = Usecase().execute(requester_user, request.data)
-
-            if 'error' in response:
-                return BadRequest(response['error'])
-            
-            return Created(body=response)
-        except MissingParameters as error:
-            return BadRequest(error.message)
-        except ForbiddenAction as error:
-            return BadRequest(error.message)
-        except:
-            return InternalServerError('Erro interno de servidor')
+        return controller_execute(
+            Usecase=Usecase,
+            request=request,
+            allowed_user_roles=ALLOWED_USER_ROLES,
+            fetch_vip_subscription=False
+        )
 
 class Usecase:
     repository: Repository
@@ -48,7 +31,7 @@ class Usecase:
     def __init__(self):
         self.repository = Repository(community_repo=True)
 
-    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict) -> dict:
+    def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict, request_params: dict) -> dict:
         if 'community_forum_topic' not in request_data \
             or not isinstance(request_data['community_forum_topic'], dict):
             return { 'error': 'Campo "community_forum_topic" não foi encontrado' }
