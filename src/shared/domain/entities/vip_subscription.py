@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 
 from src.shared.domain.enums.vip_level import VIP_LEVEL
 
+from src.shared.utils.time import now_timestamp
+
 class VipSubscription(BaseModel):
     user_id: str
     vip_level: VIP_LEVEL
@@ -37,3 +39,6 @@ class VipSubscription(BaseModel):
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 
         return updated_fields
+    
+    def expired(self) -> bool:
+        return now_timestamp() >= self.expire_at

@@ -35,7 +35,7 @@ class Controller:
             return BadRequest(error.message)
         except ForbiddenAction as error:
             return BadRequest(error.message)
-        except Exception as ex:
+        except:
             return InternalServerError('Erro interno de servidor')
 
 class Usecase:

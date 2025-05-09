@@ -1,8 +1,7 @@
 import json
 import pytest
 
-from tests.common import load_app_env, get_requester_user, \
-    load_resource
+from tests.common import load_app_env, get_requester_user
 
 load_app_env()
 

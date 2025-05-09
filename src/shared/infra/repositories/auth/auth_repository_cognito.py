@@ -2,6 +2,7 @@ import boto3
 
 from src.shared.environments import Environments
 
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.repositories.auth_repository_interface import IAuthRepository
 
 from src.shared.infra.repositories.dtos.user_cognito_dto import UserCognitoDTO
@@ -31,3 +32,19 @@ class AuthRepositoryCognito(IAuthRepository):
             return UserCognitoDTO.from_cognito(response)
         except:
             return None
+    
+    def update_user_role(self, email: str, role: ROLE) -> bool:
+        try:
+            self.client.admin_update_user_attributes(
+                UserPoolId=self.user_pool_id,
+                Username=email,
+                UserAttributes=[
+                    { 'Name': UserCognitoDTO.TO_COGNITO_DICT['role'], 'Value': role.value }
+                ]
+            )
+
+            return True
+        except:
+            pass
+
+        return False

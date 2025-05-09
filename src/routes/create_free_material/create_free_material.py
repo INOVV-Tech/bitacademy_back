@@ -12,8 +12,6 @@ from src.shared.domain.entities.tag import Tag
 
 ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
-import traceback
-
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
@@ -38,9 +36,7 @@ class Controller:
             return BadRequest(error.message)
         except ForbiddenAction as error:
             return BadRequest(error.message)
-        except Exception as ex:
-            print(str(ex))
-            print(traceback.print_exc())
+        except:
             return InternalServerError('Erro interno de servidor')
 
 class Usecase:

@@ -81,7 +81,7 @@ class Usecase:
 
         if requester_user.role not in VIP_USER_ROLES:
             vip_level = VIP_LEVEL.FREE
-
+        
         db_data = self.repository.course_repo.get_all(
             title=title,
             tags=tags,
