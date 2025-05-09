@@ -74,7 +74,7 @@ class News(BaseModel):
             return ('Imagem de capa inválida', None)
 
         if not News.data_contains_valid_card_img(data):
-            return ('Imagem de capa inválida', None)
+            return ('Imagem de card inválida', None)
         
         if 'tags' in data:
             if not News.data_contains_valid_tags(data):
@@ -99,7 +99,13 @@ class News(BaseModel):
             user_id=user_id,
             vip_level=VIP_LEVEL(data['vip_level'])
         )
+
+        if not news.cover_img.verify_base64_image():
+            return ('Imagem de capa inválida', None)
         
+        if not news.card_img.verify_base64_image():
+            return ('Imagem de card inválida', None)
+
         return ('', news)
 
     @staticmethod
@@ -170,14 +176,20 @@ class News(BaseModel):
             updated_fields['vip_level'] = self.vip_level
 
         if News.data_contains_valid_cover_img(data):
-            self.cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
+            cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
 
-            updated_fields['cover_img'] = self.cover_img
+            if cover_img.verify_base64_image():
+                self.cover_img = cover_img
+
+                updated_fields['cover_img'] = self.cover_img
         
         if News.data_contains_valid_card_img(data):
-            self.card_img = ObjectStorageFile.from_base64_data(data['card_img'])
+            card_img = ObjectStorageFile.from_base64_data(data['card_img'])
 
-            updated_fields['card_img'] = self.card_img
+            if card_img.verify_base64_image():
+                self.card_img = card_img
+
+                updated_fields['card_img'] = self.card_img
 
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 

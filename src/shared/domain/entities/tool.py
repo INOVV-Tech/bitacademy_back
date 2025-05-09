@@ -79,6 +79,9 @@ class Tool(BaseModel):
             user_id=user_id,
             created_at=now_timestamp()
         )
+
+        if tool.cover_img.verify_base64_image():
+            return ('Imagem de capa inválida', None)
         
         return ('', tool)
 
@@ -136,9 +139,12 @@ class Tool(BaseModel):
             updated_fields['external_url'] = self.external_url
 
         if Tool.data_contains_valid_cover_img(data):
-            self.cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
+            cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
 
-            updated_fields['cover_img'] = self.cover_img
+            if cover_img.verify_base64_image():
+                self.cover_img = cover_img
+
+                updated_fields['cover_img'] = self.cover_img
 
         if Tool.data_contains_valid_tags(data):
             self.tags = Tool.norm_tags(data['tags'])

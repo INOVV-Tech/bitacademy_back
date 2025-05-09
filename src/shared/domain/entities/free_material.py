@@ -80,6 +80,9 @@ class FreeMaterial(BaseModel):
             user_id=user_id
         )
 
+        if not free_material.cover_img.verify_base64_image():
+            return ('Imagem de capa inválida', None)
+
         return ('', free_material)
 
     @staticmethod
@@ -141,9 +144,12 @@ class FreeMaterial(BaseModel):
             updated_fields['description'] = self.description
 
         if FreeMaterial.data_contains_valid_cover_img(data):
-            self.cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
+            cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])
 
-            updated_fields['cover_img'] = self.cover_img
+            if cover_img.verify_base64_image():
+                self.cover_img = cover_img
+                
+                updated_fields['cover_img'] = self.cover_img
 
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 

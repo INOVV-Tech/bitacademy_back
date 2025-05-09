@@ -27,13 +27,13 @@ def load_app_env(stage='DEV'):
 def random_string(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-def get_requester_user(admin: bool = False) -> AuthAuthorizerDTO:
+def get_requester_user(admin=False):
     name = 'bit_user_' + random_string()
     email = name + '@gmail.com'
 
     role = ROLE.ADMIN.value if admin else ROLE.TEACHER.value
 
-    user = AuthAuthorizerDTO.from_api_gateway({
+    return {
         'sub': random_entity_id(),
         'name': name,
         'email': email,
@@ -41,9 +41,7 @@ def get_requester_user(admin: bool = False) -> AuthAuthorizerDTO:
         'custom:role': role,
         'email_verified': True,
         'phone_verified': True
-    })
-
-    return user.to_auth_dto()
+    }
 
 def load_resource(filename, encode_base64=True, base64_prefix=''):
     root_directory = get_root_directory()

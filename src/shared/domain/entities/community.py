@@ -150,6 +150,9 @@ class CommunityChannel(BaseModel):
             user_id=user_id
         )
 
+        if not community_channel.icon_img.verify_base64_image():
+            return ('Imagem de ícone inválida', None)
+
         return ('', community_channel)
 
     @staticmethod
@@ -197,9 +200,12 @@ class CommunityChannel(BaseModel):
             updated_fields['title'] = self.title
         
         if CommunityChannel.data_contains_valid_icon_img(data):
-            self.icon_img = ObjectStorageFile.from_base64_data(data['icon_img'])
+            icon_img = ObjectStorageFile.from_base64_data(data['icon_img'])
 
-            updated_fields['icon_img'] = self.icon_img
+            if icon_img.verify_base64_image():
+                self.icon_img = icon_img
+                
+                updated_fields['icon_img'] = self.icon_img
         
         if CommunityChannel.data_contains_valid_permissions(data):
             self.permissions = CommunityChannelPermissions.from_dict_static(data['permissions'])
@@ -255,6 +261,9 @@ class CommunityForumTopic(BaseModel):
             created_at=now_timestamp(),
             user_id=user_id
         )
+
+        if not community_forum_topic.icon_img.verify_base64_image():
+            return ('Imagem de ícone inválida', None)
 
         return ('', community_forum_topic)
 
