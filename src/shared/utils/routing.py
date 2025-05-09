@@ -67,6 +67,7 @@ def verify_user_status(requester_user: AuthAuthorizerDTO, required_vip_status: V
 
     if vip_subscription is None:
         repository.auth_repo.update_user_role(requester_user.email, ROLE.GUEST)
+        requester_user.role = ROLE.GUEST
 
         return False
     
@@ -77,6 +78,7 @@ def verify_user_status(requester_user: AuthAuthorizerDTO, required_vip_status: V
         repository.vip_subscription_repo.delete(requester_user.user_id)
 
         repository.auth_repo.update_user_role(requester_user.email, ROLE.GUEST)
+        requester_user.role = ROLE.GUEST
 
         return False
 
