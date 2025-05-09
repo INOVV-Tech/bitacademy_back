@@ -25,6 +25,10 @@ class Environments:
 
     cmc_api_key: str = os.environ.get('CMC_API_KEY', '')
 
+    stripe_pubkey: str = os.environ.get('STRIPE_PUBKEY', '')
+    stripe_privkey: str = os.environ.get('STRIPE_PRIVKEY', '')
+    stripe_webhook_privkey: str = os.environ.get('STRIPE_WEBHOOK_PRIVKEY', '')
+
     @staticmethod
     def reload():
         Environments.stage = STAGE(os.environ.get('STAGE', STAGE.TEST.value))
@@ -40,3 +44,7 @@ class Environments:
         Environments.dynamo_local_access_key = os.environ.get('DYNAMO_LOCAL_ACCESS_KEY', '')
 
         Environments.cmc_api_key = os.environ.get('CMC_API_KEY', '')
+
+        Environments.stripe_pubkey = os.environ.get('STRIPE_PUBKEY', '')
+        Environments.stripe_privkey = os.environ.get('STRIPE_PRIVKEY', '')
+        Environments.stripe_webhook_privkey = os.environ.get('STRIPE_WEBHOOK_PRIVKEY', '')

@@ -358,6 +358,15 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        ### VIP SUBSCRIPTION ###
+
+        self.vip_stripe_webhook = self.create_lambda_api_gateway_integration(
+            module_name='vip_stripe_webhook',
+            method='POST',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -405,7 +414,9 @@ class LambdaStack(Construct):
             self.delete_community_forum_topic,            
             self.get_community_channel_messages,
             self.update_community_message,
-            self.delete_community_message
+            self.delete_community_message,
+
+            self.vip_stripe_webhook
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -453,5 +464,7 @@ class LambdaStack(Construct):
             self.delete_community_forum_topic,
             self.get_community_channel_messages,
             self.update_community_message,
-            self.delete_community_message
+            self.delete_community_message,
+
+            self.vip_stripe_webhook
         ]

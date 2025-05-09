@@ -28,7 +28,7 @@ def get_requester_user(admin=False):
     name = 'bit_user_' + random_string()
     email = name + '@gmail.com'
 
-    role = ROLE.ADMIN.value if admin else ROLE.TEACHER.value
+    role = ROLE.ADMIN.value if admin else ROLE.VIP.value
 
     return {
         'sub': random_entity_id(),

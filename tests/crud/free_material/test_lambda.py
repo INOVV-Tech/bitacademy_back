@@ -93,7 +93,7 @@ class Test_FreeMaterialLambda:
         body = self.get_body()
 
         query_params = {
-            'id': '49a58e4b-c559-454e-82b2-3e5eecf0be33'
+            'id': '69ff308e-8a9f-49d8-beb1-7dbba1bf14aa'
         }
 
         controller = GetOneController()

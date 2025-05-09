@@ -53,7 +53,10 @@ class IacStack(Stack):
             'APP_CLIENT_ID': self.app_client_id,
             'DYNAMO_TABLE_NAME': self.dynamo_stack.dynamo_table.table_name,
             'BUCKET_NAME': self.bucket_name,
-            'CMC_API_KEY': os.environ.get('CMC_API_KEY', '')
+            'CMC_API_KEY': os.environ.get('CMC_API_KEY', ''),
+            'STRIPE_PUBKEY': os.environ.get('STRIPE_PUBKEY', ''),
+            'STRIPE_PRIVKEY': os.environ.get('STRIPE_PRIVKEY', ''),
+            'STRIPE_WEBHOOK_PRIVKEY': os.environ.get('STRIPE_WEBHOOK_PRIVKEY', '')
         }
         
         api_gateway_resource = self.rest_api.root.add_resource('mss-bitacademy', 
