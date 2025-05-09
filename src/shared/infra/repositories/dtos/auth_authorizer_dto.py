@@ -2,6 +2,8 @@ from src.shared.domain.enums.role import ROLE
 
 from src.shared.infra.repositories.dtos.user_cognito_dto import UserCognitoDTO
 
+from src.shared.domain.entities.vip_subscription import VipSubscription
+
 class AuthAuthorizerDTO:
     user_id: str
     name: str
@@ -10,6 +12,7 @@ class AuthAuthorizerDTO:
     role: ROLE
     email_verified: bool
     phone_verified: bool
+    vip_subscription: VipSubscription | None
 
     @staticmethod
     def from_api_gateway(data: dict) -> 'AuthAuthorizerDTO':
@@ -20,7 +23,8 @@ class AuthAuthorizerDTO:
             phone=data['phone_number'] if 'phone_number' in data else '',
             role=ROLE[data['custom:role']] if 'custom:role' in data else ROLE.GUEST,
             email_verified=bool(data['email_verified']) if 'email_verified' in data else False,
-            phone_verified=bool(data['phone_number_verified']) if 'phone_number_verified' in data else False
+            phone_verified=bool(data['phone_number_verified']) if 'phone_number_verified' in data else False,
+            vip_subscription=None
         )
     
     @staticmethod
@@ -32,11 +36,12 @@ class AuthAuthorizerDTO:
             phone=user_dt.phone,
             role=user_dt.role,
             email_verified=user_dt.email_verified,
-            phone_verified=user_dt.phone_verified
+            phone_verified=user_dt.phone_verified,
+            vip_subscription=None
         )
     
     def __init__(self, user_id: str, name: str, email: str, phone: str, role: ROLE, \
-        email_verified: bool, phone_verified: bool):
+        email_verified: bool, phone_verified: bool, vip_subscription: VipSubscription | None = None):
         self.user_id = user_id
         self.name = name
         self.email = email
@@ -44,6 +49,7 @@ class AuthAuthorizerDTO:
         self.role = role
         self.email_verified = email_verified
         self.phone_verified = phone_verified
+        self.vip_subscription = vip_subscription
 
     def to_dict(self) -> dict:
         return {
@@ -53,5 +59,6 @@ class AuthAuthorizerDTO:
             'phone': self.phone,
             'role': self.role.value,
             'email_verified': self.email_verified,
-            'phone_verified': self.phone_verified
+            'phone_verified': self.phone_verified,
+            'vip_subscription': self.vip_subscription.to_reduced_dict() if self.vip_subscription is not None else None
         }

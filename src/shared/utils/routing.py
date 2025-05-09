@@ -1,14 +1,14 @@
 from typing import Any
 
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
+from src.shared.helpers.external_interfaces.http_codes import OK, Created, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
-from src.shared.domain.enums.vip_level import VIP_LEVEL
+from src.shared.domain.entities.vip_subscription import VipSubscription
 
 DEFAULT_ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
@@ -16,7 +16,8 @@ def controller_execute(
     Usecase: Any,
     request: IRequest,
     allowed_user_roles: list[ROLE] = DEFAULT_ALLOWED_USER_ROLES,
-    required_vip_status: VIP_LEVEL = VIP_LEVEL.VIP_1
+    fetch_vip_subscription: bool = True,
+    return_created: bool = False
 ) -> IResponse:
     try:
         requester_user = request.data.get('requester_user')
@@ -29,13 +30,16 @@ def controller_execute(
         if requester_user.role not in allowed_user_roles:
             raise ForbiddenAction('Acesso não autorizado')
         
-        if not verify_user_status(requester_user, required_vip_status):
-            raise ForbiddenAction('Acceso não autorizado (VIP)')
+        if fetch_vip_subscription:
+            set_user_vip_subscription(requester_user)
         
-        response = Usecase().execute(request.data)
+        response = Usecase().execute(requester_user, request.data, request.query_params)
 
         if 'error' in response:
             return BadRequest(response['error'])
+        
+        if return_created:
+            return Created(body=response)
         
         return OK(body=response)
     except MissingParameters as error:
@@ -45,18 +49,18 @@ def controller_execute(
     except:
         return InternalServerError('Erro interno de servidor')
     
-def verify_user_status(requester_user: AuthAuthorizerDTO, required_vip_status: VIP_LEVEL) -> bool:
-    if required_vip_status == VIP_LEVEL.FREE:
-        return True
-    
+def set_user_vip_subscription(requester_user: AuthAuthorizerDTO) -> None:
     if requester_user.role == ROLE.ADMIN:
-        return True
+        requester_user.vip_subscription = VipSubscription.max_vip_dummy(requester_user.user_id)
+        return
     
     if requester_user.role == ROLE.TEACHER:
-        return True
+        requester_user.vip_subscription = VipSubscription.max_vip_dummy(requester_user.user_id)
+        return
     
     if requester_user.role != ROLE.VIP:
-        return False
+        requester_user.vip_subscription = VipSubscription.free_dummy(requester_user.user_id)
+        return
 
     repository = Repository(
         auth_repo=True,
@@ -69,10 +73,8 @@ def verify_user_status(requester_user: AuthAuthorizerDTO, required_vip_status: V
         repository.auth_repo.update_user_role(requester_user.email, ROLE.GUEST)
         requester_user.role = ROLE.GUEST
 
-        return False
-    
-    if vip_subscription.vip_level.value < required_vip_status.value:
-        return False
+        requester_user.vip_subscription = VipSubscription.free_dummy(requester_user.user_id)
+        return
 
     if vip_subscription.expired():
         repository.vip_subscription_repo.delete(requester_user.user_id)
@@ -80,6 +82,7 @@ def verify_user_status(requester_user: AuthAuthorizerDTO, required_vip_status: V
         repository.auth_repo.update_user_role(requester_user.email, ROLE.GUEST)
         requester_user.role = ROLE.GUEST
 
-        return False
-
-    return True
+        requester_user.vip_subscription = VipSubscription.free_dummy(requester_user.user_id)
+        return
+    
+    requester_user.vip_subscription = vip_subscription
