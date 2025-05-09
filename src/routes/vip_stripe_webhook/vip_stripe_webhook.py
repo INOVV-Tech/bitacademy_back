@@ -1,5 +1,6 @@
 import base64
 
+from src.shared.environments import Environments
 from src.shared.infra.repositories.repository import Repository
 
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
@@ -35,10 +36,40 @@ class Usecase:
         self.stripe_api = StripeApi()
     
     def execute(self, request_headers: dict, raw_body: bytes) -> dict:
-        payment_event = self.stripe_api.decode_webhook_event(request_headers, raw_body)
+        checkout_completed = self.stripe_api.decode_webhook_event(request_headers, raw_body)
 
-        print('PAYMENT EVENT', payment_event)
+        if checkout_completed is None:
+            return {}
+        
+        status = checkout_completed['status']
+        payment_status = checkout_completed['payment_status']
 
+        if status != 'complete':
+            return {}
+        
+        if payment_status != 'paid':
+            return {}
+        
+        session_id = checkout_completed['id']
+        customer_email = checkout_completed['customer_details']['email']
+
+        products = self.stripe_api.get_session_products(session_id)
+
+        found_vip_product = False
+
+        for item in products['data']:
+            product = item['price']['product']
+
+            if product['name'] == Environments.vip_subscription_product_name:
+                found_vip_product = True
+                break
+        
+        if not found_vip_product:
+            return {}
+        
+        print('session_id', session_id)
+        print('customer_email', customer_email)
+        
         return {}
         
 def lambda_handler(event, context) -> LambdaHttpResponse:

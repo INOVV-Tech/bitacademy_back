@@ -25,9 +25,9 @@ class Environments:
 
     cmc_api_key: str = os.environ.get('CMC_API_KEY', '')
 
-    stripe_pubkey: str = os.environ.get('STRIPE_PUBKEY', '')
     stripe_privkey: str = os.environ.get('STRIPE_PRIVKEY', '')
     stripe_webhook_privkey: str = os.environ.get('STRIPE_WEBHOOK_PRIVKEY', '')
+    vip_subscription_product_name: str = os.environ.get('VIP_SUBSCRIPTION_PRODUCT_NAME', '')
 
     @staticmethod
     def reload():
@@ -45,6 +45,6 @@ class Environments:
 
         Environments.cmc_api_key = os.environ.get('CMC_API_KEY', '')
 
-        Environments.stripe_pubkey = os.environ.get('STRIPE_PUBKEY', '')
         Environments.stripe_privkey = os.environ.get('STRIPE_PRIVKEY', '')
         Environments.stripe_webhook_privkey = os.environ.get('STRIPE_WEBHOOK_PRIVKEY', '')
+        Environments.vip_subscription_product_name = os.environ.get('VIP_SUBSCRIPTION_PRODUCT_NAME', '')
