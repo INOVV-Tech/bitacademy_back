@@ -7,9 +7,6 @@ from dotenv import load_dotenv
 
 from src.shared.domain.enums.role import ROLE
 
-from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
-
-from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id
 
 def get_root_directory():

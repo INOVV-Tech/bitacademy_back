@@ -8,7 +8,7 @@ from src.shared.utils.time import now_timestamp
 from src.shared.infra.external.s3_datasource import S3Datasource
 
 from src.shared.infra.object_storage.constants import ALLOWED_IMAGE_MIME_TYPES, \
-    ALLOWED_VIDEO_MIME_TYPES
+    ALLOWED_VIDEO_MIME_TYPES, ALLOWED_DOCUMENT_MIME_TYPES
 
 class ObjectStorageFile:
     name: str
@@ -72,6 +72,9 @@ class ObjectStorageFile:
     def contains_external_url(self) -> bool:
         return len(self.external_url) > 0
     
+    def is_pending(self) -> bool:
+        return len(self.base64_data) > 0
+    
     def store_in_s3(self, s3_datasource: S3Datasource) -> dict:
         if self.contains_external_url():
             self.base64_data = ''
@@ -92,11 +95,11 @@ class ObjectStorageFile:
 
         return {}
     
-    def verify_base64_image(self) -> bool:
+    def verify_base64_type(self, allowed_mime_types) -> bool:
         if self.contains_external_url():
             return False
         
-        if self.mime_type not in ALLOWED_IMAGE_MIME_TYPES:
+        if self.mime_type not in allowed_mime_types:
             return False
 
         binary_data = base64.b64decode(self.base64_data)
@@ -113,37 +116,25 @@ class ObjectStorageFile:
         except:
             return False
 
-        if prob_mime_type not in ALLOWED_IMAGE_MIME_TYPES:
+        if prob_mime_type not in allowed_mime_types:
             return False
         
         self.mime_type = prob_mime_type
 
         return True
     
+    def verify_base64_image(self) -> bool:
+        return self.verify_base64_type(ALLOWED_IMAGE_MIME_TYPES)
+    
     def verify_base64_video(self) -> bool:
-        if self.contains_external_url():
-            return False
-        
-        if self.mime_type not in ALLOWED_VIDEO_MIME_TYPES:
-            return False
+        return self.verify_base64_type(ALLOWED_VIDEO_MIME_TYPES)
 
-        binary_data = base64.b64decode(self.base64_data)
+    def verify_base64_document(self) -> bool:
+        return self.verify_base64_type(ALLOWED_DOCUMENT_MIME_TYPES)
+    
+    def verify_base64_all(self) -> bool:
+        allowed_mime_types = ALLOWED_IMAGE_MIME_TYPES
+        allowed_mime_types += ALLOWED_VIDEO_MIME_TYPES
+        allowed_mime_types += ALLOWED_DOCUMENT_MIME_TYPES
 
-        prob_mime_type = None
-
-        try:
-            kind = filetype.guess(binary_data)
-
-            if not kind:
-                return False
-            
-            prob_mime_type = kind.mime
-        except:
-            return False
-
-        if prob_mime_type not in ALLOWED_VIDEO_MIME_TYPES:
-            return False
-        
-        self.mime_type = prob_mime_type
-
-        return True
+        return self.verify_base64_type(allowed_mime_types)
