@@ -12,3 +12,7 @@ class IAuthRepository(ABC):
     @abstractmethod
     def update_user_role(self, email: str, role: ROLE) -> bool:
         pass
+
+    @abstractmethod
+    def create_user(self, email: str, name: str, role: ROLE) -> UserCognitoDTO | None:
+        pass

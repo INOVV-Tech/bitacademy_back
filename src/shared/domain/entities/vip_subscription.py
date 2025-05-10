@@ -9,11 +9,15 @@ class VipSubscription(BaseModel):
     vip_level: VIP_LEVEL
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     expire_at: int = Field(..., gt=0, description='Timestamp in seconds')
+
+    @staticmethod
+    def expire_one_month() -> int:
+        return now_timestamp() + 2_592_000
     
     @staticmethod
     def max_vip_dummy(user_id: str) -> 'VipSubscription':
         created_at = now_timestamp()
-        expire_at = created_at + 1500
+        expire_at = created_at + 15
 
         return VipSubscription(
             user_id=user_id,
@@ -30,6 +34,18 @@ class VipSubscription(BaseModel):
         return VipSubscription(
             user_id=user_id,
             vip_level=VIP_LEVEL.FREE,
+            created_at=created_at,
+            expire_at=expire_at
+        )
+    
+    @staticmethod
+    def vip_one_month(user_id: str) -> 'VipSubscription':
+        created_at = now_timestamp()
+        expire_at = created_at + 2_592_000
+
+        return VipSubscription(
+            user_id=user_id,
+            vip_level=VIP_LEVEL.VIP_1,
             created_at=created_at,
             expire_at=expire_at
         )
@@ -63,13 +79,6 @@ class VipSubscription(BaseModel):
     
     def to_public_dict(self) -> dict:
         return self.to_dict()
-    
-    def update_from_dict(self, data: dict) -> dict:
-        updated_fields = {}
-
-        updated_fields['any_updated'] = len(updated_fields.keys()) > 0
-
-        return updated_fields
     
     def expired(self) -> bool:
         return now_timestamp() >= self.expire_at

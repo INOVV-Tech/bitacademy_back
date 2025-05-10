@@ -48,3 +48,33 @@ class AuthRepositoryCognito(IAuthRepository):
             pass
 
         return False
+    
+    def create_user(self, email: str, name: str, role: ROLE) -> UserCognitoDTO | None:
+        cognito_attributes = [
+            {
+                'Name': 'email',
+                'Value': email
+            },
+            {
+                'Name': 'name',
+                'Value': name
+            },
+            {
+                'Name': 'custom:role',
+                'Value': role.value
+            }
+        ]
+
+        try:
+            self.client.admin_create_user(
+                UserPoolId=self.user_pool_id,
+                Username=email,
+                DesiredDeliveryMediums=[ 'EMAIL' ],
+                UserAttributes=cognito_attributes
+            )
+            
+            return self.get_user_by_email(email)
+        except:
+            pass
+
+        return None
