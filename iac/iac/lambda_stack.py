@@ -367,6 +367,16 @@ class LambdaStack(Construct):
             environment_variables=environment_variables,
         )
 
+        ### PAGE BUNDLE ###
+
+        self.get_home_page_bundle = self.create_lambda_api_gateway_integration(
+            module_name='get_home_page_bundle',
+            method='GET',
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         ### PERMISSIONS ###
 
         self.functions_that_need_cognito_permissions = [
@@ -416,7 +426,9 @@ class LambdaStack(Construct):
             self.update_community_message,
             self.delete_community_message,
 
-            self.vip_stripe_webhook
+            self.vip_stripe_webhook,
+
+            self.get_home_page_bundle
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -466,5 +478,7 @@ class LambdaStack(Construct):
             self.update_community_message,
             self.delete_community_message,
 
-            self.vip_stripe_webhook
+            self.vip_stripe_webhook,
+
+            self.get_home_page_bundle
         ]
