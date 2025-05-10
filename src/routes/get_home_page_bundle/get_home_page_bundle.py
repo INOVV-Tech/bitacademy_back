@@ -39,6 +39,7 @@ class Usecase:
 
     def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict, request_params: dict) -> dict:
         return {
+            'vip_subscription': requester_user.vip_subscription.to_public_dict(),
             'home_coins': self.get_home_coins(),
             'community_channels': self.get_community_channels(requester_user),
             'news_list': self.get_news(requester_user)

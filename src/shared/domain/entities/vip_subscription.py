@@ -17,7 +17,7 @@ class VipSubscription(BaseModel):
     @staticmethod
     def max_vip_dummy(user_id: str) -> 'VipSubscription':
         created_at = now_timestamp()
-        expire_at = created_at + 15
+        expire_at = created_at + int(2_592_000 * 12)
 
         return VipSubscription(
             user_id=user_id,
@@ -78,7 +78,7 @@ class VipSubscription(BaseModel):
         return self.from_dict_static(data)
     
     def to_public_dict(self) -> dict:
-        return self.to_dict()
+        return self.to_reduced_dict()
     
     def expired(self) -> bool:
         return now_timestamp() >= self.expire_at

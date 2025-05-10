@@ -7,8 +7,6 @@ load_app_env()
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 
-from src.routes.get_all_community_channels.get_all_community_channels import Controller as GetAllChannelsController
-
 from src.routes.get_home_page_bundle.get_home_page_bundle import Controller as GetController
 
 class Test_HomePageBundleLambda:
@@ -25,7 +23,7 @@ class Test_HomePageBundleLambda:
         
         return controller.execute(request)
 
-    @pytest.mark.skip(reason='Done')
+    # @pytest.mark.skip(reason='Done')
     def test_lambda_get_home(self):
         body = self.get_body()
         
