@@ -9,6 +9,7 @@ from constructs import Construct
 from .dynamo_stack import DynamoStack
 from .lambda_stack import LambdaStack
 from .community_stack import CommunityStack
+from .cronjob_stack import CronjobStack
 from aws_cdk.aws_apigateway import RestApi, Cors, CognitoUserPoolsAuthorizer
 
 class IacStack(Stack):
@@ -99,3 +100,8 @@ class IacStack(Stack):
 
         for f in self.lambda_stack.functions_that_need_dynamo_permissions:
             bucket.grant_read_write(f)
+
+        ### CRONJOB ###
+
+        # self.cronjob_stack = CronjobStack(self, \
+        #     environment_variables=ENVIRONMENT_VARIABLES, dynamo_stack=self.dynamo_stack)
