@@ -58,8 +58,6 @@ class DynamoDatasource:
         """
         Insere ou atualiza um item na tabela principal.
         """
-        item = self._parse_float_to_decimal(item)
-
         return self.dynamo_table.put_item(Item=item)
 
     def get_item(self, partition_key: str, sort_key: str = None):
@@ -186,10 +184,3 @@ class DynamoDatasource:
             key[key_config['sort_key']] = sort_key
         
         return self.dynamo_table.delete_item(Key=key)
-
-    @staticmethod
-    def _parse_float_to_decimal(item):
-        """
-        Converte valores float para Decimal.
-        """
-        return json.loads(json.dumps(item), parse_float=Decimal)

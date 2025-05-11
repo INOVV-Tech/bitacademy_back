@@ -72,6 +72,29 @@ def is_valid_entity_url(data: dict, field_key: str) -> bool:
 
     return True
 
+def is_valid_entity_list(data: dict, field_key: str, min_length: int = 0, \
+    max_length: int = 128) -> bool:
+    if field_key not in data:
+        return False
+    
+    if isinstance(data[field_key], list):
+        pass
+    elif isinstance(data[field_key], str):
+        try:
+            data[field_key] = json.loads(data[field_key])
+
+            if not isinstance(data[field_key], list):
+                return False
+        except:
+            return False
+    else:
+        return False
+    
+    if len(data[field_key]) < min_length or len(data[field_key]) > max_length:
+        return False
+    
+    return True
+
 def is_valid_entity_string_list(data: dict, field_key: str, min_length: int = 0, \
     max_length: int = 128, min_str_length: int = 2, max_str_length: int = 256) -> bool:
     if field_key not in data:

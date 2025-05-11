@@ -9,11 +9,25 @@ class StripeApi:
         self.webhook_privkey = Environments.stripe_webhook_privkey
 
         stripe.api_key = self.privkey
+
+    def get_sig_header(self, request_headers: dict) -> str | None:
+        sig_header = request_headers.get('Stripe-Signature', None)
+
+        if sig_header is None:
+            sig_header = request_headers.get('STRIPE-SIGNATURE', None)
+
+        if sig_header is None:
+            sig_header = request_headers.get('STRIPE_SIGNATURE', None)
+        
+        return sig_header
     
     def decode_webhook_event(self, request_headers: dict, raw_body: bytes) -> Any | None:
-        sig_header = request_headers['Stripe-Signature']
-
         try:
+            sig_header = self.get_sig_header(request_headers)
+
+            if sig_header is None:
+                return None
+
             event = stripe.Webhook.construct_event(raw_body, sig_header, \
                 self.webhook_privkey)
 

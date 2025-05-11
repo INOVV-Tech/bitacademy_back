@@ -54,9 +54,9 @@ class Test_SignalLambda:
                 'price_entry_min': '93000',
                 'price_entry_max': '96000',
                 'price_stop': '91000',
-                'price_target_one': '97000',
-                'price_target_two': '98000',
-                'price_target_three': '100000',
+                'price_targets': [ '97000', '98000', '100000' ],
+                'external_url': 'http://www.google.com',
+                'description': ''
             },
             {
                 'title': 'Vitalikcoin',
@@ -73,9 +73,9 @@ class Test_SignalLambda:
                 'price_entry_min': '3',
                 'price_entry_max': '2',
                 'price_stop': '4',
-                'price_target_one': '1',
-                'price_target_two': '0.5',
-                'price_target_three': '0.25',
+                'price_targets': [ '1500', '800', '500' ],
+                'external_url': 'http://www.youtube.com',
+                'description': ''
             }
         ]
 
@@ -246,7 +246,7 @@ class Test_SignalLambda:
         body = self.get_body()
 
         query_params = {
-            'id': '9a34da84-4242-4012-98a1-ba61dec4df3f'
+            'id': 'ab37be36-b044-45ab-841d-0c0996edd9e5'
         }
 
         controller = GetOneController()
@@ -262,7 +262,7 @@ class Test_SignalLambda:
         body = self.get_body()
 
         body['signal'] = {
-            'id': 'f488e153-35dd-49d5-a278-272b40a4541e',
+            'id': 'ab37be36-b044-45ab-841d-0c0996edd9e5',
             'base_asset': 'BTC',
             'quote_asset': 'USDT',
             'market': 'SPOT',
@@ -270,7 +270,12 @@ class Test_SignalLambda:
             'vip_level': VIP_LEVEL.VIP_1,
             'estimated_pnl': '2',
             'margin_multiplier': '10',
-            'stake_relative': '0.05'
+            'stake_relative': '0.05',
+            'price_entry_min': '93000',
+            'price_entry_max': '200000',
+            'price_targets': [ '95000', '98000', '110000', '200000' ],
+            'external_url': 'http://www.google.com',
+            'description': 'UPDATED'
         }
         
         controller = UpdateController()

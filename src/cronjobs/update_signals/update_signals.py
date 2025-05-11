@@ -222,21 +222,18 @@ class Usecase:
 
                     updated = True
                 else:
-                    if last_price >= signal.price_target_one:
-                        signal.status_details.hit_target_one_snapshot = PriceSnapshot.from_exchange(last_price)
-                        
-                        updated = True
+                    price_targets = signal.price_targets
+                    hit_target_snapshots = signal.status_details.hit_target_snapshots
 
-                    if last_price >= signal.price_target_two:
-                        signal.status_details.hit_target_two_snapshot = PriceSnapshot.from_exchange(last_price)
+                    for i in range(len(price_targets)):
+                        price_target = price_targets[i]
                         
-                        updated = True
+                        if last_price >= price_target:
+                            hit_target_snapshots[i] = PriceSnapshot.from_exchange(last_price)
+                            updated = True
 
-                    if last_price >= signal.price_target_three:
-                        signal.status_details.hit_target_three_snapshot = PriceSnapshot.from_exchange(last_price)
+                    if len([ x for x in hit_target_snapshots if x.priced() ]) == len(hit_target_snapshots):
                         signal.status = SIGNAL_STATUS.DONE
-
-                        updated = True
             
             if not updated:
                 continue
@@ -275,21 +272,18 @@ class Usecase:
 
                     updated = True
                 else:
-                    if last_price <= signal.price_target_one:
-                        signal.status_details.hit_target_one_snapshot = PriceSnapshot.from_exchange(last_price)
-                        
-                        updated = True
-                    
-                    if last_price <= signal.price_target_two:
-                        signal.status_details.hit_target_two_snapshot = PriceSnapshot.from_exchange(last_price)
-                        
-                        updated = True
+                    price_targets = signal.price_targets
+                    hit_target_snapshots = signal.status_details.hit_target_snapshots
 
-                    if last_price <= signal.price_target_three:
-                        signal.status_details.hit_target_three_snapshot = PriceSnapshot.from_exchange(last_price)
+                    for i in range(len(price_targets)):
+                        price_target = price_targets[i]
+
+                        if last_price <= price_target:
+                            hit_target_snapshots[i] = PriceSnapshot.from_exchange(last_price)
+                            updated = True
+
+                    if len([ x for x in hit_target_snapshots if x.priced() ]) == len(hit_target_snapshots):
                         signal.status = SIGNAL_STATUS.DONE
-
-                        updated = True
 
             if not updated:
                 continue

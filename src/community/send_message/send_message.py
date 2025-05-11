@@ -131,11 +131,14 @@ def broadcast_msg(request_context: dict, repository: Repository, read_roles: lis
     msg_data: dict):
     stage = request_context.get('stage', '')
     domain_name = request_context.get('domainName', '')
-    
-    api_gateway = boto3.client('apigatewaymanagementapi',
-        endpoint_url=f'https://{domain_name}/{stage}',
-        config=Config(connect_timeout=1, retries={ 'max_attempts': 3 })
-    )
+
+    try:
+        api_gateway = boto3.client('apigatewaymanagementapi',
+            endpoint_url=f'https://{domain_name}/{stage}',
+            config=Config(connect_timeout=1, retries={ 'max_attempts': 3 })
+        )
+    except:
+        return
 
     payload = json.dumps({
         'action': 'channel_message',

@@ -11,7 +11,7 @@ from src.shared.utils.decimal import Decimal
 from src.shared.utils.time import now_timestamp
 from src.shared.utils.entity import random_entity_id, is_valid_entity_uuid, \
     is_valid_entity_string_enum, is_valid_entity_int_enum, is_valid_entity_string, \
-    is_valid_entity_decimal
+    is_valid_entity_decimal, is_valid_entity_url, is_valid_entity_list
 
 class PriceSnapshot:
     @staticmethod
@@ -22,18 +22,26 @@ class PriceSnapshot:
     def from_dict_static(data: dict) -> 'PriceSnapshot':
         return PriceSnapshot(
             price=Decimal(data['price']) if ('price' in data and data['price'] is not None) else None,
-            timestamp=int(data['timestamp']) if 'timestamp' in data else None
+            timestamp=int(data['timestamp']) if ('timestamp' in data and data['timestamp'] is not None) else None
         )
 
     def __init__(self, price: Decimal | None = None, timestamp: int | None = None):
         self.price = price
         self.timestamp = timestamp
 
-    def to_dict(self) -> dict:
+    def to_dict(self, raw_decimal=True) -> dict:
+        price = None
+
+        if self.price is not None:
+            price = self.price if raw_decimal else str(self.price)
+        
         return {
-            'price': str(self.price) if self.price is not None else None,
+            'price': price,
             'timestamp': self.timestamp
         }
+    
+    def priced(self) -> bool:
+        return self.price is not None
 
 class StatusDetails:
     @staticmethod
@@ -44,32 +52,23 @@ class StatusDetails:
         return StatusDetails(
             entry_snapshot=decode_price_snapshot('entry_snapshot'),
             stop_snapshot=decode_price_snapshot('stop_snapshot'),
-            hit_target_one_snapshot=decode_price_snapshot('hit_target_one_snapshot'),
-            hit_target_two_snapshot=decode_price_snapshot('hit_target_two_snapshot'),
-            hit_target_three_snapshot=decode_price_snapshot('hit_target_three_snapshot')
+            hit_target_snapshots=[ PriceSnapshot.from_dict_static(x) for x in data['hit_target_snapshots'] ],
         )
 
     def __init__(self,
         entry_snapshot: PriceSnapshot | None = None,
         stop_snapshot: PriceSnapshot | None = None,
-        hit_target_one_snapshot: PriceSnapshot | None = None,
-        hit_target_two_snapshot: PriceSnapshot | None = None,
-        hit_target_three_snapshot: PriceSnapshot | None = None,
+        hit_target_snapshots: list[PriceSnapshot] = []
     ):
         self.entry_snapshot = entry_snapshot
         self.stop_snapshot = stop_snapshot
+        self.hit_target_snapshots = hit_target_snapshots
 
-        self.hit_target_one_snapshot = hit_target_one_snapshot
-        self.hit_target_two_snapshot = hit_target_two_snapshot
-        self.hit_target_three_snapshot = hit_target_three_snapshot
-
-    def to_dict(self) -> dict:
+    def to_dict(self, raw_decimal=True) -> dict:
         return {
-            'entry_snapshot': self.entry_snapshot.to_dict() if self.entry_snapshot is not None else None,
-            'stop_snapshot': self.stop_snapshot.to_dict() if self.stop_snapshot is not None else None,
-            'hit_target_one_snapshot': self.hit_target_one_snapshot.to_dict() if self.hit_target_one_snapshot is not None else None,
-            'hit_target_two_snapshot': self.hit_target_two_snapshot.to_dict() if self.hit_target_two_snapshot is not None else None,
-            'hit_target_three_snapshot': self.hit_target_three_snapshot.to_dict() if self.hit_target_three_snapshot is not None else None,
+            'entry_snapshot': self.entry_snapshot.to_dict(raw_decimal) if self.entry_snapshot is not None else None,
+            'stop_snapshot': self.stop_snapshot.to_dict(raw_decimal) if self.stop_snapshot is not None else None,
+            'hit_target_snapshots': [ x.to_dict(raw_decimal) for x in self.hit_target_snapshots ]
         }
 
 class Signal(BaseModel):
@@ -94,14 +93,16 @@ class Signal(BaseModel):
     price_entry_min: Decimal
     price_entry_max: Decimal
     price_stop: Decimal
-    price_target_one: Decimal
-    price_target_two: Decimal
-    price_target_three: Decimal
+
+    price_targets: list[Decimal]
 
     status_details: StatusDetails
 
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
+
+    external_url: str
+    description: str
 
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
@@ -157,7 +158,37 @@ class Signal(BaseModel):
     
     @staticmethod
     def data_contains_valid_price(data: dict, price_key: str) -> bool:
-        return is_valid_entity_decimal(data, price_key, min_value='0', max_value='1000000000')
+        return is_valid_entity_decimal(data, price_key, min_value='0', max_value='999_999_999_999')
+    
+    @staticmethod
+    def data_contains_valid_price_targets(data: dict) -> bool:
+        if not is_valid_entity_list(data, 'price_targets', min_length=1, max_length=9):
+            return False
+        
+        min_value = Decimal('0')
+        max_value = Decimal('999_999_999_999')
+
+        try:
+            for item in data['price_targets']:
+                if not isinstance(item, str):
+                    return False
+                
+                value = Decimal(item)
+
+                if value < min_value or value > max_value:
+                    return False
+        except:
+            return False
+
+        return True
+    
+    @staticmethod
+    def data_contains_valid_external_url(data: dict) -> bool:
+        return is_valid_entity_url(data, 'external_url')
+    
+    @staticmethod
+    def data_contains_valid_description(data: dict) -> bool:
+        return is_valid_entity_string(data, 'description', min_length=0, max_length=2048)
     
     @staticmethod
     def norm_asset(asset: str) -> str:
@@ -207,14 +238,14 @@ class Signal(BaseModel):
         if not Signal.data_contains_valid_price(data, 'price_stop'):
             return ('Preço de stop-loss inválido', None)
         
-        if not Signal.data_contains_valid_price(data, 'price_target_one'):
-            return ('Preço do primeiro alvo inválido', None)
+        if not Signal.data_contains_valid_price_targets(data):
+            return ('Lista de preços alvos inválida', None)
         
-        if not Signal.data_contains_valid_price(data, 'price_target_two'):
-            return ('Preço do segundo alvo inválido', None)
+        if not Signal.data_contains_valid_external_url(data):
+            return ('Link externo inválido', None)
         
-        if not Signal.data_contains_valid_price(data, 'price_target_three'):
-            return ('Preço do terceiro alvo inválido', None)
+        if not Signal.data_contains_valid_description(data):
+            return ('Descrição inválida', None)
 
         base_asset = Signal.norm_asset(data['base_asset'])
         quote_asset = Signal.norm_asset(data['quote_asset'])
@@ -239,14 +270,17 @@ class Signal(BaseModel):
             price_entry_min=Decimal(data['price_entry_min']),
             price_entry_max=Decimal(data['price_entry_max']),
             price_stop=Decimal(data['price_stop']),
-            price_target_one=Decimal(data['price_target_one']),
-            price_target_two=Decimal(data['price_target_two']),
-            price_target_three=Decimal(data['price_target_three']),
+            price_targets=[ Decimal(x) for x in data['price_targets'] ],
 
-            status_details=StatusDetails(),
+            status_details=StatusDetails(
+                hit_target_snapshots=[ PriceSnapshot() for x in data['price_targets'] ]
+            ),
 
             created_at=now_timestamp(),
-            updated_at=now_timestamp()
+            updated_at=now_timestamp(),
+
+            external_url=data['external_url'].strip(),
+            description=data['description'].strip()
         )
 
         if signal.market == MARKET.SPOT and signal.trade_side != TRADE_SIDE.LONG:
@@ -276,17 +310,21 @@ class Signal(BaseModel):
             price_entry_min=Decimal(data['price_entry_min']),
             price_entry_max=Decimal(data['price_entry_max']),
             price_stop=Decimal(data['price_stop']),
-            price_target_one=Decimal(data['price_target_one']),
-            price_target_two=Decimal(data['price_target_two']),
-            price_target_three=Decimal(data['price_target_three']),
+            price_targets=[ Decimal(x) for x in data['price_targets'] ],
 
             status_details=StatusDetails.from_dict_static(data['status_details']),
             
             created_at=int(data['created_at']),
             updated_at=int(data['updated_at']),
+
+            external_url=data['external_url'],
+            description=data['description']
         )
 
-    def to_dict(self) -> dict:
+    def to_dict(self, raw_decimal=True) -> dict:
+        def dump_decimal(value: Decimal) -> Decimal | str:
+            return value if raw_decimal else str(value)
+
         return {
             'id': self.id,
             'user_id': self.user_id,
@@ -301,27 +339,28 @@ class Signal(BaseModel):
             'status': self.status.value,
             'trade_strat': self.trade_strat.value,
 
-            'estimated_pnl': str(self.estimated_pnl),
-            'stake_relative': str(self.stake_relative),
-            'margin_multiplier': str(self.margin_multiplier),
-            'price_entry_min': str(self.price_entry_min),
-            'price_entry_max': str(self.price_entry_max),
-            'price_stop': str(self.price_stop),
-            'price_target_one': str(self.price_target_one),
-            'price_target_two': str(self.price_target_two),
-            'price_target_three': str(self.price_target_three),
-            
-            'status_details': self.status_details.to_dict(),
+            'estimated_pnl': dump_decimal(self.estimated_pnl),
+            'stake_relative': dump_decimal(self.stake_relative),
+            'margin_multiplier': dump_decimal(self.margin_multiplier),
+            'price_entry_min': dump_decimal(self.price_entry_min),
+            'price_entry_max': dump_decimal(self.price_entry_max),
+            'price_stop': dump_decimal(self.price_stop),
+            'price_targets': [ dump_decimal(x) for x in self.price_targets ],
+
+            'status_details': self.status_details.to_dict(raw_decimal),
 
             'created_at': self.created_at,
-            'updated_at': self.updated_at,            
+            'updated_at': self.updated_at,
+
+            'external_url': self.external_url,
+            'description': self.description         
         }
     
     def from_dict(self, data: dict) -> 'Signal':
         return self.from_dict_static(data)
     
     def to_public_dict(self) -> dict:
-        result = self.to_dict()
+        result = self.to_dict(raw_decimal=False)
 
         del result['user_id']
 
@@ -400,20 +439,24 @@ class Signal(BaseModel):
 
             updated_fields['price_stop'] = self.price_stop
 
-        if Signal.data_contains_valid_price(data, 'price_target_one'):
-            self.price_target_one = Decimal(data['price_target_one'])
+        if Signal.data_contains_valid_price_targets(data):
+            self.price_targets = [ Decimal(x) for x in data['price_targets'] ]
 
-            updated_fields['price_target_one'] = self.price_target_one
+            updated_fields['price_targets'] = self.price_targets
 
-        if Signal.data_contains_valid_price(data, 'price_target_two'):
-            self.price_target_two = Decimal(data['price_target_two'])
+            self.status_details = StatusDetails(
+                hit_target_snapshots=[ PriceSnapshot() for x in self.price_targets ]
+            )
 
-            updated_fields['price_target_two'] = self.price_target_two
+        if Signal.data_contains_valid_external_url(data):
+            self.external_url = data['external_url'].strip()
+
+            updated_fields['external_url'] = self.external_url
         
-        if Signal.data_contains_valid_price(data, 'price_target_three'):
-            self.price_target_three = Decimal(data['price_target_three'])
+        if Signal.data_contains_valid_description(data):
+            self.description = data['description'].strip()
 
-            updated_fields['price_target_three'] = self.price_target_three
+            updated_fields['description'] = self.description
 
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 
