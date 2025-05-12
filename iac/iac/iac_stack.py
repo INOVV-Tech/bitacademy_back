@@ -72,8 +72,6 @@ class IacStack(Stack):
 
         self.community_stack = CommunityStack(self, \
             environment_variables=ENVIRONMENT_VARIABLES, dynamo_stack=self.dynamo_stack)
-        
-        self.community_stack.comm_connect_fn.add_to_role_policy(cognito_admin_policy)
 
         ENVIRONMENT_VARIABLES['WEBSOCKET_API_ID'] = self.community_stack.comm_api.ref
         ENVIRONMENT_VARIABLES['WEBSOCKET_STAGE'] = self.community_stack.comm_stage.stage_name
@@ -92,6 +90,8 @@ class IacStack(Stack):
                 self.user_pool_arn
             ]
         )
+
+        self.community_stack.comm_connect_fn.add_to_role_policy(cognito_admin_policy)
         
         for f in self.lambda_stack.functions_that_need_cognito_permissions:
             f.add_to_role_policy(cognito_admin_policy)
