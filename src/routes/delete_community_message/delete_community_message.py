@@ -8,6 +8,8 @@ from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.entities.community import CommunityMessage
 
+from src.shared.messaging.comm_sender import broadcast_msg_delete
+
 from src.shared.utils.routing import controller_execute
 
 ALLOWED_USER_ROLES = [
@@ -55,6 +57,14 @@ class Usecase:
 
         if delete_result != 200:
             return { 'error': f'Delete falhou com status "{delete_result}"' }
+        
+        read_roles = community_channel.permissions.get_all_read_roles()
+
+        if len(read_roles) > 0:
+            broadcast_msg_delete(
+                msg=community_message,
+                read_roles=read_roles
+            )
     
         return {}
 

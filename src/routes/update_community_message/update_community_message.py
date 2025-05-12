@@ -8,6 +8,8 @@ from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.entities.community import CommunityMessage
 
+from src.shared.messaging.comm_sender import broadcast_msg_update
+
 from src.shared.utils.routing import controller_execute
 
 ALLOWED_USER_ROLES = [
@@ -65,6 +67,14 @@ class Usecase:
         community_message.user_id = requester_user.user_id
 
         self.repository.community_repo.update_message(community_message)
+
+        read_roles = community_channel.permissions.get_all_read_roles()
+
+        if len(read_roles) > 0:
+            broadcast_msg_update(
+                msg=community_message,
+                read_roles=read_roles
+            )
 
         return {
             'community_message': community_message.to_public_dict()

@@ -68,6 +68,18 @@ class IacStack(Stack):
             }
         )
 
+        ### WEBSOCKET ###
+
+        self.community_stack = CommunityStack(self, \
+            environment_variables=ENVIRONMENT_VARIABLES, dynamo_stack=self.dynamo_stack)
+        
+        self.community_stack.comm_connect_fn.add_to_role_policy(cognito_admin_policy)
+
+        ENVIRONMENT_VARIABLES['WEBSOCKET_API_ID'] = self.community_stack.comm_api.ref
+        ENVIRONMENT_VARIABLES['WEBSOCKET_STAGE'] = self.community_stack.comm_stage.stage_name
+
+        ### ROUTES ###
+
         self.lambda_stack = LambdaStack(self, api_gateway_resource=api_gateway_resource,
             environment_variables=ENVIRONMENT_VARIABLES, authorizer=self.cognito_auth)
           
@@ -87,12 +99,8 @@ class IacStack(Stack):
         for f in self.lambda_stack.functions_that_need_dynamo_permissions:
             self.dynamo_stack.dynamo_table.grant_read_write_data(f)
 
-        ### WEBSOCKET ###
-
-        self.community_stack = CommunityStack(self, \
-            environment_variables=ENVIRONMENT_VARIABLES, dynamo_stack=self.dynamo_stack)
-        
-        self.community_stack.comm_connect_fn.add_to_role_policy(cognito_admin_policy)
+        for f in self.lambda_stack.functions_that_need_comm_ws_permissions:
+            f.add_to_role_policy(self.community_stack.manage_connections_policy)
 
         ### S3 ###
 

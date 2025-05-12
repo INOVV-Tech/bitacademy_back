@@ -8,6 +8,7 @@ from aws_cdk import (
 class LambdaStack(Construct):
     functions_that_need_cognito_permissions = []
     functions_that_need_dynamo_permissions = []
+    functions_that_need_comm_ws_permissions = []
 
     def create_lambda_api_gateway_integration(self, module_name: str, method: str, api_resource: Resource,
         environment_variables: dict = { 'STAGE': 'TEST' }, authorizer=None):
@@ -481,4 +482,9 @@ class LambdaStack(Construct):
             self.vip_stripe_webhook,
 
             self.get_home_page_bundle
+        ]
+
+        self.functions_that_need_comm_ws_permissions = [
+            self.update_community_message,
+            self.delete_community_message
         ]

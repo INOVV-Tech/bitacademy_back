@@ -393,5 +393,13 @@ class CommunityMessage(BaseModel):
                 updated_fields['raw_content'] = self.raw_content
         
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
-
+        
         return updated_fields
+    
+    def to_delete_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'channel_id': self.channel_id,
+            'forum_topic_id': self.forum_topic_id,
+            'user_id': self.user_id
+        }

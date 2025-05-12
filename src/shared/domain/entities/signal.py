@@ -66,9 +66,9 @@ class StatusDetails:
 
     def to_dict(self, raw_decimal=True) -> dict:
         return {
-            'entry_snapshot': self.entry_snapshot.to_dict(raw_decimal) if self.entry_snapshot is not None else None,
-            'stop_snapshot': self.stop_snapshot.to_dict(raw_decimal) if self.stop_snapshot is not None else None,
-            'hit_target_snapshots': [ x.to_dict(raw_decimal) for x in self.hit_target_snapshots ]
+            'entry_snapshot': self.entry_snapshot.to_dict(raw_decimal=raw_decimal) if self.entry_snapshot is not None else None,
+            'stop_snapshot': self.stop_snapshot.to_dict(raw_decimal=raw_decimal) if self.stop_snapshot is not None else None,
+            'hit_target_snapshots': [ x.to_dict(raw_decimal=raw_decimal) for x in self.hit_target_snapshots ]
         }
 
 class Signal(BaseModel):
@@ -347,7 +347,7 @@ class Signal(BaseModel):
             'price_stop': dump_decimal(self.price_stop),
             'price_targets': [ dump_decimal(x) for x in self.price_targets ],
 
-            'status_details': self.status_details.to_dict(raw_decimal),
+            'status_details': self.status_details.to_dict(raw_decimal=raw_decimal),
 
             'created_at': self.created_at,
             'updated_at': self.updated_at,

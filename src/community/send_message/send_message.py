@@ -6,6 +6,7 @@ from src.shared.infra.repositories.repository import Repository
 
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
+from src.shared.domain.enums.community_action import COMMUNITY_ACTION
 from src.shared.domain.entities.community import CommunityChannel, \
     CommunityForumTopic, CommunityMessage
 
@@ -129,19 +130,24 @@ def push_forum_msg(request_context: dict, repository: Repository, connection_id:
 
 def broadcast_msg(request_context: dict, repository: Repository, read_roles: list[ROLE], \
     msg_data: dict):
-    stage = request_context.get('stage', '')
-    domain_name = request_context.get('domainName', '')
+    api_gateway = None
 
     try:
+        stage = request_context.get('stage', '')
+        domain_name = request_context.get('domainName', '')
+
         api_gateway = boto3.client('apigatewaymanagementapi',
             endpoint_url=f'https://{domain_name}/{stage}',
             config=Config(connect_timeout=1, retries={ 'max_attempts': 3 })
         )
     except:
+        pass
+
+    if api_gateway is None:
         return
 
     payload = json.dumps({
-        'action': 'channel_message',
+        'action': COMMUNITY_ACTION.CHANNEL_MESSAGE_CREATE.value,
         'message': msg_data 
     }).encode('utf-8')
 
