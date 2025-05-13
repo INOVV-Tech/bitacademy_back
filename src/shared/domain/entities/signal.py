@@ -283,9 +283,6 @@ class Signal(BaseModel):
             description=data['description'].strip()
         )
 
-        if signal.market == MARKET.SPOT and signal.trade_side != TRADE_SIDE.LONG:
-            return (f'Direção de trade "{signal.trade_side.value}" com mercado spot não é permitida', None)
-
         return ('', signal)
 
     @staticmethod
