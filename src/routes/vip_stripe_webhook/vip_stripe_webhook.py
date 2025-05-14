@@ -87,7 +87,7 @@ class Usecase:
                 return
         
         if user_dto.role not in [ ROLE.GUEST, ROLE.VIP ]:
-            # TODO: only guest/vip cant buy/renew vip subscription ?
+            # TODO: only guest/vip can buy/renew vip subscription ?
             return
 
         vip_subscription = self.repository.vip_subscription_repo.get_one(user_dto.user_id)
