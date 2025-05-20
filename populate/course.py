@@ -16,7 +16,7 @@ def populate_courses():
 
     template = {
         'title': 'Curso Investimento do Zero ao Avançado',
-        'description': 'Duração do Curso: 3 meses. Descrição: Domine os principais conceitos do mercado financeiro, conheça diferentes tipos de ativos e descubra estratégias para potencializar seus ganhos em renda fixa, variável e criptomoedas. Fundamentos do mercado financeiro Investimentos em renda fixa e variável Introdução às criptomoedas (Bitcoin, Ethereum e altcoins).',
+        'description': 'Domine os principais conceitos do mercado financeiro, conheça diferentes tipos de ativos e descubra estratégias para potencializar seus ganhos em renda fixa, variável e criptomoedas. Fundamentos do mercado financeiro Investimentos em renda fixa e variável Introdução às criptomoedas (Bitcoin, Ethereum e altcoins).',
         'teachers': [ 'Rogério Silva' ],
         'duration': '3 meses',
         'external_url': 'https://www.youtube.com/',

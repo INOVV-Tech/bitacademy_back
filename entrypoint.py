@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     # populate_home_coins()
     # populate_free_materials()
-    # populate_courses()
+    populate_courses()
     # populate_news()
     # populate_tools()
     pass
