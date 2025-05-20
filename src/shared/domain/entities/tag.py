@@ -24,7 +24,7 @@ class Tag(BaseModel):
             tag_dict[tag_str] = True
 
             result.append(Tag(
-                title=tag_str,
+                title=Tag.norm_title(tag_str),
                 created_at=now
             ))
         

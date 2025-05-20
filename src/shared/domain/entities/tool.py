@@ -80,7 +80,7 @@ class Tool(BaseModel):
             created_at=now_timestamp()
         )
 
-        if tool.cover_img.verify_base64_image():
+        if not tool.cover_img.verify_base64_image():
             return ('Imagem de capa inválida', None)
         
         return ('', tool)

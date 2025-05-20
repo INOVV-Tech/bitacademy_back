@@ -8,7 +8,7 @@ from src.shared.coinmarketcap.enums.sort_option import CMC_SORT_OPTION
 from src.shared.domain.entities.home_coins import HomeCoins
 
 class CMCApi:
-    CMD_API_KEY: str = Environments.cmc_api_key 
+    CMC_API_KEY: str = Environments.cmc_api_key
 
     def __init__(self):
         pass
@@ -23,7 +23,7 @@ class CMCApi:
 
         headers = {
             'accept': 'application/json',
-            'X-CMC_PRO_API_KEY': self.CMD_API_KEY
+            'X-CMC_PRO_API_KEY': self.CMC_API_KEY
         }
 
         if method == 'POST':

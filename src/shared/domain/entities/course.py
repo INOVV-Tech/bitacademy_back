@@ -16,6 +16,7 @@ class Course(BaseModel):
     title: str
     description: str
     teachers: list[str]
+    duration: str
     cover_img: ObjectStorageFile
     card_img: ObjectStorageFile
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
@@ -39,6 +40,10 @@ class Course(BaseModel):
     @staticmethod
     def data_contains_valid_teachers(data: dict) -> bool:
         return is_valid_entity_string_list(data, 'teachers', min_length=0)
+    
+    @staticmethod
+    def data_contains_valid_duration(data: dict) -> bool:
+        return is_valid_entity_string(data, 'duration', min_length=2, max_length=128)
     
     @staticmethod
     def data_contains_valid_external_url(data: dict) -> bool:
@@ -81,6 +86,9 @@ class Course(BaseModel):
         
         teachers = Course.norm_teachers(data['teachers'])
 
+        if not Course.data_contains_valid_duration(data):
+            return ('Duração inválida', None)
+
         if not Course.data_contains_valid_external_url(data):
             return ('Link externo inválido', None)
         
@@ -106,6 +114,7 @@ class Course(BaseModel):
             title=data['title'].strip(),
             description=data['description'].strip(),
             teachers=teachers,
+            duration=data['duration'].strip(),
             cover_img=ObjectStorageFile.from_base64_data(data['cover_img']),
             card_img=ObjectStorageFile.from_base64_data(data['card_img']),
             created_at=now_timestamp(),
@@ -130,6 +139,7 @@ class Course(BaseModel):
             title=data['title'],
             description=data['description'],
             teachers=data['teachers'],
+            duration=data['duration'],
             cover_img=ObjectStorageFile.from_dict_static(data['cover_img']),
             card_img=ObjectStorageFile.from_dict_static(data['card_img']),
             created_at=int(data['created_at']),
@@ -145,6 +155,7 @@ class Course(BaseModel):
             'title': self.title,
             'description': self.description,
             'teachers': self.teachers,
+            'duration': self.duration,
             'cover_img': self.cover_img.to_dict(),
             'card_img': self.card_img.to_dict(),
             'created_at': self.created_at,
@@ -196,6 +207,11 @@ class Course(BaseModel):
             self.teachers = Course.norm_teachers(data['teachers'])
 
             updated_fields['teachers'] = self.teachers
+
+        if Course.data_contains_valid_duration(data):
+            self.duration = data['duration'].strip()
+
+            updated_fields['duration'] = self.duration
 
         if Course.data_contains_valid_cover_img(data):
             cover_img = ObjectStorageFile.from_base64_data(data['cover_img'])

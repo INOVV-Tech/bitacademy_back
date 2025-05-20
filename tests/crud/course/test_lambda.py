@@ -20,7 +20,7 @@ class Test_CourseLambda:
 
     def get_body(self):
         return {
-            'requester_user': get_requester_user(admin=False)
+            'requester_user': get_requester_user(admin=True)
         }
     
     def call_lambda(self, controller, body={}, headers={}, query_params={}):
@@ -37,8 +37,9 @@ class Test_CourseLambda:
 
         body['course'] = {
             'title': 'Test Course',
-            'description': 'Duração do Curso: 3 meses. Descrição: Domine os principais conceitos do mercado financeiro, conheça diferentes tipos de ativos e descubra estratégias para potencializar seus ganhos em renda fixa, variável e criptomoedas. Fundamentos do mercado financeiro Investimentos em renda fixa e variável Introdução às criptomoedas (Bitcoin, Ethereum e altcoins).',
+            'description': 'Domine os principais conceitos do mercado financeiro, conheça diferentes tipos de ativos e descubra estratégias para potencializar seus ganhos em renda fixa, variável e criptomoedas. Fundamentos do mercado financeiro Investimentos em renda fixa e variável Introdução às criptomoedas (Bitcoin, Ethereum e altcoins).',
             'teachers': [ 'Rogério Silva' ],
+            'duration': '3 meses',
             'external_url': 'https://www.youtube.com/',
             'tags': [ 'teste', 'free' ],
             'vip_level': 1,
@@ -132,10 +133,11 @@ class Test_CourseLambda:
             encode_base64=True, base64_prefix='data:image/png;base64')
 
         body['course'] = {
-            'id': '22a4fc15-2a22-4f1a-8b54-a035150331a2',
+            'id': 'af43f947-7371-4d61-afea-90bbc6e88b6e',
             'title': 'Test Course updated',
             'description': 'Duração do Curso: 3 meses. Descrição: Domine os principais conceitos do mercado financeiro, conheça diferentes tipos de ativos e descubra estratégias para potencializar seus ganhos em renda fixa, variável e criptomoedas. Fundamentos do mercado financeiro Investimentos em renda fixa e variável Introdução às criptomoedas (Bitcoin, Ethereum e altcoins).',
             'teachers': [ 'Rogério Silva' ],
+            'duration': '4 meses',
             'external_url': 'https://www.google.com/',
             'tags': [ 'teste', 'free', 'maisuma' ],
             'vip_level': 0,

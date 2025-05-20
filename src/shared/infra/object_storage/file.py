@@ -115,7 +115,7 @@ class ObjectStorageFile:
             prob_mime_type = kind.mime
         except:
             return False
-
+        
         if prob_mime_type not in allowed_mime_types:
             return False
         
