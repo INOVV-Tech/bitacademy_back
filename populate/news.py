@@ -1,3 +1,4 @@
+import os
 from populate.common import load_app_env, load_resource
 
 load_app_env()
@@ -7,7 +8,7 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.domain.entities.news import News
 from src.shared.domain.entities.tag import Tag
 
-USER_ID = 'e34c5a0a-e061-7081-168a-3d82472dc6c3'
+USER_ID = os.environ.get('POPULATE_USER_ID')
 
 def populate_news():
     repository = Repository(news_repo=True, tag_repo=True)
