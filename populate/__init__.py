@@ -5,9 +5,9 @@ from populate.news import populate_news
 from populate.tool import populate_tools
 from populate.community import populate_community_channels
 
-def populate_primary_entities(home_coins: bool = True, free_materials: bool = True, 
-    courses: bool = True, news: bool = True, tools: bool = True, 
-    community_channels: bool = True) -> None:
+def populate_primary_entities(home_coins: bool = False, free_materials: bool = False, 
+    courses: bool = False, news: bool = False, tools: bool = False, 
+    community_channels: bool = False) -> None:
     if home_coins:
         populate_home_coins()
 

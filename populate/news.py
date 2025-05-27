@@ -19,6 +19,7 @@ def populate_news():
     requester_user = AuthAuthorizerDTO(
         user_id=USER_ID,
         name=USER_NAME,
+        email='',
         phone='',
         role=ROLE.ADMIN,
         email_verified=True,
