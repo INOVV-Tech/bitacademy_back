@@ -4,14 +4,27 @@ from populate.common import load_app_env, load_resource
 load_app_env()
 
 from src.shared.infra.repositories.repository import Repository
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.entities.news import News
 from src.shared.domain.entities.tag import Tag
 
 USER_ID = os.environ.get('POPULATE_USER_ID')
+USER_NAME = os.environ.get('POPULATE_USER_NAME')
 
 def populate_news():
     repository = Repository(news_repo=True, tag_repo=True)
+
+    requester_user = AuthAuthorizerDTO(
+        user_id=USER_ID,
+        name=USER_NAME,
+        phone='',
+        role=ROLE.ADMIN,
+        email_verified=True,
+        phone_verified=True,
+        vip_subscription=None
+    )
 
     tags = [ 'Mercado' ]
 
@@ -28,7 +41,7 @@ def populate_news():
     }
     
     for i in range(20):
-        (error, news) = News.from_request_data(template, USER_ID)
+        (error, news) = News.from_request_data(template, requester_user)
         
         s3_datasource = repository.get_s3_datasource()
 

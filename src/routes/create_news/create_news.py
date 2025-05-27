@@ -36,8 +36,8 @@ class Usecase:
         if 'news' not in request_data \
             or not isinstance(request_data['news'], dict):
             return { 'error': 'Campo "news" não foi encontrado' }
-
-        (error, news) = News.from_request_data(request_data['news'], requester_user.user_id)
+        
+        (error, news) = News.from_request_data(request_data['news'], requester_user)
 
         if error != '':
             return { 'error': error }

@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
+
 from src.shared.domain.enums.vip_level import VIP_LEVEL
 
 from src.shared.utils.time import now_timestamp
@@ -21,6 +23,7 @@ class News(BaseModel):
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     tags: list[str]
     user_id: str
+    user_name: str
     vip_level: VIP_LEVEL
 
     @staticmethod
@@ -60,7 +63,7 @@ class News(BaseModel):
         return [ tag.strip().lower() for tag in tags ]
 
     @staticmethod
-    def from_request_data(data: dict, user_id: str) -> 'tuple[str, News | None]':
+    def from_request_data(data: dict, requester_user: AuthAuthorizerDTO) -> 'tuple[str, News | None]':
         if not News.data_contains_valid_title(data):
             return ('Título inválido', None)
         
@@ -96,7 +99,8 @@ class News(BaseModel):
             card_img=ObjectStorageFile.from_base64_data(data['card_img']),
             created_at=now_timestamp(),
             tags=tags,
-            user_id=user_id,
+            user_id=requester_user.user_id,
+            user_name=requester_user.name,
             vip_level=VIP_LEVEL(data['vip_level'])
         )
 
@@ -120,6 +124,7 @@ class News(BaseModel):
             created_at=int(data['created_at']),
             tags=data['tags'],
             user_id=data['user_id'],
+            user_name=data['user_name'],
             vip_level=VIP_LEVEL(data['vip_level'])
         )
 
@@ -134,6 +139,7 @@ class News(BaseModel):
             'created_at': self.created_at,
             'tags': self.tags,
             'user_id': self.user_id,
+            'user_name': self.user_name,
             'vip_level': self.vip_level.value
         }
     
