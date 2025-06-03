@@ -5,11 +5,23 @@ from src.shared.helpers.external_interfaces.http_models import HttpResponse
 
 class OK(HttpResponse):
     def __init__(self, body: Any = None) -> None:
-        super().__init__(HttpStatusCode.OK.value, body)
+        headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+        }
+
+        super().__init__(HttpStatusCode.OK.value, body, headers=headers)
 
 class Created(HttpResponse):
     def __init__(self, body: Any = None) -> None:
-        super().__init__(HttpStatusCode.CREATED.value, body)
+        headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+        }
+
+        super().__init__(HttpStatusCode.CREATED.value, body, headers=headers)
 
 class NoContent(HttpResponse):
     def __init__(self) -> None:
