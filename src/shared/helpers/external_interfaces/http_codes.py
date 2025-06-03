@@ -3,21 +3,13 @@ from typing import Any
 from src.shared.helpers.enum.http_status_code import HttpStatusCode
 from src.shared.helpers.external_interfaces.http_models import HttpResponse
 
-DEFAULT_HEADERS = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-    'Access-Control-Allow-Credentials': 'true'
-}
-
 class OK(HttpResponse):
     def __init__(self, body: Any = None) -> None:
-        super().__init__(HttpStatusCode.OK.value, body, headers=DEFAULT_HEADERS)
+        super().__init__(HttpStatusCode.OK.value, body)
 
 class Created(HttpResponse):
     def __init__(self, body: Any = None) -> None:
-        super().__init__(HttpStatusCode.CREATED.value, body, headers=DEFAULT_HEADERS)
+        super().__init__(HttpStatusCode.CREATED.value, body)
 
 class NoContent(HttpResponse):
     def __init__(self) -> None:
