@@ -40,7 +40,8 @@ class IacStack(Stack):
             rest_api_name=f'BitAcademy_RestApi_{self.github_ref_name}',
             description='This is the BitAcademy RestApi',
             default_cors_preflight_options={
-                'allow_origins': Cors.ALL_ORIGINS,
+                # 'allow_origins': Cors.ALL_ORIGINS,
+                'allow_origins': 'https://6156-45-174-238-229.ngrok-free.app',
                 'allow_methods': [ 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS' ],
                 'allow_headers': [ '*' ]
             }
@@ -62,7 +63,8 @@ class IacStack(Stack):
         
         api_gateway_resource = self.rest_api.root.add_resource('mss-bitacademy', 
             default_cors_preflight_options={
-                'allow_origins': Cors.ALL_ORIGINS,
+                # 'allow_origins': Cors.ALL_ORIGINS,
+                'allow_origins': 'https://6156-45-174-238-229.ngrok-free.app',
                 'allow_methods': [ 'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS' ],
                 'allow_headers': Cors.DEFAULT_HEADERS
             }
