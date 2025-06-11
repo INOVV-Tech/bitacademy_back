@@ -511,3 +511,20 @@ class CommunityRepositoryDynamo(ICommunityRepository):
         )
 
         return resp['ResponseMetadata']['HTTPStatusCode']
+    
+    def get_forum_last_messages(self, community_forum_topics: list[CommunityForumTopic]) -> list[CommunityMessage]:
+        if len(community_forum_topics) == 0:
+            return []
+
+        forum_topic_ids = [ x.id for x in community_forum_topics ]
+
+        filter_expression = Attr('forum_topic_id').is_in(forum_topic_ids)
+
+        response = self.dynamo.query(
+            index_name='GetAllEntities',
+            partition_key=self.community_message_gsi_entity_get_all_pk_from_id(community_forum_topics[0].channel_id),
+            filter_expression=filter_expression,
+            scan_index_forward=False
+        )
+
+        return [ CommunityMessage.from_dict_static(item) for item in response['items'] ]

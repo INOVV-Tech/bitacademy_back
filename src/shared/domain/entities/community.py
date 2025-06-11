@@ -13,6 +13,79 @@ from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 
 from src.shared.messaging.parser import parse_input_msg
 
+class CommunityMessage(BaseModel):
+    id: str
+    channel_id: str
+    forum_topic_id: str | None
+    raw_content: str
+    created_at: int = Field(..., gt=0, description='Timestamp in seconds')
+    updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
+    user_id: str
+
+    @staticmethod
+    def data_contains_valid_id(data: dict) -> bool:
+        return is_valid_entity_uuid(data, 'id', version=4)
+
+    @staticmethod
+    def from_dict_static(data: dict) -> 'CommunityMessage':
+        return CommunityMessage(
+            id=data['id'],
+            channel_id=data['channel_id'],
+            forum_topic_id=data['forum_topic_id'] if 'forum_topic_id' in data else None,
+            raw_content=data['raw_content'],
+            created_at=int(data['created_at']),
+            updated_at=int(data['updated_at']),
+            user_id=data['user_id']
+        )
+    
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'channel_id': self.channel_id,
+            'forum_topic_id': self.forum_topic_id,
+            'raw_content': self.raw_content,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'user_id': self.user_id
+        }
+    
+    def to_public_dict(self, extra_data: dict = {}) -> dict:
+        result = self.to_dict()
+
+        for key, value in extra_data.items():
+            result[key] = value
+        
+        return result
+    
+    def update_from_dict(self, data: dict) -> dict:
+        updated_fields = {}
+
+        if 'raw_content' in data:
+            (error, raw_content) = parse_input_msg(data['raw_content'])
+
+            if error != '':
+                self.raw_content = raw_content
+                updated_fields['raw_content'] = self.raw_content
+        
+        updated_fields['any_updated'] = len(updated_fields.keys()) > 0
+        
+        return updated_fields
+    
+    def to_delete_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'channel_id': self.channel_id,
+            'forum_topic_id': self.forum_topic_id,
+            'user_id': self.user_id
+        }
+    
+    def to_forum_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'raw_content': self.raw_content,
+            'timestamp': self.updated_at
+        }
+
 class CommunityChannelPermissions:
     @staticmethod
     def data_contains_valid_permissions(data: dict) -> bool:
@@ -215,7 +288,7 @@ class CommunityChannel(BaseModel):
         updated_fields['any_updated'] = len(updated_fields.keys()) > 0
 
         return updated_fields
-    
+
 class CommunityForumTopic(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
@@ -288,10 +361,13 @@ class CommunityForumTopic(BaseModel):
             'user_id': self.user_id
         }
     
-    def to_public_dict(self) -> dict:
+    def to_public_dict(self, last_message: CommunityMessage | None = None) -> dict:
         result = self.to_dict()
 
         del result['user_id']
+
+        if last_message is not None:
+            result['last_message'] = last_message.to_forum_dict()
 
         return result
 
@@ -336,70 +412,4 @@ class CommunitySessionLock(BaseModel):
     def to_dict(self) -> dict:
         return {
             'expire_timestamp': self.expire_timestamp
-        }
-
-class CommunityMessage(BaseModel):
-    id: str
-    channel_id: str
-    forum_topic_id: str | None
-    raw_content: str
-    created_at: int = Field(..., gt=0, description='Timestamp in seconds')
-    updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
-    user_id: str
-
-    @staticmethod
-    def data_contains_valid_id(data: dict) -> bool:
-        return is_valid_entity_uuid(data, 'id', version=4)
-
-    @staticmethod
-    def from_dict_static(data: dict) -> 'CommunityMessage':
-        return CommunityMessage(
-            id=data['id'],
-            channel_id=data['channel_id'],
-            forum_topic_id=data['forum_topic_id'] if 'forum_topic_id' in data else None,
-            raw_content=data['raw_content'],
-            created_at=int(data['created_at']),
-            updated_at=int(data['updated_at']),
-            user_id=data['user_id']
-        )
-    
-    def to_dict(self) -> dict:
-        return {
-            'id': self.id,
-            'channel_id': self.channel_id,
-            'forum_topic_id': self.forum_topic_id,
-            'raw_content': self.raw_content,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'user_id': self.user_id
-        }
-    
-    def to_public_dict(self, extra_data: dict = {}) -> dict:
-        result = self.to_dict()
-
-        for key, value in extra_data.items():
-            result[key] = value
-        
-        return result
-    
-    def update_from_dict(self, data: dict) -> dict:
-        updated_fields = {}
-
-        if 'raw_content' in data:
-            (error, raw_content) = parse_input_msg(data['raw_content'])
-
-            if error != '':
-                self.raw_content = raw_content
-                updated_fields['raw_content'] = self.raw_content
-        
-        updated_fields['any_updated'] = len(updated_fields.keys()) > 0
-        
-        return updated_fields
-    
-    def to_delete_dict(self) -> dict:
-        return {
-            'id': self.id,
-            'channel_id': self.channel_id,
-            'forum_topic_id': self.forum_topic_id,
-            'user_id': self.user_id
         }

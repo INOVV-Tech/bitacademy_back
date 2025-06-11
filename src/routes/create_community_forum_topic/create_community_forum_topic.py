@@ -22,7 +22,8 @@ class Controller:
             Usecase=Usecase,
             request=request,
             allowed_user_roles=ALLOWED_USER_ROLES,
-            fetch_vip_subscription=False
+            fetch_vip_subscription=False,
+            return_created=True
         )
 
 class Usecase:

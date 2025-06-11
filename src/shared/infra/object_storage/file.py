@@ -102,8 +102,11 @@ class ObjectStorageFile:
         if self.mime_type not in allowed_mime_types:
             return False
 
-        binary_data = base64.b64decode(self.base64_data)
-
+        try:
+            binary_data = base64.b64decode(self.base64_data)
+        except:
+            return False
+        
         prob_mime_type = None
 
         try:

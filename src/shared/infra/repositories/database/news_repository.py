@@ -67,7 +67,7 @@ class NewsRepositoryDynamo(INewsRepository):
 
         if vip_level is not None:
             filter_expressions.append(Attr('vip_level').lte(vip_level.value))
-
+        
         filter_expression= None
 
         if len(filter_expressions) > 0:

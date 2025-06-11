@@ -44,7 +44,7 @@ class Usecase:
 
         if Course.data_contains_valid_title(request_params):
             title = request_params['title'].strip()
-
+        
         tags = []
         
         if Course.data_contains_valid_tags(request_params):

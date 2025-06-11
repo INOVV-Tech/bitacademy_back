@@ -8,6 +8,8 @@ load_app_env()
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 
+from src.shared.infra.repositories.repository import Repository
+
 from src.routes.create_community_channel.create_community_channel import Controller as CreateChannelController
 from src.routes.get_all_community_channels.get_all_community_channels import Controller as GetAllChannelsController
 from src.routes.get_one_community_channel.get_one_community_channel import Controller as GetOneChannelController
@@ -21,6 +23,11 @@ from src.routes.delete_community_forum_topic.delete_community_forum_topic import
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 from src.shared.domain.entities.community import CommunityChannelPermissions
+
+from src.shared.domain.entities.community import CommunityMessage
+
+from src.shared.utils.time import now_timestamp
+from src.shared.utils.entity import random_entity_id
 
 class Test_CommunityLambda:
     def print_data(self, data: dict) -> None:
@@ -156,7 +163,7 @@ class Test_CommunityLambda:
 
         body['community_forum_topic'] = {
             'title': 'PORTAL TO BITCOIN',
-            'channel_id': '2af968a2-f15e-4826-965f-17fa90628ac7',
+            'channel_id': 'edd8c552-d089-471b-8662-1dd8aa42e282',
             'icon_img': icon_img
         }
 
@@ -173,7 +180,7 @@ class Test_CommunityLambda:
         body = self.get_body()
 
         query_params = {
-            'channel_id': '2af968a2-f15e-4826-965f-17fa90628ac7',
+            'channel_id': 'edd8c552-d089-471b-8662-1dd8aa42e282',
             'title': 'PORTAL',
             'limit': 10,
             'next_cursor': '',
@@ -201,3 +208,25 @@ class Test_CommunityLambda:
         self.print_data(response.data)
 
         assert response.status_code == 200
+
+    @pytest.mark.skip(reason='Done')
+    def test_lambda_create_message(self):
+        repository = Repository(community_repo=True)
+
+        user = get_requester_user(admin=True)
+
+        community_forum_topic = repository.community_repo.get_one_forum_topic('382a34b9-9267-4574-96b9-e77814ce1a42')
+
+        now = now_timestamp()
+
+        msg = CommunityMessage(
+            id=random_entity_id(),
+            channel_id=community_forum_topic.channel_id,
+            forum_topic_id=community_forum_topic.id,
+            raw_content='testettestetstestetestee',
+            created_at=now,
+            updated_at=now,
+            user_id=user['sub']
+        )
+
+        repository.community_repo.create_message(msg)

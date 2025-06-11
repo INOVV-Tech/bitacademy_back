@@ -79,7 +79,7 @@ class Signal(BaseModel):
     title: str
     base_asset: str
     quote_asset: str
-
+    
     exchange: EXCHANGE
     market: MARKET
     trade_side: TRADE_SIDE
