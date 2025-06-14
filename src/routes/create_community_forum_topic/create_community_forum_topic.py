@@ -53,8 +53,8 @@ class Usecase:
         if community_channel.comm_type != COMMUNITY_TYPE.FORUM:
             return { 'error': 'O canal de comunidade não é um fórum' }
 
-        (error, community_forum_topic) = CommunityForumTopic.from_request_data(community_forum_topic_create_data,
-            requester_user.user_id)
+        (error, community_forum_topic) = CommunityForumTopic.from_request_data(community_forum_topic_create_data, \
+            requester_user)
 
         if error != '':
             return { 'error': error }

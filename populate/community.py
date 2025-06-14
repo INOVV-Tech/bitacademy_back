@@ -4,12 +4,23 @@ from populate.common import load_app_env, load_resource
 load_app_env()
 
 from src.shared.infra.repositories.repository import Repository
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.entities.community import CommunityChannel
 from src.shared.domain.entities.community import CommunityChannelPermissions
 
-USER_ID = os.environ.get('POPULATE_USER_ID')
+requester_user = AuthAuthorizerDTO(
+    user_id=os.environ.get('POPULATE_USER_ID'),
+    name=os.environ.get('POPULATE_USER_NAME'),
+    email='',
+    phone='',
+    role=ROLE.ADMIN,
+    email_verified=True,
+    phone_verified=True,
+    vip_subscription=None
+)
 
 def populate_community_channels():
     repository = Repository(community_repo=True)
@@ -46,7 +57,7 @@ def populate_community_channels():
     ]
 
     for i in range(4):
-        (error, community_channel) = CommunityChannel.from_request_data(comm_channels[i], USER_ID)
+        (error, community_channel) = CommunityChannel.from_request_data(comm_channels[i], requester_user)
 
         s3_datasource = repository.get_s3_datasource()
 

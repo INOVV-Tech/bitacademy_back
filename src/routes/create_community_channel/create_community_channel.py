@@ -33,7 +33,7 @@ class Usecase:
             or not isinstance(request_data['community_channel'], dict):
             return { 'error': 'Campo "community_channel" não foi encontrado' }
 
-        (error, community_channel) = CommunityChannel.from_request_data(request_data['community_channel'], requester_user.user_id)
+        (error, community_channel) = CommunityChannel.from_request_data(request_data['community_channel'], requester_user)
 
         if error != '':
             return { 'error': error }

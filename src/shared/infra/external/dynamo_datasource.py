@@ -1,6 +1,4 @@
-import json
 import boto3
-from decimal import Decimal
 from boto3.dynamodb.conditions import Key
 
 from src.shared.environments import Environments

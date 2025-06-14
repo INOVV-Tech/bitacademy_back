@@ -6,6 +6,7 @@ from src.shared.utils.entity import random_entity_id, is_valid_entity_uuid, \
     is_valid_entity_dict
 
 from src.shared.infra.object_storage.file import ObjectStorageFile
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
@@ -21,6 +22,8 @@ class CommunityMessage(BaseModel):
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
     user_id: str
+    user_name: str
+    user_role: ROLE
 
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
@@ -35,7 +38,9 @@ class CommunityMessage(BaseModel):
             raw_content=data['raw_content'],
             created_at=int(data['created_at']),
             updated_at=int(data['updated_at']),
-            user_id=data['user_id']
+            user_id=data['user_id'],
+            user_name=data['user_name'],
+            user_role=ROLE[data['user_role']]
         )
     
     def to_dict(self) -> dict:
@@ -46,7 +51,9 @@ class CommunityMessage(BaseModel):
             'raw_content': self.raw_content,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_role': self.user_role.value
         }
     
     def to_public_dict(self, extra_data: dict = {}) -> dict:
@@ -76,14 +83,16 @@ class CommunityMessage(BaseModel):
             'id': self.id,
             'channel_id': self.channel_id,
             'forum_topic_id': self.forum_topic_id,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_role': self.user_role.value
         }
     
     def to_forum_dict(self) -> dict:
         return {
             'id': self.id,
             'raw_content': self.raw_content,
-            'timestamp': self.updated_at
+            'timestamp': self.created_at
         }
 
 class CommunityChannelPermissions:
@@ -175,6 +184,8 @@ class CommunityChannel(BaseModel):
     permissions: CommunityChannelPermissions
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     user_id: str
+    user_name: str
+    user_role: ROLE
 
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
@@ -200,7 +211,7 @@ class CommunityChannel(BaseModel):
         return CommunityChannelPermissions.data_contains_valid_permissions(data['permissions'])
 
     @staticmethod
-    def from_request_data(data: dict, user_id: str) -> 'tuple[str, CommunityChannel | None]':
+    def from_request_data(data: dict, requester_user: AuthAuthorizerDTO) -> 'tuple[str, CommunityChannel | None]':
         if not CommunityChannel.data_contains_valid_title(data):
             return ('Título inválido', None)
         
@@ -220,7 +231,9 @@ class CommunityChannel(BaseModel):
             icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
             permissions=CommunityChannelPermissions.from_dict_static(data['permissions']),
             created_at=now_timestamp(),
-            user_id=user_id
+            user_id=requester_user.user_id,
+            user_name=requester_user.name,
+            user_role=requester_user.role
         )
 
         if not community_channel.icon_img.verify_base64_image():
@@ -237,7 +250,9 @@ class CommunityChannel(BaseModel):
             icon_img=ObjectStorageFile.from_dict_static(data['icon_img']),
             permissions=CommunityChannelPermissions.from_dict_static(data['permissions']),
             created_at=int(data['created_at']),
-            user_id=data['user_id']
+            user_id=data['user_id'],
+            user_name=data['user_name'],
+            user_role=ROLE[data['user_role']]
         )
 
     def to_dict(self) -> dict:
@@ -248,7 +263,9 @@ class CommunityChannel(BaseModel):
             'icon_img': self.icon_img.to_dict(),
             'permissions': self.permissions.to_dict(),
             'created_at': self.created_at,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_role': self.user_role.value
         }
     
     def from_dict(self, data: dict) -> 'CommunityChannel':
@@ -298,6 +315,8 @@ class CommunityForumTopic(BaseModel):
     icon_img: ObjectStorageFile
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     user_id: str
+    user_name: str
+    user_role: ROLE
     first_message: CommunityMessage
 
     @staticmethod
@@ -317,7 +336,7 @@ class CommunityForumTopic(BaseModel):
         return is_valid_entity_base64_string(data, 'icon_img')
 
     @staticmethod
-    def from_request_data(data: dict, user_id: str) -> 'tuple[str, CommunityForumTopic | None]':
+    def from_request_data(data: dict, requester_user: AuthAuthorizerDTO) -> 'tuple[str, CommunityForumTopic | None]':
         if not CommunityForumTopic.data_contains_valid_title(data):
             return ('Título inválido', None)
         
@@ -343,7 +362,9 @@ class CommunityForumTopic(BaseModel):
             raw_content=first_msg_content,
             created_at=now,
             updated_at=now,
-            user_id=user_id
+            user_id=requester_user.user_id,
+            user_name=requester_user.name,
+            user_role=requester_user.role
         )
 
         community_forum_topic = CommunityForumTopic(
@@ -352,7 +373,9 @@ class CommunityForumTopic(BaseModel):
             title=data['title'].strip(),
             icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
             created_at=now,
-            user_id=user_id,
+            user_id=requester_user.user_id,
+            user_name=requester_user.name,
+            user_role=requester_user.role,
             first_message=first_message
         )
 
@@ -370,6 +393,8 @@ class CommunityForumTopic(BaseModel):
         first_message['created_at'] = first_message['timestamp']
         first_message['updated_at'] = first_message['timestamp']
         first_message['user_id'] = data['user_id']
+        first_message['user_name'] = data['user_name']
+        first_message['user_role'] = data['user_role']
 
         return CommunityForumTopic(
             id=data['id'],
@@ -378,6 +403,8 @@ class CommunityForumTopic(BaseModel):
             icon_img=ObjectStorageFile.from_dict_static(data['icon_img']),
             created_at=int(data['created_at']),
             user_id=data['user_id'],
+            user_name=data['user_name'],
+            user_role=ROLE[data['user_role']],
             first_message=CommunityMessage.from_dict_static(first_message)
         )
 
@@ -389,6 +416,8 @@ class CommunityForumTopic(BaseModel):
             'icon_img': self.icon_img.to_dict(),
             'created_at': self.created_at,
             'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_role': self.user_role.value,
             'first_message': self.first_message.to_forum_dict()
         }
     

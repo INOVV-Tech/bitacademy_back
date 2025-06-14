@@ -56,15 +56,13 @@ class Usecase:
         if not community_channel.permissions.is_edit_role(requester_user.role):
             return { 'error': 'Usuário não tem permissão para editar o canal de comunidade' }
         
-        if community_channel.comm_type == COMMUNITY_TYPE.CHAT and community_message.user_id != requester_user.user_id:
+        if not requester_user.role == ROLE.ADMIN and community_message.user_id != requester_user.user_id:
             return { 'error': 'Usuário não pode editar mensagens de terceiros em canais do tipo CHAT' }
         
         updated_fields = community_message.update_from_dict(community_message_update_data)
 
         if not updated_fields['any_updated']:
             return { 'community_message': None }
-        
-        community_message.user_id = requester_user.user_id
 
         self.repository.community_repo.update_message(community_message)
 

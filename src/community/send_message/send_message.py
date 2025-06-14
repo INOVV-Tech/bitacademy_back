@@ -76,7 +76,9 @@ def push_chat_msg(request_context: dict, repository: Repository, connection_id: 
         raw_content=raw_content,
         created_at=now,
         updated_at=now,
-        user_id=community_session.user_id
+        user_id=community_session.user_id,
+        user_name=community_session.user_name,
+        user_role=community_session.user_role
     )
 
     msg_data = msg.to_public_dict()
@@ -115,7 +117,9 @@ def push_forum_msg(request_context: dict, repository: Repository, connection_id:
         raw_content=raw_content,
         created_at=now,
         updated_at=now,
-        user_id=community_session.user_id
+        user_id=community_session.user_id,
+        user_name=community_session.user_name,
+        user_role=community_session.user_role
     )
     
     msg_data = msg.to_public_dict()

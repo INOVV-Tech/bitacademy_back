@@ -20,6 +20,7 @@ from src.routes.get_community_channel_forum_topics.get_community_channel_forum_t
 from src.routes.delete_community_forum_topic.delete_community_forum_topic import Controller as DeleteForumTopicController
 from src.routes.get_community_channel_messages.get_community_channel_messages import Controller as GetCommunityCHannelMessages
 
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 from src.shared.domain.entities.community import CommunityChannelPermissions
@@ -163,7 +164,7 @@ class Test_CommunityLambda:
 
         body['community_forum_topic'] = {
             'title': 'PORTAL TO BITCOIN',
-            'channel_id': '9bfeec54-0a66-4392-887b-ef61ff1af3e7',
+            'channel_id': '09c6e7db-0cbc-4cdd-bc06-24c0a2a5a608',
             'icon_img': icon_img,
             'first_message': 'bitcoinbitcoinbitcoinbitcoin'
         }
@@ -181,7 +182,7 @@ class Test_CommunityLambda:
         body = self.get_body()
 
         query_params = {
-            'channel_id': 'a934dadf-0cca-4fb5-ad04-79c68ade7d61',
+            'channel_id': '09c6e7db-0cbc-4cdd-bc06-24c0a2a5a608',
             'title': 'PORTAL',
             'limit': 10,
             'next_cursor': '',
@@ -216,8 +217,8 @@ class Test_CommunityLambda:
 
         user = get_requester_user(admin=True)
 
-        community_forum_topic = repository.community_repo.get_one_forum_topic('56bfae93-f92a-4fbe-b95c-d90e06d9af1a')
-
+        community_forum_topic = repository.community_repo.get_one_forum_topic('ee0a3efc-2009-4fa4-a5d5-1e6067fbd38a')
+        
         now = now_timestamp()
 
         for i in range(0, 10):
@@ -228,7 +229,9 @@ class Test_CommunityLambda:
                 raw_content=f'MSG {str(i)} for {community_forum_topic.id}',
                 created_at=now,
                 updated_at=now,
-                user_id=user['sub']
+                user_id=user['sub'],
+                user_name=user['name'],
+                user_role=ROLE[user['custom:role']]
             )
 
             repository.community_repo.create_message(msg)
@@ -238,8 +241,8 @@ class Test_CommunityLambda:
         body = self.get_body()
 
         query_params = {
-            'channel_id': 'a934dadf-0cca-4fb5-ad04-79c68ade7d61',
-            'forum_topic_id': 'ee8674ee-caa4-45d8-9f56-91a70a562260',
+            'channel_id': '09c6e7db-0cbc-4cdd-bc06-24c0a2a5a608',
+            'forum_topic_id': 'ee0a3efc-2009-4fa4-a5d5-1e6067fbd38a',
             'limit': 100,
             'next_cursor': '',
             'sort_order': 'desc'
