@@ -15,10 +15,10 @@ from src.routes.get_all_community_channels.get_all_community_channels import Con
 from src.routes.get_one_community_channel.get_one_community_channel import Controller as GetOneChannelController
 from src.routes.update_community_channel.update_community_channel import Controller as UpdateChannelController
 from src.routes.delete_community_channel.delete_community_channel import Controller as DeleteChannelController
-
 from src.routes.create_community_forum_topic.create_community_forum_topic import Controller as CreateForumTopicController
 from src.routes.get_community_channel_forum_topics.get_community_channel_forum_topics import Controller as GetChannelForumTopicsController
 from src.routes.delete_community_forum_topic.delete_community_forum_topic import Controller as DeleteForumTopicController
+from src.routes.get_community_channel_messages.get_community_channel_messages import Controller as GetCommunityCHannelMessages
 
 from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
@@ -163,8 +163,9 @@ class Test_CommunityLambda:
 
         body['community_forum_topic'] = {
             'title': 'PORTAL TO BITCOIN',
-            'channel_id': 'edd8c552-d089-471b-8662-1dd8aa42e282',
-            'icon_img': icon_img
+            'channel_id': '67d7fd28-ac43-4c51-be79-c7d70785ae14',
+            'icon_img': icon_img,
+            'first_message': 'testettestetstestetestee'
         }
 
         controller = CreateForumTopicController()
@@ -180,7 +181,7 @@ class Test_CommunityLambda:
         body = self.get_body()
 
         query_params = {
-            'channel_id': 'edd8c552-d089-471b-8662-1dd8aa42e282',
+            'channel_id': '67d7fd28-ac43-4c51-be79-c7d70785ae14',
             'title': 'PORTAL',
             'limit': 10,
             'next_cursor': '',
@@ -230,3 +231,23 @@ class Test_CommunityLambda:
         )
 
         repository.community_repo.create_message(msg)
+
+    @pytest.mark.skip(reason='Done')
+    def test_lambda_get_forum_topic_message(self):
+        body = self.get_body()
+
+        query_params = {
+            'channel_id': '67d7fd28-ac43-4c51-be79-c7d70785ae14',
+            'forum_topic_id': '716fb1dc-193a-4272-90e6-c19a491257fc',
+            'limit': 10,
+            'next_cursor': '',
+            'sort_order': 'desc'
+        }
+
+        controller = GetCommunityCHannelMessages()
+
+        response = self.call_lambda(controller, body, query_params=query_params)
+
+        self.print_data(response.data)
+        
+        assert response.status_code == 200

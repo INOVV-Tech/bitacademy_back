@@ -298,6 +298,7 @@ class CommunityForumTopic(BaseModel):
     icon_img: ObjectStorageFile
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     user_id: str
+    first_message: CommunityMessage
 
     @staticmethod
     def data_contains_valid_id(data: dict) -> bool:
@@ -326,13 +327,33 @@ class CommunityForumTopic(BaseModel):
         if not CommunityForumTopic.data_contains_valid_icon_img(data):
             return ('Imagem de ícone inválida', None)
 
-        community_forum_topic = CommunityForumTopic(
+        (msg_error, first_msg_content) = parse_input_msg(data['first_message'])
+
+        if msg_error != '':
+            return (msg_error, None)
+        
+        now = now_timestamp()
+
+        forum_topic_id = random_entity_id()
+
+        first_message = CommunityMessage(
             id=random_entity_id(),
+            channel_id=data['channel_id'],
+            forum_topic_id=forum_topic_id,
+            raw_content=first_msg_content,
+            created_at=now,
+            updated_at=now,
+            user_id=user_id
+        )
+
+        community_forum_topic = CommunityForumTopic(
+            id=forum_topic_id,
             channel_id=data['channel_id'],
             title=data['title'].strip(),
             icon_img=ObjectStorageFile.from_base64_data(data['icon_img']),
-            created_at=now_timestamp(),
-            user_id=user_id
+            created_at=now,
+            user_id=user_id,
+            first_message=first_message
         )
 
         if not community_forum_topic.icon_img.verify_base64_image():
@@ -342,13 +363,22 @@ class CommunityForumTopic(BaseModel):
 
     @staticmethod
     def from_dict_static(data: dict) -> 'CommunityForumTopic':
+        first_message = data['first_message']
+
+        first_message['channel_id'] = data['channel_id']
+        first_message['forum_topic_id'] = data['id']
+        first_message['created_at'] = first_message['timestamp']
+        first_message['updated_at'] = first_message['timestamp']
+        first_message['user_id'] = data['user_id']
+
         return CommunityForumTopic(
             id=data['id'],
             channel_id=data['channel_id'],
             title=data['title'],
             icon_img=ObjectStorageFile.from_dict_static(data['icon_img']),
             created_at=int(data['created_at']),
-            user_id=data['user_id']
+            user_id=data['user_id'],
+            first_message=CommunityMessage.from_dict_static(first_message)
         )
 
     def to_dict(self) -> dict:
@@ -358,16 +388,14 @@ class CommunityForumTopic(BaseModel):
             'title': self.title,
             'icon_img': self.icon_img.to_dict(),
             'created_at': self.created_at,
-            'user_id': self.user_id
+            'user_id': self.user_id,
+            'first_message': self.first_message.to_forum_dict()
         }
     
-    def to_public_dict(self, last_message: CommunityMessage | None = None) -> dict:
+    def to_public_dict(self) -> dict:
         result = self.to_dict()
 
         del result['user_id']
-
-        if last_message is not None:
-            result['last_message'] = last_message.to_forum_dict()
 
         return result
 

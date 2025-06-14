@@ -67,6 +67,7 @@ class Usecase:
             return upload_icon_resp
         
         self.repository.community_repo.create_forum_topic(community_forum_topic)
+        self.repository.community_repo.create_message(community_forum_topic.first_message)
 
         return {
             'community_forum_topic': community_forum_topic.to_public_dict()

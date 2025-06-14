@@ -121,7 +121,3 @@ class ICommunityRepository(ABC):
     @abstractmethod
     def delete_message(self, id: str) -> int:
         pass
-
-    @abstractmethod
-    def get_forum_last_messages(self, community_forum_topics: list[CommunityForumTopic]) -> list[CommunityMessage]:
-        pass

@@ -9,7 +9,7 @@ from src.shared.domain.entities.community import CommunityForumTopic
 
 from src.shared.utils.routing import controller_execute
 from src.shared.utils.entity import is_valid_getall_object
-from src.shared.utils.pagination import encode_cursor_get_all, decode_cursor, encode_cursor
+from src.shared.utils.pagination import decode_cursor, encode_cursor_get_all
 
 ALLOWED_USER_ROLES = [
     ROLE.GUEST,
@@ -58,30 +58,12 @@ class Usecase:
             sort_order=request_params['sort_order']
         )
 
-        total = db_data['total']
-        community_forum_topics: list[CommunityForumTopic] = db_data['community_forum_topics']
-
-        community_messages = self.repository.community_repo.get_forum_last_messages(community_forum_topics)
-
-        next_cursor = db_data['last_evaluated_key']
-        next_cursor = encode_cursor(next_cursor) if next_cursor else ''
-
-        output_data = []
-
-        for community_forum_topic in community_forum_topics:
-            last_message = next((x for x in community_messages if x.forum_topic_id == community_forum_topic.id), None)
-
-            output_data.append(
-                community_forum_topic.to_public_dict(last_message=last_message)
-            )
-
-        return {
-            'total': total,
-            'per_page': request_params['limit'],
-            'data': output_data,
-            'next_cursor': next_cursor,
-            'has_more': bool(next_cursor)
-        }
+        return encode_cursor_get_all(
+            db_data=db_data,
+            item_key='community_forum_topics',
+            limit=request_params['limit'],
+            last_evaluated_key=db_data['last_evaluated_key']
+        )
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)
