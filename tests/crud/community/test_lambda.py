@@ -143,7 +143,7 @@ class Test_CommunityLambda:
     def test_lambda_delete_channel(self):
         body = self.get_body()
 
-        body['id'] = '27e00ce9-b2ba-4344-9737-65e7b0d9dbcd'
+        body['id'] = 'a934dadf-0cca-4fb5-ad04-79c68ade7d61'
 
         controller = DeleteChannelController()
 
@@ -163,9 +163,9 @@ class Test_CommunityLambda:
 
         body['community_forum_topic'] = {
             'title': 'PORTAL TO BITCOIN',
-            'channel_id': '67d7fd28-ac43-4c51-be79-c7d70785ae14',
+            'channel_id': '9bfeec54-0a66-4392-887b-ef61ff1af3e7',
             'icon_img': icon_img,
-            'first_message': 'testettestetstestetestee'
+            'first_message': 'bitcoinbitcoinbitcoinbitcoin'
         }
 
         controller = CreateForumTopicController()
@@ -181,7 +181,7 @@ class Test_CommunityLambda:
         body = self.get_body()
 
         query_params = {
-            'channel_id': '67d7fd28-ac43-4c51-be79-c7d70785ae14',
+            'channel_id': 'a934dadf-0cca-4fb5-ad04-79c68ade7d61',
             'title': 'PORTAL',
             'limit': 10,
             'next_cursor': '',
@@ -200,7 +200,7 @@ class Test_CommunityLambda:
     def test_lambda_delete_forum_topic(self):
         body = self.get_body()
 
-        body['id'] = '3da9ee73-e006-4a8c-8c14-5960cd00ac74'
+        body['id'] = 'ee8674ee-caa4-45d8-9f56-91a70a562260'
 
         controller = DeleteForumTopicController()
 
@@ -216,30 +216,31 @@ class Test_CommunityLambda:
 
         user = get_requester_user(admin=True)
 
-        community_forum_topic = repository.community_repo.get_one_forum_topic('382a34b9-9267-4574-96b9-e77814ce1a42')
+        community_forum_topic = repository.community_repo.get_one_forum_topic('56bfae93-f92a-4fbe-b95c-d90e06d9af1a')
 
         now = now_timestamp()
 
-        msg = CommunityMessage(
-            id=random_entity_id(),
-            channel_id=community_forum_topic.channel_id,
-            forum_topic_id=community_forum_topic.id,
-            raw_content='testettestetstestetestee',
-            created_at=now,
-            updated_at=now,
-            user_id=user['sub']
-        )
+        for i in range(0, 10):
+            msg = CommunityMessage(
+                id=random_entity_id(),
+                channel_id=community_forum_topic.channel_id,
+                forum_topic_id=community_forum_topic.id,
+                raw_content=f'MSG {str(i)} for {community_forum_topic.id}',
+                created_at=now,
+                updated_at=now,
+                user_id=user['sub']
+            )
 
-        repository.community_repo.create_message(msg)
+            repository.community_repo.create_message(msg)
 
     @pytest.mark.skip(reason='Done')
     def test_lambda_get_forum_topic_message(self):
         body = self.get_body()
 
         query_params = {
-            'channel_id': '67d7fd28-ac43-4c51-be79-c7d70785ae14',
-            'forum_topic_id': '716fb1dc-193a-4272-90e6-c19a491257fc',
-            'limit': 10,
+            'channel_id': 'a934dadf-0cca-4fb5-ad04-79c68ade7d61',
+            'forum_topic_id': 'ee8674ee-caa4-45d8-9f56-91a70a562260',
+            'limit': 100,
             'next_cursor': '',
             'sort_order': 'desc'
         }

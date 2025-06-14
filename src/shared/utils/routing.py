@@ -12,8 +12,6 @@ from src.shared.domain.entities.vip_subscription import VipSubscription
 
 DEFAULT_ALLOWED_USER_ROLES = [ ROLE.ADMIN ]
 
-import traceback
-
 def controller_execute(
     Usecase: Any,
     request: IRequest,
@@ -48,8 +46,7 @@ def controller_execute(
         return BadRequest(error.message)
     except ForbiddenAction as error:
         return BadRequest(error.message)
-    except Exception as ex:
-        print(traceback.print_exc())
+    except:
         return InternalServerError('Erro interno de servidor')
     
 def set_user_vip_subscription(requester_user: AuthAuthorizerDTO) -> None:

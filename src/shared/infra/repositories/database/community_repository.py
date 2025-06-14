@@ -264,6 +264,12 @@ class CommunityRepositoryDynamo(ICommunityRepository):
 
         return resp['ResponseMetadata']['HTTPStatusCode']
     
+    def delete_all_forum_topics(self, channel_id: str) -> int:
+        return self.dynamo.delete_item_with_index(
+            index_name='GetAllEntities',
+            partition_key=self.community_forum_topic_gsi_entity_get_all_pk_from_id(channel_id)
+        )
+
     ### SESSION ###
     @staticmethod
     def community_session_lock_partition_key_format(user_id: str) -> str:
@@ -511,3 +517,15 @@ class CommunityRepositoryDynamo(ICommunityRepository):
         )
 
         return resp['ResponseMetadata']['HTTPStatusCode']
+    
+    def delete_all_messages(self, channel_id: str, forum_topic_id: str | None = None) -> int:
+        filter_expression = None
+
+        if forum_topic_id is not None:
+            filter_expression = Attr('forum_topic_id').eq(forum_topic_id)
+
+        return self.dynamo.delete_item_with_index(
+            index_name='GetAllEntities',
+            partition_key=self.community_message_gsi_entity_get_all_pk_from_id(channel_id),
+            filter_expression=filter_expression
+        )

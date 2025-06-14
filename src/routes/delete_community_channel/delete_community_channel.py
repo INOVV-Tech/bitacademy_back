@@ -35,7 +35,10 @@ class Usecase:
 
         if delete_result != 200:
             return { 'error': f'Delete falhou com status "{delete_result}"' }
-    
+        
+        self.repository.community_repo.delete_all_forum_topics(request_data['id'])
+        self.repository.community_repo.delete_all_messages(channel_id=request_data['id'])
+        
         return {}
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

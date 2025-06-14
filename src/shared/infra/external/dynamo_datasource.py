@@ -184,3 +184,36 @@ class DynamoDatasource:
             key[key_config['sort_key']] = sort_key
         
         return self.dynamo_table.delete_item(Key=key)
+    
+    def delete_item_with_index(self, index_name: str, partition_key: str, \
+        sort_key=None, filter_expression=None) -> int:
+        key_config = self._get_key_config(index_name=index_name)
+
+        key_condition = Key(key_config['partition_key']).eq(partition_key)
+
+        if sort_key and key_config.get('sort_key'):
+            key_condition &= Key(key_config['sort_key']).eq(sort_key)
+
+        kwargs = {
+            'IndexName': index_name,
+            'KeyConditionExpression': key_condition,
+            'ProjectionExpression': 'PK, SK'
+        }
+
+        if filter_expression:
+            kwargs['FilterExpression'] = filter_expression
+
+        query_response = self.dynamo_table.query(**kwargs)
+
+        items_to_delete = query_response.get('Items', [])
+
+        with self.dynamo_table.batch_writer() as batch:
+            for item in items_to_delete:
+                batch.delete_item(
+                    Key={
+                        'PK': item['PK'],
+                        'SK': item['SK']
+                    }
+                )
+
+        return len(items_to_delete)
