@@ -184,7 +184,7 @@ class DynamoDatasource:
         return self.dynamo_table.delete_item(Key=key)
     
     def delete_item_with_index(self, index_name: str, partition_key: str, \
-        sort_key=None, filter_expression=None) -> int:
+        sort_key=None, filter_expression=None) -> int | None:
         key_config = self._get_key_config(index_name=index_name)
 
         key_condition = Key(key_config['partition_key']).eq(partition_key)
@@ -204,6 +204,9 @@ class DynamoDatasource:
         query_response = self.dynamo_table.query(**kwargs)
 
         items_to_delete = query_response.get('Items', [])
+
+        if len(items_to_delete) == 0:
+            return None
 
         with self.dynamo_table.batch_writer() as batch:
             for item in items_to_delete:

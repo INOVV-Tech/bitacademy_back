@@ -264,7 +264,7 @@ class CommunityRepositoryDynamo(ICommunityRepository):
 
         return resp['ResponseMetadata']['HTTPStatusCode']
     
-    def delete_all_forum_topics(self, channel_id: str) -> int:
+    def delete_all_forum_topics(self, channel_id: str) -> int | None:
         return self.dynamo.delete_item_with_index(
             index_name='GetAllEntities',
             partition_key=self.community_forum_topic_gsi_entity_get_all_pk_from_id(channel_id)
@@ -518,7 +518,7 @@ class CommunityRepositoryDynamo(ICommunityRepository):
 
         return resp['ResponseMetadata']['HTTPStatusCode']
     
-    def delete_all_messages(self, channel_id: str, forum_topic_id: str | None = None) -> int:
+    def delete_all_messages(self, channel_id: str, forum_topic_id: str | None = None) -> int | None:
         filter_expression = None
 
         if forum_topic_id is not None:

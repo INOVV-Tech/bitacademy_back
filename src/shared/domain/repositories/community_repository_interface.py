@@ -64,7 +64,7 @@ class ICommunityRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_all_forum_topics(self, channel_id: str) -> int:
+    def delete_all_forum_topics(self, channel_id: str) -> int | None:
         pass
     
     ### SESSION ###
@@ -127,5 +127,5 @@ class ICommunityRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_all_messages(self, channel_id: str, forum_topic_id: str | None = None) -> int:
+    def delete_all_messages(self, channel_id: str, forum_topic_id: str | None = None) -> int | None:
         pass
