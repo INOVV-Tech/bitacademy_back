@@ -21,7 +21,7 @@ class Test_CommunityWebSocket:
         }
 
     ### CHANNEL ###
-    @pytest.mark.skip(reason='Done')
+    # @pytest.mark.skip(reason='Done')
     def test_ws_list_connections(self):
         api_management = boto3.client(
             'apigatewaymanagementapi',

@@ -13,6 +13,7 @@ from src.shared.domain.enums.community_type import COMMUNITY_TYPE
 from src.shared.domain.enums.community_permission import COMMUNITY_PERMISSION
 
 from src.shared.messaging.parser import parse_input_msg
+from src.shared.messaging.constants import MAX_MESSAGE_CHARACTERS
 
 class CommunityMessage(BaseModel):
     id: str
@@ -334,6 +335,10 @@ class CommunityForumTopic(BaseModel):
     @staticmethod
     def data_contains_valid_icon_img(data: dict) -> bool:
         return is_valid_entity_base64_string(data, 'icon_img')
+    
+    @staticmethod
+    def data_contains_valid_first_message(data: dict) -> bool:
+        return is_valid_entity_string(data, 'first_message', min_length=0, max_length=MAX_MESSAGE_CHARACTERS)
 
     @staticmethod
     def from_request_data(data: dict, requester_user: AuthAuthorizerDTO) -> 'tuple[str, CommunityForumTopic | None]':
@@ -345,7 +350,10 @@ class CommunityForumTopic(BaseModel):
         
         if not CommunityForumTopic.data_contains_valid_icon_img(data):
             return ('Imagem de ícone inválida', None)
-
+        
+        if not CommunityForumTopic.data_contains_valid_first_message(data):
+            return ('Conteúdo da primeira mensagem inválido', None)
+        
         (msg_error, first_msg_content) = parse_input_msg(data['first_message'])
 
         if msg_error != '':
