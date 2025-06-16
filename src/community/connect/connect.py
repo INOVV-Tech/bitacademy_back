@@ -24,20 +24,20 @@ def lambda_handler(event, context) -> dict:
 
     session_lock = None
 
-    for i in range(0, 3):
+    for i in range(0, 5):
         session_lock = repository.community_repo.acquire_session_lock(requester_user.user_id)
 
         if session_lock is not None:
             break
         
         sleep_random_float()
-
+    
     if session_lock is None:
         return { 'statusCode': 401, 'body': 'Usuário não pode criar mais sessões no momento' }
     
     session_count = repository.community_repo.count_user_sessions(requester_user.user_id)
 
-    if session_count >= 3:
+    if session_count >= 10:
         repository.community_repo.release_session_lock(requester_user.user_id)
 
         return { 'statusCode': 401, 'body': 'Usuário não pode criar mais que 3 sessões' }
