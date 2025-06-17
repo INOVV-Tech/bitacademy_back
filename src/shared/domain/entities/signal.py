@@ -250,6 +250,14 @@ class Signal(BaseModel):
         base_asset = Signal.norm_asset(data['base_asset'])
         quote_asset = Signal.norm_asset(data['quote_asset'])
 
+        status = SIGNAL_STATUS.ENTRY_WAIT
+
+        price_entry_min = Decimal(data['price_entry_min'])
+        price_entry_max = Decimal(data['price_entry_max'])
+
+        if price_entry_min == price_entry_max:
+            status = SIGNAL_STATUS.RUNNING
+
         signal = Signal(
             id=random_entity_id(),
             user_id=user_id,
@@ -261,14 +269,14 @@ class Signal(BaseModel):
             market=MARKET[data['market']],
             trade_side=TRADE_SIDE[data['trade_side']],
             vip_level=VIP_LEVEL(data['vip_level']),
-            status=SIGNAL_STATUS.ENTRY_WAIT,
+            status=status,
             trade_strat=TRADE_STRAT[data['trade_strat']],
 
             estimated_pnl=Decimal(data['estimated_pnl']),
             stake_relative=Decimal(data['stake_relative']),
             margin_multiplier=Decimal(data['margin_multiplier']),
-            price_entry_min=Decimal(data['price_entry_min']),
-            price_entry_max=Decimal(data['price_entry_max']),
+            price_entry_min=price_entry_min,
+            price_entry_max=price_entry_max,
             price_stop=Decimal(data['price_stop']),
             price_targets=[ Decimal(x) for x in data['price_targets'] ],
 
