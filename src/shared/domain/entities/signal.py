@@ -1,5 +1,8 @@
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
+
+from src.shared.domain.enums.role import ROLE
 from src.shared.domain.enums.exchange import EXCHANGE
 from src.shared.domain.enums.market import MARKET
 from src.shared.domain.enums.trade_side import TRADE_SIDE
@@ -76,31 +79,27 @@ class Signal(BaseModel):
 
     id: str
     user_id: str
+    user_name: str
+    user_role: ROLE
     title: str
     base_asset: str
     quote_asset: str
-    
     exchange: EXCHANGE
     market: MARKET
     trade_side: TRADE_SIDE
     vip_level: VIP_LEVEL
     status: SIGNAL_STATUS
     trade_strat: TRADE_STRAT
-
     estimated_pnl: Decimal
     stake_relative: Decimal
     margin_multiplier: Decimal
     price_entry_min: Decimal
     price_entry_max: Decimal
     price_stop: Decimal
-
     price_targets: list[Decimal]
-
     status_details: StatusDetails
-
     created_at: int = Field(..., gt=0, description='Timestamp in seconds')
     updated_at: int = Field(..., gt=0, description='Timestamp in seconds')
-
     external_url: str
     description: str
 
@@ -114,11 +113,11 @@ class Signal(BaseModel):
     
     @staticmethod
     def data_contains_valid_base_asset(data: dict) -> bool:
-        return is_valid_entity_string(data, 'base_asset', min_length=3, max_length=4)
+        return is_valid_entity_string(data, 'base_asset', min_length=2, max_length=4)
     
     @staticmethod
     def data_contains_valid_quote_asset(data: dict) -> bool:
-        return is_valid_entity_string(data, 'quote_asset', min_length=3, max_length=4)
+        return is_valid_entity_string(data, 'quote_asset', min_length=2, max_length=4)
     
     @staticmethod
     def data_contains_valid_exchange(data: dict) -> bool:
@@ -195,7 +194,7 @@ class Signal(BaseModel):
         return asset.strip().lower()
     
     @staticmethod
-    def from_request_data(data: dict, user_id: str) -> 'tuple[str, Signal | None]':
+    def from_request_data(data: dict, requester_user: AuthAuthorizerDTO) -> 'tuple[str, Signal | None]':
         if not Signal.data_contains_valid_title(data):
             return ('Título inválido', None)
         
@@ -260,18 +259,18 @@ class Signal(BaseModel):
 
         signal = Signal(
             id=random_entity_id(),
-            user_id=user_id,
+            user_id=requester_user.user_id,
+            user_name=requester_user.name,
+            user_role=requester_user.role,
             title=data['title'].strip(),
             base_asset=base_asset,
             quote_asset=quote_asset,
-
             exchange=EXCHANGE[data['exchange']],
             market=MARKET[data['market']],
             trade_side=TRADE_SIDE[data['trade_side']],
             vip_level=VIP_LEVEL(data['vip_level']),
             status=status,
             trade_strat=TRADE_STRAT[data['trade_strat']],
-
             estimated_pnl=Decimal(data['estimated_pnl']),
             stake_relative=Decimal(data['stake_relative']),
             margin_multiplier=Decimal(data['margin_multiplier']),
@@ -279,14 +278,11 @@ class Signal(BaseModel):
             price_entry_max=price_entry_max,
             price_stop=Decimal(data['price_stop']),
             price_targets=[ Decimal(x) for x in data['price_targets'] ],
-
             status_details=StatusDetails(
                 hit_target_snapshots=[ PriceSnapshot() for x in data['price_targets'] ]
             ),
-
             created_at=now_timestamp(),
             updated_at=now_timestamp(),
-
             external_url=data['external_url'].strip(),
             description=data['description'].strip()
         )
@@ -298,17 +294,17 @@ class Signal(BaseModel):
         return Signal(
             id=data['id'],
             user_id=data['user_id'],
+            user_name=data['user_name'],
+            user_role=ROLE[data['user_role']],
             title=data['title'],
             base_asset=data['base_asset'],
             quote_asset=data['quote_asset'],
-
             exchange=EXCHANGE[data['exchange']],
             market=MARKET[data['market']],
             trade_side=TRADE_SIDE[data['trade_side']],
             vip_level=VIP_LEVEL(data['vip_level']),
             status=SIGNAL_STATUS[data['status']],
             trade_strat=TRADE_STRAT[data['trade_strat']],
-
             estimated_pnl=Decimal(data['estimated_pnl']),
             stake_relative=Decimal(data['stake_relative']),
             margin_multiplier=Decimal(data['margin_multiplier']),
@@ -316,12 +312,9 @@ class Signal(BaseModel):
             price_entry_max=Decimal(data['price_entry_max']),
             price_stop=Decimal(data['price_stop']),
             price_targets=[ Decimal(x) for x in data['price_targets'] ],
-
             status_details=StatusDetails.from_dict_static(data['status_details']),
-            
             created_at=int(data['created_at']),
             updated_at=int(data['updated_at']),
-
             external_url=data['external_url'],
             description=data['description']
         )
@@ -333,17 +326,17 @@ class Signal(BaseModel):
         return {
             'id': self.id,
             'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_role': self.user_role.value,
             'title': self.title,
             'base_asset': self.base_asset,
             'quote_asset': self.quote_asset,
-
             'exchange': self.exchange.value,
             'market': self.market.value,
             'trade_side': self.trade_side.value,
             'vip_level': self.vip_level.value,
             'status': self.status.value,
             'trade_strat': self.trade_strat.value,
-
             'estimated_pnl': dump_decimal(self.estimated_pnl),
             'stake_relative': dump_decimal(self.stake_relative),
             'margin_multiplier': dump_decimal(self.margin_multiplier),
@@ -351,12 +344,9 @@ class Signal(BaseModel):
             'price_entry_max': dump_decimal(self.price_entry_max),
             'price_stop': dump_decimal(self.price_stop),
             'price_targets': [ dump_decimal(x) for x in self.price_targets ],
-
             'status_details': self.status_details.to_dict(raw_decimal=raw_decimal),
-
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-
             'external_url': self.external_url,
             'description': self.description         
         }

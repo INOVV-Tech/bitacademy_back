@@ -4,10 +4,11 @@ from populate.course import populate_courses
 from populate.news import populate_news
 from populate.tool import populate_tools
 from populate.community import populate_community_channels
+from populate.signal import populate_signals
 
 def populate_primary_entities(home_coins: bool = False, free_materials: bool = False, 
     courses: bool = False, news: bool = False, tools: bool = False, 
-    community_channels: bool = False) -> None:
+    community_channels: bool = False, signals: bool = False) -> None:
     if home_coins:
         populate_home_coins()
 
@@ -25,3 +26,6 @@ def populate_primary_entities(home_coins: bool = False, free_materials: bool = F
 
     if community_channels:
         populate_community_channels()
+
+    if signals:
+        populate_signals()

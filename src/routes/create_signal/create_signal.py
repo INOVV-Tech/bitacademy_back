@@ -33,7 +33,7 @@ class Usecase:
             or not isinstance(request_data['signal'], dict):
             return { 'error': 'Campo "signal" não foi encontrado' }
 
-        (error, signal) = Signal.from_request_data(request_data['signal'], requester_user.user_id)
+        (error, signal) = Signal.from_request_data(request_data['signal'], requester_user)
 
         if error != '':
             return { 'error': error }

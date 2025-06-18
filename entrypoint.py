@@ -7,5 +7,5 @@ if __name__ == '__main__':
     # init_file_api()
     # init_stripe_webhook()
 
-    populate_primary_entities(community_channels=True)
+    populate_primary_entities(signals=True)
     pass

@@ -56,7 +56,7 @@ def populate_community_channels():
         }
     ]
 
-    for i in range(4):
+    for i in range(len(comm_channels)):
         (error, community_channel) = CommunityChannel.from_request_data(comm_channels[i], requester_user)
 
         s3_datasource = repository.get_s3_datasource()
