@@ -39,7 +39,7 @@ def populate_signals():
             'base_asset': base_asset,
             'quote_asset': 'USDT',
             'exchange': random.choice(list(EXCHANGE)).value,
-            'market': random.choice(list(MARKET)).value,
+            'market': random.choice([ MARKET.SPOT, MARKET.FUTURES_USDT ]).value,
             'trade_side': random.choice(list(TRADE_SIDE)).value,
             'vip_level': random.choice(list(VIP_LEVEL)),
             'trade_strat': random.choice(list(TRADE_STRAT)).value,
