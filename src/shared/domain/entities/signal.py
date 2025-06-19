@@ -113,7 +113,7 @@ class Signal(BaseModel):
     
     @staticmethod
     def data_contains_valid_base_asset(data: dict) -> bool:
-        return is_valid_entity_string(data, 'base_asset', min_length=2, max_length=4)
+        return is_valid_entity_string(data, 'base_asset', min_length=1, max_length=4)
     
     @staticmethod
     def data_contains_valid_quote_asset(data: dict) -> bool:

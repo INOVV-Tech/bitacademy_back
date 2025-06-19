@@ -71,7 +71,7 @@ class Usecase:
                     markets.append(MARKET[market])
 
         trade_sides = []
-
+        
         if is_valid_entity_string_list(request_params, 'trade_sides', min_length=1, max_length=TRADE_SIDE.length()):
             for trade_side in request_params['trade_sides']:
                 if Signal.data_contains_valid_trade_side({ 'trade_side': trade_side }):

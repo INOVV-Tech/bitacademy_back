@@ -31,7 +31,7 @@ class CMCApi:
                 headers['content-type'] = 'application/json'
             else:
                 headers['content-type'] = 'application/x-www-form-urlencoded'
-
+        
         try:
             if method == 'GET':
                 response = requests.get(url, headers=headers, timeout=timeout_secs)
@@ -72,6 +72,18 @@ class CMCApi:
     def get_home_coins(self, timeout_secs: int = 3) -> HomeCoins | None:
         data = self.get_top_cripto(
             limit=10,
+            sort=CMC_SORT_OPTION.MARKET_CAP,
+            timeout_secs=timeout_secs
+        )
+
+        if 'error' in data:
+            return None
+
+        return HomeCoins.from_cmc_request(data)
+    
+    def get_all_coins(self, timeout_secs: int = 3) -> HomeCoins | None:
+        data = self.get_top_cripto(
+            limit=5000,
             sort=CMC_SORT_OPTION.MARKET_CAP,
             timeout_secs=timeout_secs
         )

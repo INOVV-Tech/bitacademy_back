@@ -18,6 +18,7 @@ from src.shared.domain.repositories.tag_repository_interface import ITagReposito
 from src.shared.domain.repositories.signal_repository_interface import ISignalRepository
 from src.shared.domain.repositories.community_repository_interface import ICommunityRepository
 from src.shared.domain.repositories.vip_subscription_repository_interface import IVipSubscriptionRepository
+from src.shared.domain.repositories.coininfo_repository_interface import ICoinInfoRepository
 
 ### REPOSITORIES ###
 
@@ -32,6 +33,7 @@ from src.shared.infra.repositories.database.tag_repository import TagRepositoryD
 from src.shared.infra.repositories.database.signal_repository import SignalRepositoryDynamo
 from src.shared.infra.repositories.database.community_repository import CommunityRepositoryDynamo
 from src.shared.infra.repositories.database.vip_subscription_repository import VipSubscriptionRepositoryDynamo
+from src.shared.infra.repositories.database.coininfo_repository import CoinInfoRepositoryDynamo
 
 class Repository:
     auth_repo: IAuthRepository
@@ -45,6 +47,7 @@ class Repository:
     signal_repo: ISignalRepository
     community_repo: ICommunityRepository
     vip_subscription_repo: IVipSubscriptionRepository
+    coin_info_repo: ICoinInfoRepository
 
     def __init__(
         self,
@@ -57,7 +60,8 @@ class Repository:
         tag_repo: bool = False,
         signal_repo: bool = False,
         community_repo: bool = False,
-        vip_subscription_repo: bool = False
+        vip_subscription_repo: bool = False,
+        coin_info_repo: bool = False
     ):
         self.session = None
 
@@ -71,7 +75,8 @@ class Repository:
             tag_repo,
             signal_repo,
             community_repo,
-            vip_subscription_repo
+            vip_subscription_repo,
+            coin_info_repo
         )
 
     def get_s3_datasource(self) -> S3Datasource:
@@ -82,7 +87,7 @@ class Repository:
     
     def _initialize_database_repositories(self, auth_repo: bool, free_material_repo: bool, course_repo: bool, \
         home_coins_repo: bool, news_repo: bool, tool_repo: bool, tag_repo: bool, signal_repo: bool, \
-        community_repo: bool, vip_subscription_repo: bool):
+        community_repo: bool, vip_subscription_repo: bool, coin_info_repo: bool):
         if auth_repo:
             self.auth_repo = AuthRepositoryCognito()
 
@@ -118,3 +123,6 @@ class Repository:
 
         if vip_subscription_repo:
             self.vip_subscription_repo = VipSubscriptionRepositoryDynamo(dynamo)
+
+        if coin_info_repo:
+            self.coin_info_repo = CoinInfoRepositoryDynamo(dynamo)

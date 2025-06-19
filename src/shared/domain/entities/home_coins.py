@@ -112,7 +112,11 @@ class CoinInfo:
         }
     
     def to_public_dict(self) -> dict:
-        return self.to_dict()
+        result = self.to_dict()
+
+        result['cmc_img_url'] = f'https://s2.coinmarketcap.com/static/img/coins/64x64/{self.cmc_id}.png'
+        
+        return result
 
 class HomeCoins(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
