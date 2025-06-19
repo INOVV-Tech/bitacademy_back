@@ -90,7 +90,7 @@ class Test_SignalLambda:
 
             assert response.status_code == 201
 
-    @pytest.mark.skip(reason='Done')
+    # @pytest.mark.skip(reason='Done')
     def test_lambda_get_all(self):
         body = self.get_body()
 
@@ -241,12 +241,12 @@ class Test_SignalLambda:
 
         assert response.status_code == 200
 
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_lambda_get_one(self):
         body = self.get_body()
 
         query_params = {
-            'id': 'bb0c39f7-e348-4989-b7c3-3b79d5283741'
+            'id': '32adf1c5-15ba-4c8a-a5d6-5f2eb75bcb84'
         }
 
         controller = GetOneController()

@@ -64,3 +64,11 @@ class CoinInfoRepositoryDynamo(ICoinInfoRepository):
         return {
             'coins': [ CoinInfo.from_dict_static(item) for item in response['items'] ]
         }
+    
+    def get_one(self, symbol: str) -> CoinInfo | None:
+        data = self.dynamo.get_item(
+            partition_key=self.coininfo_partition_key_format_from_symbol(symbol),
+            sort_key=self.coininfo_sort_key_format()
+        )
+
+        return CoinInfo.from_dict_static(data['Item']) if 'Item' in data else None

@@ -26,7 +26,10 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(signal_repo=True)
+        self.repository = Repository(
+            signal_repo=True,
+            coin_info_repo=True
+        )
 
     def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict, request_params: dict) -> dict:
         if 'signal' not in request_data \
@@ -40,8 +43,10 @@ class Usecase:
         
         self.repository.signal_repo.create(signal)
 
+        coin_info = self.repository.coin_info_repo.get_one(signal.base_asset.upper())
+
         return {
-            'signal': signal.to_public_dict()
+            'signal': signal.to_public_dict(coin_info=coin_info)
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

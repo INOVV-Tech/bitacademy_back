@@ -9,6 +9,7 @@ from src.shared.domain.enums.trade_side import TRADE_SIDE
 from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.domain.enums.signal_status import SIGNAL_STATUS
 from src.shared.domain.enums.trade_strat import TRADE_STRAT
+from src.shared.domain.entities.coininfo import CoinInfo
 
 from src.shared.utils.decimal import Decimal
 from src.shared.utils.time import now_timestamp
@@ -354,10 +355,13 @@ class Signal(BaseModel):
     def from_dict(self, data: dict) -> 'Signal':
         return self.from_dict_static(data)
     
-    def to_public_dict(self) -> dict:
+    def to_public_dict(self, coin_info: CoinInfo | None = None) -> dict:
         result = self.to_dict(raw_decimal=False)
 
         del result['user_id']
+
+        if coin_info is not None:
+            result['coin_info'] = coin_info.to_symbol_public_dict()
 
         return result
     

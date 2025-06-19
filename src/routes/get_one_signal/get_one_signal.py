@@ -31,7 +31,10 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(signal_repo=True)
+        self.repository = Repository(
+            signal_repo=True,
+            coin_info_repo=True
+        )
 
     def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict, request_params: dict) -> dict:
         if Signal.data_contains_valid_id(request_params):
@@ -42,12 +45,16 @@ class Usecase:
     def query_with_id(self, requester_user: AuthAuthorizerDTO, request_params: dict) -> dict:
         signal = self.repository.signal_repo.get_one(request_params['id'])
 
-        if signal is not None:
-            if not requester_user.vip_subscription.can_access(signal.vip_level):
-                return { 'signal': None }
+        if signal is None:
+            return { 'signal': None }
+        
+        if not requester_user.vip_subscription.can_access(signal.vip_level):
+            return { 'signal': None }
+        
+        coin_info = self.repository.coin_info_repo.get_one(signal.base_asset.upper())
 
         return {
-            'signal': signal.to_public_dict() if signal is not None else None
+            'signal': signal.to_public_dict(coin_info=coin_info)
         }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

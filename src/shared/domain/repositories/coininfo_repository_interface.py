@@ -10,3 +10,7 @@ class ICoinInfoRepository(ABC):
     @abstractmethod
     def get_all(self, symbols: list[str]) -> dict:
         pass
+
+    @abstractmethod
+    def get_one(self, symbol: str) -> CoinInfo | None:
+        pass

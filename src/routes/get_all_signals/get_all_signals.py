@@ -12,11 +12,12 @@ from src.shared.domain.enums.signal_status import SIGNAL_STATUS
 from src.shared.domain.enums.vip_level import VIP_LEVEL
 from src.shared.domain.enums.trade_strat import TRADE_STRAT
 from src.shared.domain.entities.signal import Signal
+from src.shared.domain.entities.coininfo import CoinInfo
 
 from src.shared.utils.routing import controller_execute
 from src.shared.utils.entity import is_valid_getall_object, \
     is_valid_entity_string_list
-from src.shared.utils.pagination import encode_cursor_get_all, decode_cursor
+from src.shared.utils.pagination import encode_cursor_get_all_with_data, decode_cursor
 
 ALLOWED_USER_ROLES = [
     ROLE.GUEST,
@@ -40,7 +41,10 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(signal_repo=True)
+        self.repository = Repository(
+            signal_repo=True,
+            coin_info_repo=True
+        )
 
     def execute(self, requester_user: AuthAuthorizerDTO, request_data: dict, request_params: dict) -> dict:
         if not is_valid_getall_object(request_params):
@@ -111,13 +115,52 @@ class Usecase:
             last_evaluated_key=decode_cursor(request_params['next_cursor']),
             sort_order=request_params['sort_order']
         )
-        
-        return encode_cursor_get_all(
-            db_data=db_data,
-            item_key='signals',
+
+        signals: list[Signal] = db_data['signals']
+
+        coins_info = self.get_coins_info(signals)
+
+        coins_info_dict = {}
+
+        for coin_info in coins_info:
+            coins_info_dict[coin_info.symbol] = coin_info
+
+        signals_data = []
+
+        for signal in signals:
+            base_asset = signal.base_asset.upper()
+            
+            coin_info = coins_info_dict[base_asset] if base_asset in coins_info_dict else None
+
+            signals_data.append(
+                signal.to_public_dict(
+                    coin_info=coin_info
+                )
+            )
+
+        return encode_cursor_get_all_with_data(
+            total=db_data['total'],
+            data=signals_data,
             limit=request_params['limit'],
             last_evaluated_key=db_data['last_evaluated_key']
         )
+    
+    def get_coins_info(self, signals: list[Signal]) -> list[CoinInfo]:
+        base_asset_dict = {}
+
+        for signal in signals:
+            base_asset_dict[signal.base_asset.upper()] = True
+
+        base_assets = list(base_asset_dict.keys())
+
+        if len(base_assets) == 0:
+            return []
+
+        resp = self.repository.coin_info_repo.get_all(
+            symbols=base_assets
+        )
+
+        return resp['coins']
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)

@@ -22,3 +22,15 @@ def encode_cursor_get_all(db_data: dict, item_key: str, limit: int, \
         'next_cursor': next_cursor,
         'has_more': bool(next_cursor)
     }
+
+def encode_cursor_get_all_with_data(total: int, data: list[Any], limit: int, \
+    last_evaluated_key: dict | None) -> dict:
+    next_cursor = encode_cursor(last_evaluated_key) if last_evaluated_key else ''
+
+    return {
+        'total': total,
+        'per_page': limit,
+        'data': data,
+        'next_cursor': next_cursor,
+        'has_more': bool(next_cursor)
+    }

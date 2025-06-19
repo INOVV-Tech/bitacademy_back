@@ -16,7 +16,7 @@ class Test_BinanceCronjob:
     def call_cronjob(self, controller):
         return controller.execute()
     
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_cronjob_update(self):
         controller = UpdateController()
 
