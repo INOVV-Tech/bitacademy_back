@@ -69,7 +69,7 @@ class IacStack(Stack):
         )
 
         ### WEBSOCKET ###
-
+        
         self.community_stack = CommunityStack(self, \
             environment_variables=ENVIRONMENT_VARIABLES, dynamo_stack=self.dynamo_stack)
 

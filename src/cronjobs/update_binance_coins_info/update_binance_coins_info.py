@@ -14,7 +14,7 @@ class Controller:
             return Usecase().execute()
         except:
             return { 'error': 'Erro interno de servidor' }
-        
+
 class Usecase:
     repository: Repository
     cmc_api: CMCApi

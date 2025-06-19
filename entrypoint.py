@@ -7,5 +7,5 @@ if __name__ == '__main__':
     # init_file_api()
     # init_stripe_webhook()
 
-    populate_primary_entities(signals=True)
+    # populate_primary_entities(coin_info=True)
     pass
