@@ -40,8 +40,20 @@ class CronjobStack(Construct):
             timeout=Duration.seconds(360)
         )
 
+        self.update_binance_coins_info = lambda_.Function(
+            self, 'UpdateBinanceCoinsInfo',
+            code=lambda_.Code.from_asset(f'../src/cronjobs/update_binance_coins_info'),
+            handler='update_binance_coins_info.lambda_handler',
+            runtime=lambda_.Runtime.PYTHON_3_11,
+            layers=[ self.cronjob_lambda_layer ],
+            memory_size=512,
+            environment=environment_variables,
+            timeout=Duration.seconds(60)
+        )
+
         dynamo_stack.dynamo_table.grant_read_write_data(self.update_home_coins)
         dynamo_stack.dynamo_table.grant_read_write_data(self.update_signals)
+        dynamo_stack.dynamo_table.grant_read_write_data(self.update_binance_coins_info)
 
         update_home_coins_rule = aws_events.Rule(
             self, 'UpdateHomeCoinsRule',
@@ -56,3 +68,10 @@ class CronjobStack(Construct):
         )
 
         update_signals_rule.add_target(aws_events_targets.LambdaFunction(self.update_signals))
+
+        update_binance_coins_info_rule = aws_events.Rule(
+            self, 'UpdateBinanceCoinsInfoRule',
+            schedule=aws_events.Schedule.rate(Duration.hours(24))
+        )
+
+        update_binance_coins_info_rule.add_target(aws_events_targets.LambdaFunction(self.update_binance_coins_info))

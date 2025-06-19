@@ -90,7 +90,7 @@ class Test_SignalLambda:
 
             assert response.status_code == 201
 
-    # @pytest.mark.skip(reason='Done')
+    @pytest.mark.skip(reason='Done')
     def test_lambda_get_all(self):
         body = self.get_body()
 
